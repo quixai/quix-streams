@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- These settings are applied to all projects recursive from here (unless overridden).-->
+  <PropertyGroup>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+      <!-- Nuget Properties -->
+      <MinClientVersion>4.1.0</MinClientVersion>
+      <NeutralLanguage>en-US</NeutralLanguage>
+      <Authors>Mizux</Authors>
+      <Company>Google LLC</Company>
+      <Copyright>Copyright 2020 Google LLC</Copyright>
+
+       <!-- Pack Option -->
+       <PackageTags>native;sample</PackageTags>
+       <PackageIcon>content/logo.png</PackageIcon>
+       <PackageProjectUrl>https://github.com/mizux/cmake-swig</PackageProjectUrl>
+       <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+       <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+       <PackageOutputPath>../packages</PackageOutputPath>
+       <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+       <RepositoryType>git</RepositoryType>
+       <RepositoryUrl>https://github.com/mizux/cmake-swig</RepositoryUrl>
+        <!--Disable CS1591 "Missing XML comment for publicly visible type or member" (Swig doesn't generate documentation)-->
+        <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../logo.png">
+      <Pack>True</Pack>
+      <PackagePath>content</PackagePath>
+    </None>
+  </ItemGroup>
+  <PropertyGroup Label="BasePath">
+    <SolutionDir Condition="'$(SolutionDir)'==''">$(MSBuildThisFileDirectory)</SolutionDir>
+  </PropertyGroup>
+</Project>

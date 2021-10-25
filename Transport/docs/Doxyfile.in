@@ -1,0 +1,5 @@
+OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/doc_doxygen/
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../include/ @CMAKE_CURRENT_SOURCE_DIR@/.
+FILE_PATTERNS          = *.cpp *.h *hpp q*.doc
+RECURSIVE              = YES
+MACRO_EXPANSION        = YES

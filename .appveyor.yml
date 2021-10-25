@@ -1,0 +1,41 @@
+version: '{build}'
+shallow_clone: true
+
+platform: x64
+configuration:
+  - Debug
+  - Release
+
+environment:
+  MSBUILD_FLAGS: /verbosity:normal /maxcpucount
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    LANGUAGE: cpp
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    LANGUAGE: python
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    LANGUAGE: dotnet
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    LANGUAGE: java
+
+matrix:
+  fast_finish: false
+
+install:
+  - if "%LANGUAGE%"=="python"
+    set PATH=C:\Python38-x64;%PATH% &
+    python -V &
+    python -m pip install virtualenv wheel
+
+before_build:
+  - cmake --version
+  - if "%LANGUAGE%"=="cpp" cmake -S. -Bbuild -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=%configuration%
+  - if "%LANGUAGE%"=="python" cmake -S. -Bbuild -DBUILD_PYTHON=ON -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=%configuration%
+  - if "%LANGUAGE%"=="dotnet" cmake -S. -Bbuild -DBUILD_DOTNET=ON -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=%configuration%
+
+build_script:
+  - cmake --build build --config %configuration% --target ALL_BUILD -- %MSBUILD_FLAGS%
+
+test_script:
+  - cmake --build build --config %configuration% --target RUN_TESTS -- %MSBUILD_FLAGS%
+
