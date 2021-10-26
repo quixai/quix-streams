@@ -23,7 +23,7 @@ namespace Quix {
                 return s;
             }
 
-            void registerCodec(std::string model, AbstractCodec*);
+            void registerCodec(const std::string& model, AbstractCodec*);
             std::vector<AbstractCodec*>& retrieveCodecs(const std::string& modelKey);
             void clearCodecs(const std::string& modelKey);
             AbstractCodec* retrieveCodec(const std::string& modelKey, const std::string& codecId);

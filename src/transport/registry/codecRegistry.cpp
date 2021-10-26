@@ -12,7 +12,7 @@ namespace Quix {
      * @param model modelName to be registered
      * @param codec codec
      */
-    void CodecRegistry::registerCodec(string model, AbstractCodec* codec){
+    void CodecRegistry::registerCodec(const string& model, AbstractCodec* codec){
 
         //not found model >> creating a element of key
         if ( codecs.find(model) == codecs.end() ) {
