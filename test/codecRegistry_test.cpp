@@ -89,8 +89,9 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     std::type_index* tpindex = (std::type_index*)((void*)(new char[sizeof(std::type_index)]));
     bool type_found = ModelKeyRegistry::instance()->tryGetType(modelKey, *tpindex);
 
-    delete (void*)tpindex;
     // Assert
     ASSERT_TRUE ( type_found );
     EXPECT_EQ ( *tpindex, std::type_index( typeid(&codec1) ) );
+
+    delete (void*)tpindex;
 }
