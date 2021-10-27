@@ -23,5 +23,5 @@ echo "CONFIGURING DONE"
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
-make -j 8
+cmake --build . --config Release
 echo "BUILDING DONE"
