@@ -16,4 +16,4 @@ jobs:
     vmImage: ubuntu-latest
 
   steps:
-    template: .ci/linux-pipeline.yml
+  - template: .ci/linux-pipeline.yml
