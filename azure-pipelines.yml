@@ -16,13 +16,8 @@ steps:
 
 - script: |
     ./.ci/script.sh
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
   displayName: 'Build codebase'
 
 - script: |
-    ./.ci/script.sh
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run test'
     ./build/test/QuixStreaming_tst
+  displayName: 'Run test'
