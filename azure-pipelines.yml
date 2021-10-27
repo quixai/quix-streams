@@ -14,18 +14,18 @@ jobs:
   pool:
     vmImage: ubuntu-latest
   steps:
-  - template: .ci/linux-pipeline.yml
+  - template: .ci/unix/ci-pipeline.yml
 
 - job: TestMacOS
   displayName: 'Test MacOS Latest'
   pool:
     vmImage: macOS-latest
   steps:
-  - template: .ci/linux-pipeline.yml
+  - template: .ci/unix/ci-pipeline.yml
 
 - job: TestWindows
   displayName: 'Test Windows Latest'
   pool:
     vmImage: windows-latest
   steps:
-  - template: .ci/linux-pipeline.yml
+  - template: .ci/windows/ci-pipeline.yml
