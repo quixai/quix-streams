@@ -19,6 +19,8 @@ steps:
 - script: |
     echo "Build dependencies"
     mkdir build
+    pwd
+    ls -la .
     ls -la ./lib
     ls -la ./lib/googletest
     chmod +x ./.ci/build.sh
