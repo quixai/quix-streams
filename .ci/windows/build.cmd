@@ -15,7 +15,7 @@ cmake --version
 
 Mkdir build 
 cd build
-cmake -DUSE_MSVC_RUNTIME_LIBRARY_DLL=1 ..
+cmake ..
 
 echo "CONFIGURING DONE"
 
@@ -23,5 +23,5 @@ echo "CONFIGURING DONE"
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
-cmake --build . --config Debug
+cmake --build . --config Release
 echo "BUILDING DONE"
