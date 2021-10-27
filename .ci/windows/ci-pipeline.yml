@@ -6,7 +6,7 @@
 steps:
 - script: |
     echo "Build dependencies"
-    .ci\unix\build.cmd
+    RUN .ci\unix\build.cmd
   displayName: 'Build codebase'
 
 - script: |
