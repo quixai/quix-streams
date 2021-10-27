@@ -15,6 +15,8 @@ Mkdir build
 
 cmake --version
 
+cmake ..
+
 echo "CONFIGURING DONE"
 
 :: #############
