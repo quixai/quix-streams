@@ -1,0 +1,29 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: |
+    echo "Install dependencies"
+    chmod +x ./.ci/install.sh
+    ./.ci/install.sh
+  displayName: 'Install dependencies'
+
+- script: |
+    echo "Build dependencies"
+    mkdir build
+    chmod +x ./.ci/script.sh
+    ./.ci/script.sh
+  displayName: 'Build codebase'
+
+- script: |
+    echo "Running test"
+    ./build/test/QuixStreaming_tst
+  displayName: 'Run test'
