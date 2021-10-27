@@ -12,6 +12,7 @@ pool:
 steps:
 - script: |
     echo "Install dependencies"
+    pwd
     chmod +x ./.ci/install.sh
     ./.ci/install.sh
   displayName: 'Install dependencies'
