@@ -27,5 +27,16 @@ TODO: to be specified
 
 ## Development
 
-Our naming conventions are inspired by [https://manual.gromacs.org/documentation/5.1-current/dev-manual/naming.html](https://manual.gromacs.org/documentation/5.1-current/dev-manual/naming.html).
+### CI pipeline
+
+We use Azure DevOps CI pipeline for running our unit tests.
+
+Please folow on this link [https://dev.azure.com/quix-analytics/Quix%20streams/_build?definitionId=51](https://dev.azure.com/quix-analytics/Quix%20streams/_build?definitionId=51).
+
+
+### Naming conventions
+
+Our naming conventions are inspired by 
+
+[https://manual.gromacs.org/documentation/5.1-current/dev-manual/naming.html](https://manual.gromacs.org/documentation/5.1-current/dev-manual/naming.html).
 
