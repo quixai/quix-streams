@@ -18,8 +18,7 @@ steps:
 
 - script: |
     echo "Build dependencies"
-    ls -la
-    pwd
+    mkdir build
     chmod +x ./.ci/script.sh
     ./.ci/script.sh
   displayName: 'Build codebase'
