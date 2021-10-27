@@ -15,7 +15,7 @@ cmake --version
 
 Mkdir build 
 cd build
-cmake -DGTEST_CREATE_SHARED_LIBRARY=1 -DGTEST_LINKED_AS_SHARED_LIBRARY=1 ..
+cmake ..
 
 echo "CONFIGURING DONE"
 
