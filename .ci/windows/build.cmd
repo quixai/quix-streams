@@ -15,14 +15,18 @@ Mkdir build
 
 cmake --version
 
+echo "CONFIGURING DONE"
+
 :: #############
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
 cmake --build build --target all -- VERBOSE=1
+echo "BUILDING DONE"
 
 :: ############
 :: ##  TEST  ##
 :: ############
 echo "TESTING"
 cmake --build build --target test
+echo "TESTING DONE"
