@@ -17,3 +17,12 @@ jobs:
 
   steps:
   - template: .ci/linux-pipeline.yml
+
+- job: TestMacOS
+  displayName: 'Test MacOS Latest'
+
+  pool:
+    vmImage: macOS-latest
+
+  steps:
+  - template: .ci/linux-pipeline.yml
