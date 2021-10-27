@@ -20,7 +20,7 @@ steps:
     echo "Build dependencies"
     mkdir build
     chmod +x ./.ci/build.sh
-    ./.ci/script.sh
+    ./.ci/build.sh
   displayName: 'Build codebase'
 
 - script: |
