@@ -11,12 +11,10 @@ git clone https://github.com/google/googletest.git lib/googletest
 :: #################
 echo "CONFIGURING"
 
-Mkdir build 
-
-cd build
-
 cmake --version
 
+Mkdir build 
+cd build
 cmake ..
 
 echo "CONFIGURING DONE"
