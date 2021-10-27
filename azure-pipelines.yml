@@ -5,6 +5,7 @@
 
 trigger:
 - main
+- develop
 
 pool:
   vmImage: ubuntu-latest
@@ -18,11 +19,6 @@ steps:
 
 - script: |
     echo "Build dependencies"
-    mkdir build
-    pwd
-    ls -la .
-    ls -la ./lib
-    ls -la ./lib/googletest
     chmod +x ./.ci/build.sh
     ./.ci/build.sh
   displayName: 'Build codebase'

@@ -13,6 +13,9 @@ git clone https://github.com/google/googletest.git lib/googletest
 ##  CONFIGURE  ##
 #################
 echo "CONFIGURING"
+
+mkdir -p build
+
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   export PATH=/opt/cmake-3.16.2/bin:$PATH
 fi
