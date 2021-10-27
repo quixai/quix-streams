@@ -1,12 +1,9 @@
-#!/usr/bin/env bash
-set -x
-set -e
-
 ###########################
 ## DOWNLOAD DEPENDENCIES ##
 ###########################
 
-mkdir lib && mkdir lib/googletest
+Mkdir lib 
+Mkdir lib\googletest
 git clone https://github.com/google/googletest.git lib/googletest
 
 #################
