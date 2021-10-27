@@ -11,11 +11,7 @@ git clone https://github.com/google/googletest.git lib/googletest
 #################
 echo "CONFIGURING"
 
-mkdir -p build
-
-if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  export PATH=/opt/cmake-3.16.2/bin:$PATH
-fi
+Mkdir build 
 
 cmake --version
 
@@ -33,4 +29,3 @@ cmake --build build --target all -- VERBOSE=1
 ############
 echo "TESTING"
 cmake --build build --target test
-# vim: set tw=0 ts=2 sw=2 expandtab:
