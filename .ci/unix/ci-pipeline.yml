@@ -12,8 +12,7 @@ steps:
 
 - script: |
     echo "Build dependencies"
-    chmod +x ./.ci/unix/build.sh
-    ./.ci/unix/build.sh
+    ./.ci/windows/build.sh
   displayName: 'Build codebase'
 
 - script: |
