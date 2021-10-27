@@ -28,6 +28,6 @@ cmake --build . --config Release
 echo "DIR ."
 dir .
 echo "DIR build"
-dir build
+dir bin
 
 echo "BUILDING DONE"
