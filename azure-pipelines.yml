@@ -11,10 +11,12 @@ pool:
 
 steps:
 - script: |
+    chmod +x ./.ci/install.sh
     ./.ci/install.sh
   displayName: 'Install dependencies'
 
 - script: |
+    chmod +x ./.ci/script.sh
     ./.ci/script.sh
   displayName: 'Build codebase'
 
