@@ -23,5 +23,5 @@ echo "CONFIGURING DONE"
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
-make all -j 8
+make -j 8
 echo "BUILDING DONE"
