@@ -15,5 +15,5 @@ jobs:
   pool:
     vmImage: ubuntu-latest
 
-  extends:
+  steps:
     template: .ci/linux-pipeline.yml
