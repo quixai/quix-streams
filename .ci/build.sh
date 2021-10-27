@@ -2,6 +2,13 @@
 set -x
 set -e
 
+###########################
+## DOWNLOAD DEPENDENCIES ##
+###########################
+
+mkdir lib && mkdir lib/googletest
+git clone https://github.com/google/googletest.git lib/googletest
+
 #################
 ##  CONFIGURE  ##
 #################
@@ -9,8 +16,6 @@ echo "CONFIGURING"
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   export PATH=/opt/cmake-3.16.2/bin:$PATH
 fi
-
-cmake --version
 
 cmake --version
 
