@@ -11,5 +11,5 @@ steps:
 
 - script: |
     echo "Running test"
-    build\test\QuixStreaming_tst
+    test\Release\QuixStreaming_tst.exe
   displayName: 'Run test'
