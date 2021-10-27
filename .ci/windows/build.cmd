@@ -13,6 +13,8 @@ echo "CONFIGURING"
 
 Mkdir build 
 
+cd build
+
 cmake --version
 
 cmake ..
@@ -23,12 +25,5 @@ echo "CONFIGURING DONE"
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
-cmake --build build --target all -- VERBOSE=1
+make all -j 8
 echo "BUILDING DONE"
-
-:: ############
-:: ##  TEST  ##
-:: ############
-echo "TESTING"
-cmake --build build --target test
-echo "TESTING DONE"
