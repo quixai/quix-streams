@@ -3,32 +3,20 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- main
-- develop
+steps:
+- script: |
+    echo "Install dependencies"
+    chmod +x ./.ci/install.sh
+    ./.ci/install.sh
+  displayName: 'Install dependencies'
 
+- script: |
+    echo "Build dependencies"
+    chmod +x ./.ci/build.sh
+    ./.ci/build.sh
+  displayName: 'Build codebase'
 
-jobs:
-- job: TestUbuntu
-  displayName: 'Test Ubuntu Latest'
-
-  pool:
-    vmImage: ubuntu-latest
-
-  steps:
-  - script: |
-      echo "Install dependencies"
-      chmod +x ./.ci/install.sh
-      ./.ci/install.sh
-    displayName: 'Install dependencies'
-
-  - script: |
-      echo "Build dependencies"
-      chmod +x ./.ci/build.sh
-      ./.ci/build.sh
-    displayName: 'Build codebase'
-
-  - script: |
-      echo "Running test"
-      ./build/test/QuixStreaming_tst
-    displayName: 'Run test'
+- script: |
+    echo "Running test"
+    ./build/test/QuixStreaming_tst
+  displayName: 'Run test'
