@@ -23,5 +23,5 @@ echo "CONFIGURING DONE"
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
-cmake --build .
+cmake --build . --config Debug
 echo "BUILDING DONE"
