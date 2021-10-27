@@ -24,4 +24,10 @@ echo "CONFIGURING DONE"
 :: #############
 echo "BUILDING"
 cmake --build . --config Release
+
+echo "DIR ."
+dir .
+echo "DIR build"
+dir build
+
 echo "BUILDING DONE"
