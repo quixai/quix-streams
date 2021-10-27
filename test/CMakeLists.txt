@@ -8,4 +8,8 @@ add_executable(${BINARY} ${TEST_SOURCES})
 
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 
+set(VCPKG_TARGET_ARCHITECTURE x64) 
+set(VCPKG_CRT_LINKAGE dynamic) 
+set(VCPKG_LIBRARY_LINKAGE static) 
+
 target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib gtest)
