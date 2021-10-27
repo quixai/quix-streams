@@ -5,7 +5,12 @@
 namespace Quix {
     using namespace std;
 
-    const std::type_info& AbstractCodec::type() const{
-        return typeid(this);
+    AbstractCodec::AbstractCodec(const std::string& codecKey) : codecKey_(codecKey) {
+
     }
+
+    const std::string& AbstractCodec::key() const {
+        return codecKey_;
+    }
+
 }

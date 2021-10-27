@@ -10,10 +10,8 @@ using namespace Quix;
 
 class MockCodec : public AbstractCodec{
     private:
-        std::string _id;
     public:
-        MockCodec(const std::string& id): _id(id){};
-        virtual std::string id(){ return _id; };
+        MockCodec(const std::string& id): AbstractCodec(id){};
 };
 
 TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected) {

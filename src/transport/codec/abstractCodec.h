@@ -2,13 +2,19 @@
 
 #include <string>
 
+#include <unordered_map>
+
 namespace Quix {
 
-    class AbstractCodec{
+    class AbstractCodec {
+        private:
+            const std::string codecKey_;
+
+        protected:
+            AbstractCodec(const std::string& codecKey);
+
         public:
-            virtual std::string id() = 0;
-            const std::type_info& type() const;
-            // virtual char* serialize(void* obj) = 0;
+            const std::string & key() const;
     };
 
 }

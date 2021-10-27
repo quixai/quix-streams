@@ -15,8 +15,8 @@ namespace Quix {
 
         private:
             ModelKeyRegistry(){};
-            std::unordered_map<std::string, std::type_index> modelKeysToTypes;
-            std::unordered_map<std::type_index, std::string> typesToModelKeys;
+            std::unordered_map<std::string, std::string> modelKeysToCodecKeys;
+            std::unordered_map<std::string, std::string> typesToModelKeys;
 
         public:
             ModelKeyRegistry(ModelKeyRegistry const&) = delete;
@@ -27,9 +27,9 @@ namespace Quix {
                 return s;
             }
             
-            void registerModel(const std::type_index& type, const std::string& modelKey);
-            bool tryGetType(const std::string& modelKey, std::type_index& type);
-            bool tryGetModelKey(const std::type_index& type, std::string& modelKey);        
+            void registerModel(const std::string& type, const std::string& modelKey);
+            bool tryGetCodecKey(const std::string& modelKey, std::string& type);
+            bool tryGetModelKey(const std::string& type, std::string& modelKey);        
     };
 
 

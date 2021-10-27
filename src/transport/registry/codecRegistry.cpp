@@ -23,8 +23,10 @@ namespace Quix {
         //TODO: this is slow due to RTTI dispatch of virtual id() >> redo to cache the ids
         auto& modelCodecs = codecs[model];
 
-        auto codecId = codec->id();
-        auto it = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecId](AbstractCodec* val){return val->id() == codecId;});
+        auto codecKey = codec->key();
+        auto it = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecKey](AbstractCodec* val){
+            return val->key() == codecKey;
+        });
         if( it == modelCodecs.end() ) {
             //no codec found
             modelCodecs.push_back(codec);
@@ -34,7 +36,7 @@ namespace Quix {
         }
 
         static auto modelKeyRegistry = ModelKeyRegistry::instance();
-        modelKeyRegistry->registerModel(codec->type(), model);
+        modelKeyRegistry->registerModel(codecKey, model);
     }
 
     /**
@@ -50,16 +52,17 @@ namespace Quix {
         return codecs[modelKey];
     }
 
-        /**
+
+    /**
      * Retrieves registered codecs for the model key and codec id
      * @param modelKey The model key to retrieve codecs for
+     * @param codecKey String representation of the codec
      * @return Previously registered <see cref="ICodec"/> or an empty collection if none found
      */
-    AbstractCodec* CodecRegistry::retrieveCodec(const string& modelKey, const string& codecId){
+    AbstractCodec* CodecRegistry::retrieveCodec(const string& modelKey, const string& codecKey){
         auto modelCodecs = retrieveCodecs(modelKey);
-        //TODO: this is slow due to RTTI dispatch of virtual id() >> redo to cache the ids
-        auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecId](AbstractCodec* val){
-            return val->id() == codecId;
+        auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecKey](AbstractCodec* val){
+            return val->key() == codecKey;
         });
         return el == modelCodecs.end()
                     ?

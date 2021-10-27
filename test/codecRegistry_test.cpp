@@ -11,10 +11,8 @@ using namespace Quix;
 
 class MockCodec : public AbstractCodec{
     private:
-        std::string _id;
     public:
-        MockCodec(const std::string& id): _id(id){};
-        virtual std::string id(){ return _id; };
+        MockCodec(const std::string& id): AbstractCodec(id){};
 };
 
 TEST(codecRegistryTest, shouldRegisterCodec) {
@@ -26,10 +24,10 @@ TEST(codecRegistryTest, shouldRegisterCodec) {
     registry->registerCodec(modelKey, &codec1);
 
     // Act
-    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.id());
+    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.key());
 
     // Assert
-    EXPECT_EQ (codec1.id(),  "TestCodec");
+    EXPECT_EQ (codec1.key(),  "TestCodec");
     EXPECT_EQ (retrievedCodec,  &codec1);
 }
 
@@ -68,7 +66,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
 
     // Act
     registry->clearCodecs(modelKey);
-    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.id());
+    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.key());
     auto allCodecs = registry->retrieveCodecs(modelKey);
 
     // Assert
@@ -86,12 +84,10 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     // Act
     registry->registerCodec(modelKey, &codec1);
 
-    std::type_index* tpindex = (std::type_index*)((void*)(new char[sizeof(std::type_index)]));
-    bool type_found = ModelKeyRegistry::instance()->tryGetType(modelKey, *tpindex);
+    std::string codecKey("");
+    bool type_found = ModelKeyRegistry::instance()->tryGetCodecKey(modelKey, codecKey);
 
     // Assert
     ASSERT_TRUE ( type_found );
-    EXPECT_EQ ( *tpindex, std::type_index( typeid(&codec1) ) );
-
-    delete (void*)tpindex;
+    EXPECT_EQ ( codecKey, codec1.key() );
 }
