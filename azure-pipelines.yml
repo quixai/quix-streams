@@ -11,18 +11,21 @@ trigger:
 jobs:
 - job: TestUbuntu
   displayName: 'Test Ubuntu Latest'
-
   pool:
     vmImage: ubuntu-latest
-
   steps:
   - template: .ci/linux-pipeline.yml
 
 - job: TestMacOS
   displayName: 'Test MacOS Latest'
-
   pool:
     vmImage: macOS-latest
+  steps:
+  - template: .ci/linux-pipeline.yml
 
+- job: TestWindows
+  displayName: 'Test Windows Latest'
+  pool:
+    vmImage: windows-latest
   steps:
   - template: .ci/linux-pipeline.yml
