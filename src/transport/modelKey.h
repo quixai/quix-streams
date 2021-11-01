@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Quix {
+namespace Quix::Transport {
 
     /**
      * Class implements abstraction over the model key.

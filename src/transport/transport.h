@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace Quix {
+namespace Quix::Transport {
 
 class Transport
 {

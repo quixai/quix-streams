@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 
-namespace Quix {
+namespace Quix::Transport {
     using namespace std;
 
     void CodecRegistry::registerCodec(const ModelKey& model, AbstractCodec* codec){

@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-namespace Quix {
+namespace Quix::Transport {
 
     Transport::Transport(int x)
     {

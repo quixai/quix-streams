@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 
-namespace Quix {
+namespace Quix::Transport {
 
     class AbstractCodec {
         private:

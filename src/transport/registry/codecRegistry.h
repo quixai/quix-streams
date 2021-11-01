@@ -7,7 +7,7 @@
 #include "../codec/abstractCodec.h"
 #include "../modelKey.h"
 
-namespace Quix {
+namespace Quix::Transport {
 
     class CodecRegistry{
 

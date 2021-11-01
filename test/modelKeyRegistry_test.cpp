@@ -7,7 +7,7 @@
 #include <algorithm>
 
 using namespace std;
-using namespace Quix;
+using namespace Quix::Transport;
 
 class MockCodec : public AbstractCodec{
     private:

@@ -2,7 +2,7 @@
 
 #include "abstractCodec.h"
 
-namespace Quix {
+namespace Quix::Transport {
     using namespace std;
 
     AbstractCodec::AbstractCodec(const std::string& codecKey) : codecKey_(codecKey) {
