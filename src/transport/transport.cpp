@@ -9,8 +9,6 @@ namespace Quix {
     Transport::Transport(int x)
     {
         gx = x;
-
-        std::cout << "Transport layer here" << std::endl;
     }
 
 

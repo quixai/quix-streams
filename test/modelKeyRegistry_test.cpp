@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "transport/codec/abstractCodec.h"
 #include "transport/registry/codecRegistry.h"
+#include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"
 
 #include <algorithm>
@@ -16,17 +17,49 @@ class MockCodec : public AbstractCodec{
 
 TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected) {
     // Arrange
-    // auto type = std::type_index(typeid(ModelKeyRegistryShould));
-    // var modelKey = new ModelKey(type, 32);
-    // ModelKeyRegistry.RegisterModel(type, modelKey);
+    ModelKey modelKey("TESTModel");
+    auto codecKey = std::string("TESTCodec");
 
-    // // Act
-    // var retrievedType = ModelKeyRegistry.GetType(modelKey);
-    // var retrievedModelKey = ModelKeyRegistry.GetModelKey(type);
+    auto registry = ModelKeyRegistry::instance();
+    registry->registerModel(codecKey, modelKey);
+
+
+    // Act
+    std::string outCodecKey = std::string("___TESTERROR___");
+    auto retrievedCodecKeySuccess = registry->tryGetCodecKey(modelKey, outCodecKey);
+    ModelKey outModelKey("___TESTERROR___");
+    auto retrievedModelKeySuccess = registry->tryGetModelKey(codecKey, outModelKey);
 
     // // Assert
-    // retrievedType.Should().Be(type);
-    // retrievedModelKey.Should().Be(modelKey);
+    ASSERT_TRUE ( retrievedCodecKeySuccess );
+    ASSERT_EQ ( outCodecKey, codecKey );
 
+    ASSERT_TRUE ( retrievedModelKeySuccess );
+    ASSERT_EQ ( outModelKey, modelKey );
+}
+
+TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldNotFound) {
+    // Arrange
+    ModelKey modelKey("TESTModel");
+    ModelKey modelKey2("TESTModel2");
+    auto codecKey = std::string("TESTCodec");
+    auto codecKey2 = std::string("TESTCodec2");
+
+    auto registry = ModelKeyRegistry::instance();
+    registry->registerModel(codecKey, modelKey);
+
+
+    // Act
+    std::string outCodecKey = std::string("___TESTERROR___");
+    auto retrievedCodecKeySuccess = registry->tryGetCodecKey(modelKey2, outCodecKey);
+    ModelKey outModelKey("___TESTERROR___");
+    auto retrievedModelKeySuccess = registry->tryGetModelKey(codecKey2, outModelKey);
+
+    // // Assert
+    ASSERT_FALSE ( retrievedCodecKeySuccess );
+    ASSERT_EQ ( outCodecKey, std::string("___TESTERROR___") );
+
+    ASSERT_FALSE ( retrievedModelKeySuccess );
+    ASSERT_EQ ( outModelKey, std::string("___TESTERROR___") );
 }
 

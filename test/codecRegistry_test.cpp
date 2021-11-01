@@ -20,7 +20,7 @@ TEST(codecRegistryTest, shouldRegisterCodec) {
     MockCodec codec1("TestCodec");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Model1";
+    ModelKey modelKey("Model1");
     registry->registerCodec(modelKey, &codec1);
 
     // Act
@@ -37,7 +37,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec) {
     MockCodec codec2("TestCodec2");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Test";
+    ModelKey modelKey("Test");
     registry->registerCodec(modelKey, &codec1);
     registry->registerCodec(modelKey, &codec2);
 
@@ -61,7 +61,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
     MockCodec codec1("TestCodec");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Model1";
+    ModelKey modelKey("Model1");
     registry->registerCodec(modelKey, &codec1);
 
     // Act
@@ -79,7 +79,7 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     MockCodec codec1("TestCodec");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Model1";
+    ModelKey modelKey("Model1");
 
     // Act
     registry->registerCodec(modelKey, &codec1);
