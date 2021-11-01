@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Quix::Transport {
+namespace Quix { namespace Transport {
 
     /**
      * Class implements abstraction over the model key.
@@ -32,4 +32,4 @@ namespace Quix::Transport {
             }
     };
 
-}
+} }

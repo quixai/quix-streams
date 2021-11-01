@@ -4,7 +4,7 @@
 
 #include "modelKeyRegistry.h"
 
-namespace Quix::Transport {
+namespace Quix { namespace Transport {
     using namespace std;
 
     void ModelKeyRegistry::registerModel(const std::string& codecKey, const ModelKey& modelKey){
@@ -30,4 +30,4 @@ namespace Quix::Transport {
         return true;
     };        
 
-}
+} }

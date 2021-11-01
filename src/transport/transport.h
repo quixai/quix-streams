@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace Quix::Transport {
+namespace Quix { namespace Transport {
 
 class Transport
 {
@@ -12,4 +12,4 @@ public:
   int get();
 };
 
-}
+} }

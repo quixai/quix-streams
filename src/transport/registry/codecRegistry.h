@@ -7,7 +7,7 @@
 #include "../codec/abstractCodec.h"
 #include "../modelKey.h"
 
-namespace Quix::Transport {
+namespace Quix { namespace Transport {
 
     class CodecRegistry{
 
@@ -74,4 +74,4 @@ namespace Quix::Transport {
     };
 
 
-}
+} }

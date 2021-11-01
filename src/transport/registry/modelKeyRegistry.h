@@ -11,7 +11,7 @@
 #include "../codec/abstractCodec.h"
 #include "../modelKey.h"
 
-namespace Quix::Transport {
+namespace Quix { namespace Transport {
 
     /**
      * Contains bi-directional mapping between codecKey and modelKey.
@@ -81,4 +81,4 @@ namespace Quix::Transport {
     }
 
 
-}
+} }

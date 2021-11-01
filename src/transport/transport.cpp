@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-namespace Quix::Transport {
+namespace Quix { namespace Transport {
 
     Transport::Transport(int x)
     {
@@ -17,4 +17,4 @@ namespace Quix::Transport {
         return gx;
     }
 
-}
+} }
