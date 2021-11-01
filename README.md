@@ -11,7 +11,7 @@ This module is the c++ implementation of the next gen Quix SDK library for [Quix
 ### Install prerequisities
 
 ```sh
-    sudo apt-get install build-essentials cmake
+    sudo apt-get install build-essential cmake
 ```
 
 ### How to build?
