@@ -1,0 +1,15 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+steps:
+- script: |
+    echo "Build dependencies"
+    .ci\windows\build.cmd
+  displayName: 'Build codebase'
+
+- script: |
+    echo "Running test"
+    build\test\Release\QuixStreaming_tst.exe
+  displayName: 'Run test'

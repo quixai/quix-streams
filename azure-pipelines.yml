@@ -1,0 +1,31 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+- develop
+
+
+jobs:
+- job: TestUbuntu
+  displayName: 'Test Ubuntu Latest'
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - template: .ci/unix/ci-pipeline.yml
+
+- job: TestMacOS
+  displayName: 'Test MacOS Latest'
+  pool:
+    vmImage: macOS-latest
+  steps:
+  - template: .ci/unix/ci-pipeline.yml
+
+- job: TestWindows
+  displayName: 'Test Windows Latest'
+  pool:
+    vmImage: windows-latest
+  steps:
+  - template: .ci/windows/ci-pipeline.yml
