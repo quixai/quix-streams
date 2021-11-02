@@ -25,15 +25,10 @@ TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected
 
 
     // Act
-    std::string outCodecKey = std::string("___TESTERROR___");
-    auto retrievedCodecKeySuccess = registry->tryGetCodecKey(modelKey, outCodecKey);
     ModelKey outModelKey("___TESTERROR___");
     auto retrievedModelKeySuccess = registry->tryGetModelKey(codecKey, outModelKey);
 
     // // Assert
-    ASSERT_TRUE ( retrievedCodecKeySuccess );
-    ASSERT_EQ ( outCodecKey, codecKey );
-
     ASSERT_TRUE ( retrievedModelKeySuccess );
     ASSERT_EQ ( outModelKey, modelKey );
 }
@@ -50,15 +45,10 @@ TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldNotFound) {
 
 
     // Act
-    std::string outCodecKey = std::string("___TESTERROR___");
-    auto retrievedCodecKeySuccess = registry->tryGetCodecKey(modelKey2, outCodecKey);
     ModelKey outModelKey("___TESTERROR___");
     auto retrievedModelKeySuccess = registry->tryGetModelKey(codecKey2, outModelKey);
 
     // // Assert
-    ASSERT_FALSE ( retrievedCodecKeySuccess );
-    ASSERT_EQ ( outCodecKey, std::string("___TESTERROR___") );
-
     ASSERT_FALSE ( retrievedModelKeySuccess );
     ASSERT_EQ ( outModelKey, std::string("___TESTERROR___") );
 }
