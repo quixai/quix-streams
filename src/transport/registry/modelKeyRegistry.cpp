@@ -8,12 +8,12 @@ namespace Quix { namespace Transport {
     using namespace std;
 
     void ModelKeyRegistry::registerModel(const std::string& codecKey, const ModelKey& modelKey){
-        typesToModelKeys.emplace(codecKey, modelKey);
+        codecKeysToModelKeys.emplace(codecKey, modelKey);
     };
 
     bool ModelKeyRegistry::tryGetModelKey(const std::string& codecKey, ModelKey& modelKey){
-        auto it = typesToModelKeys.find(codecKey);
-        if ( it == typesToModelKeys.end() ){
+        auto it = codecKeysToModelKeys.find(codecKey);
+        if ( it == codecKeysToModelKeys.end() ){
             return false;
         }
         modelKey = it->second;

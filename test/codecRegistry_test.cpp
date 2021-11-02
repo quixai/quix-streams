@@ -89,5 +89,5 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
 
     // Assert
     ASSERT_TRUE ( typeFound );
-    EXPECT_EQ ( outModelKey, codec1.key() );
+    EXPECT_EQ ( outModelKey, modelKey );
 }
