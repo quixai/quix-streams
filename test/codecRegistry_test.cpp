@@ -7,7 +7,7 @@
 #include <algorithm>
 
 using namespace std;
-using namespace Quix;
+using namespace Quix::Transport;
 
 class MockCodec : public AbstractCodec{
     private:
@@ -20,7 +20,7 @@ TEST(codecRegistryTest, shouldRegisterCodec) {
     MockCodec codec1("TestCodec");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Model1";
+    ModelKey modelKey("Model1");
     registry->registerCodec(modelKey, &codec1);
 
     // Act
@@ -37,7 +37,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec) {
     MockCodec codec2("TestCodec2");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Test";
+    ModelKey modelKey("Test");
     registry->registerCodec(modelKey, &codec1);
     registry->registerCodec(modelKey, &codec2);
 
@@ -61,7 +61,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
     MockCodec codec1("TestCodec");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Model1";
+    ModelKey modelKey("Model1");
     registry->registerCodec(modelKey, &codec1);
 
     // Act
@@ -79,15 +79,15 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     MockCodec codec1("TestCodec");
 
     auto registry = CodecRegistry::instance();
-    std::string modelKey = "Model1";
+    ModelKey modelKey("Model1");
 
     // Act
     registry->registerCodec(modelKey, &codec1);
 
-    std::string codecKey("");
-    bool type_found = ModelKeyRegistry::instance()->tryGetCodecKey(modelKey, codecKey);
+    ModelKey outModelKey("");
+    bool typeFound = ModelKeyRegistry::instance()->tryGetModelKey(codec1.key(), outModelKey);
 
     // Assert
-    ASSERT_TRUE ( type_found );
-    EXPECT_EQ ( codecKey, codec1.key() );
+    ASSERT_TRUE ( typeFound );
+    EXPECT_EQ ( outModelKey, modelKey );
 }

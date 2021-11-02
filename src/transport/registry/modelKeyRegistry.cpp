@@ -4,29 +4,20 @@
 
 #include "modelKeyRegistry.h"
 
-namespace Quix {
+namespace Quix { namespace Transport {
     using namespace std;
 
-    void ModelKeyRegistry::registerModel(const std::string& codecKey, const std::string& modelKey){
-        modelKeysToCodecKeys.emplace(modelKey, codecKey);
-        typesToModelKeys.emplace(codecKey, modelKey);
+    void ModelKeyRegistry::registerModel(const std::string& codecKey, const ModelKey& modelKey){
+        codecKeysToModelKeys.emplace(codecKey, modelKey);
     };
 
-    bool ModelKeyRegistry::tryGetCodecKey(const std::string& modelKey, std::string& codecKey){
-        auto it = modelKeysToCodecKeys.find(modelKey);
-        if ( it == modelKeysToCodecKeys.end() ){
-            return false;
-        }
-        codecKey = it->second;
-        return true;
-    };
-    bool ModelKeyRegistry::tryGetModelKey(const std::string& codecKey, std::string& modelKey){
-        auto it = typesToModelKeys.find(codecKey);
-        if ( it == typesToModelKeys.end() ){
+    bool ModelKeyRegistry::tryGetModelKey(const std::string& codecKey, ModelKey& modelKey){
+        auto it = codecKeysToModelKeys.find(codecKey);
+        if ( it == codecKeysToModelKeys.end() ){
             return false;
         }
         modelKey = it->second;
         return true;
     };        
 
-}
+} }

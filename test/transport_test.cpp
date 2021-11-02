@@ -3,7 +3,7 @@
 
 TEST(blaTest, test1) {
     //arrange
-    Quix::Transport transport(5);
+    Quix::Transport::Transport transport(5);
     //act
     //assert
     EXPECT_EQ (transport.get (),  5);

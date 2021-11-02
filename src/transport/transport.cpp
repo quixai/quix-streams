@@ -4,13 +4,11 @@
 #include <iostream>
 
 
-namespace Quix {
+namespace Quix { namespace Transport {
 
     Transport::Transport(int x)
     {
         gx = x;
-
-        std::cout << "Transport layer here" << std::endl;
     }
 
 
@@ -19,4 +17,4 @@ namespace Quix {
         return gx;
     }
 
-}
+} }

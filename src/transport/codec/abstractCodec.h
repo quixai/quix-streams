@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 
-namespace Quix {
+namespace Quix { namespace Transport {
 
     class AbstractCodec {
         private:
@@ -17,4 +17,4 @@ namespace Quix {
             const std::string & key() const;
     };
 
-}
+} }

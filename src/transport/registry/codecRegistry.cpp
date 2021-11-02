@@ -4,15 +4,10 @@
 #include <algorithm>
 #include <iostream>
 
-namespace Quix {
+namespace Quix { namespace Transport {
     using namespace std;
 
-    /**
-     * Registers a codec for the provided key. If multiple codecs are registered for the same ModelKey, the last one registered will be used for writing
-     * @param model modelName to be registered
-     * @param codec codec
-     */
-    void CodecRegistry::registerCodec(const string& model, AbstractCodec* codec){
+    void CodecRegistry::registerCodec(const ModelKey& model, AbstractCodec* codec){
 
         //not found model >> creating a element of key
         if ( codecs.find(model) == codecs.end() ) {
@@ -39,12 +34,7 @@ namespace Quix {
         modelKeyRegistry->registerModel(codecKey, model);
     }
 
-    /**
-     * Retrieves registered codecs for the key
-     * @param modelKey The model key to retrieve codecs for
-     * @return Previously registered <see cref="ICodec"/> or an empty collection if none found
-     */
-    vector<AbstractCodec*>& CodecRegistry::retrieveCodecs(const string& modelKey){
+    vector<AbstractCodec*>& CodecRegistry::retrieveCodecs(const ModelKey& modelKey){
         if ( codecs.find(modelKey) == codecs.end() ){
             static vector<AbstractCodec*> ret = {};
             return ret;
@@ -53,17 +43,14 @@ namespace Quix {
     }
 
 
-    /**
-     * Retrieves registered codecs for the model key and codec id
-     * @param modelKey The model key to retrieve codecs for
-     * @param codecKey String representation of the codec
-     * @return Previously registered <see cref="ICodec"/> or an empty collection if none found
-     */
-    AbstractCodec* CodecRegistry::retrieveCodec(const string& modelKey, const string& codecKey){
+    AbstractCodec* CodecRegistry::retrieveCodec(const ModelKey& modelKey, const string& codecKey){
         auto modelCodecs = retrieveCodecs(modelKey);
+
+        //find first codec from the list which has the key matching codecKey
         auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecKey](AbstractCodec* val){
             return val->key() == codecKey;
         });
+
         return el == modelCodecs.end()
                     ?
                 nullptr
@@ -71,17 +58,12 @@ namespace Quix {
                 *el;
     }
 
-    /**
-     * Clear codecs registered for model
-     * @param modelKey The model key to clear codecs for
-     */
-    void CodecRegistry::clearCodecs(const string& modelKey){
+    void CodecRegistry::clearCodecs(const ModelKey& modelKey){
         auto it = codecs.find(modelKey);
         if ( it != codecs.end() ){
             codecs.erase(it);
         }
     }
 
-
-}
+} }
 
