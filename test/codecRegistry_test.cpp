@@ -84,10 +84,10 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     // Act
     registry->registerCodec(modelKey, &codec1);
 
-    std::string codecKey("");
-    bool type_found = ModelKeyRegistry::instance()->tryGetCodecKey(modelKey, codecKey);
+    ModelKey outModelKey("");
+    bool typeFound = ModelKeyRegistry::instance()->tryGetModelKey(codec1.key(), outModelKey);
 
     // Assert
-    ASSERT_TRUE ( type_found );
-    EXPECT_EQ ( codecKey, codec1.key() );
+    ASSERT_TRUE ( typeFound );
+    EXPECT_EQ ( outModelKey, modelKey );
 }

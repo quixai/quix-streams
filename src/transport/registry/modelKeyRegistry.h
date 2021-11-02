@@ -14,17 +14,25 @@
 namespace Quix { namespace Transport {
 
     /**
+<<<<<<< HEAD
      * Contains bi-directional mapping between codecKey and modelKey.
      * Supports the fast O(1) lookup according to both keys.
+=======
+     * Contains mapping between codecKey and modelKey.
+>>>>>>> develop
      */
     class ModelKeyRegistry{
 
         private:
             ModelKeyRegistry(){};
 
+<<<<<<< HEAD
             //bi-directional map stored as two maps
             std::map<ModelKey, std::string> modelKeysToCodecKeys;
             std::map<std::string, ModelKey> typesToModelKeys;
+=======
+            std::map<std::string, ModelKey> codecKeysToModelKeys;
+>>>>>>> develop
 
         public:
 
@@ -49,6 +57,7 @@ namespace Quix { namespace Transport {
             void registerModel(const std::string& codecKey, const ModelKey& modelKey);
 
             /**
+<<<<<<< HEAD
              * @brief Get last codecKey for specified modelKey
              * 
              * Search in the bi-directional map for specified modelKey
@@ -61,6 +70,8 @@ namespace Quix { namespace Transport {
             bool tryGetCodecKey(const ModelKey& modelKey, std::string& codecKey);
 
             /**
+=======
+>>>>>>> develop
              * @brief Get last modelKey for specified codecKey
              * 
              * Search in the bi-directional map for specified codecKey
@@ -70,8 +81,12 @@ namespace Quix { namespace Transport {
              * 
              * @returns true if the codecKey has been found in map, false otherwise
              */
+<<<<<<< HEAD
             bool tryGetModelKey(const std::string& codecKey, ModelKey& modelKey);        
 
+=======
+            bool tryGetModelKey(const std::string& codecKey, ModelKey& modelKey);
+>>>>>>> develop
     };
 
     //for fancy printing using "cout <<"
