@@ -21,7 +21,7 @@ namespace Quix { namespace Transport {
         private:
             ModelKeyRegistry(){};
 
-            std::map<std::string, ModelKey> typesToModelKeys;
+            std::map<std::string, ModelKey> codecKeysToModelKeys;
 
         public:
 
