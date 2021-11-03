@@ -45,6 +45,7 @@ public:
     uint8_t maxIndex(){ return maxIndex_; }
     uint32_t msgId(){ return msgId_; }
 };
+#pragma pack()
 
 class ByteSplitter{
 private:

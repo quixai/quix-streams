@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 #include <functional>
 
 #include "./serializingModifier.h"
@@ -22,7 +23,9 @@ namespace Quix { namespace Transport {
 
         auto codec = CodecRegistry::instance()->retrieveFirstCodec(modelKey);
         if(codec == nullptr){
-             throw SerializingException(std::string("Failed to serialize '")+modelKey.key()+"' because there is no codec registered for it.");
+            std::stringstream ss;
+            ss << "Failed to serialize '" << modelKey.key() << "' because there is no codec registered for it.";
+            throw SerializingException(ss.str());
         }
 
         auto bytePackage = serializePackage(package, codec, modelKey);
@@ -34,7 +37,9 @@ namespace Quix { namespace Transport {
             RawBytePackageValue serializedData = codec->serialize(package->dataptr());
             delete package;
             if(serializedData.data() == nullptr){
-                throw SerializingException(std::string("Failed to serialize '")+modelKey.key()+"' because codec returned nullptr.");
+                std::stringstream ss;
+                ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
+                throw SerializingException(ss.str());
             }
             return new RawBytePackage(modelKey, serializedData);
         }catch(...){
