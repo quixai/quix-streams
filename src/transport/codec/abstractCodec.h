@@ -1,7 +1,10 @@
 #pragma once
 
-#include <string>
+#include "../io/abstractPackage.h"
 
+#include <string>
+#include <memory>
+#include <vector>
 #include <unordered_map>
 
 namespace Quix { namespace Transport {
@@ -15,6 +18,10 @@ namespace Quix { namespace Transport {
 
         public:
             const std::string & key() const;
+            RawBytePackageValue serialize(const void* obj) const{
+                //TODO: do clever allocation
+                return RawBytePackageValue();
+            };
     };
 
 } }

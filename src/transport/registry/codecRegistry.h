@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "../codec/abstractCodec.h"
-#include "../modelKey.h"
+#include "../fw/modelKey.h"
 
 namespace Quix { namespace Transport {
 
@@ -62,6 +62,15 @@ namespace Quix { namespace Transport {
              * @returns nullptr if no codec found, otherwise matching codec implementation
              */
             AbstractCodec* retrieveCodec(const ModelKey& modelKey, const std::string& codecKey);
+
+            /**
+             * @brief Retrieves first codecs for the model key
+             * 
+             * @param modelKey The model key to retrieve codecs for
+             * 
+             * @returns nullptr if no codec found, otherwise matching codec implementation
+             */
+            AbstractCodec* retrieveFirstCodec(const ModelKey& modelKey);
 
             /**
              * @brief Clear all codecs registered for model

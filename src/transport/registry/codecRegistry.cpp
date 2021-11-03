@@ -58,6 +58,19 @@ namespace Quix { namespace Transport {
                 *el;
     }
 
+    AbstractCodec* CodecRegistry::retrieveFirstCodec(const ModelKey& modelKey){
+        auto modelCodecs = retrieveCodecs(modelKey);
+
+        auto it = modelCodecs.begin();        
+        //find first codec from the list which has the key matching codecKey
+        return it == modelCodecs.end()
+                    ?
+                nullptr
+                    :
+                *it;
+    }
+
+
     void CodecRegistry::clearCodecs(const ModelKey& modelKey){
         auto it = codecs.find(modelKey);
         if ( it != codecs.end() ){
