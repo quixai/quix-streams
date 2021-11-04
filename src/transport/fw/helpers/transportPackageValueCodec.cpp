@@ -29,9 +29,10 @@ namespace Quix { namespace Transport {
 
         //serialize into array buffer
         size_t size = protobufCodec.ByteSizeLong(); 
-        uint8_t* buffer = new uint8_t[size+1];
-        buffer[0] = TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF;
-        protobufCodec.SerializeToArray(buffer+1, size);
+
+        const std::shared_ptr<uint8_t> buffer(new uint8_t[size+1], std::default_delete<uint8_t[]>());
+        (&*buffer)[0] = TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF;
+        protobufCodec.SerializeToArray((&*buffer)+1, size);
 
         //return object containing raw array and its length
         return RawBytePackageValue(buffer, size+1);
@@ -39,9 +40,6 @@ namespace Quix { namespace Transport {
 
     RawBytePackage* TransportPackageValueCodecProtobuf::Deserialize(const RawBytePackageValue& data){
         TransportPackageValueCodecProtobufRaw protobufCodec;
-
-        const std::shared_ptr<char> ptr(new char[0], std::default_delete<char[]>());
-
 
         //parse from the index 1 and not 0 because index 0 is controlling character to specify codec type
         protobufCodec.ParseFromArray(data.data()+1, data.len()-1);
@@ -55,13 +53,9 @@ namespace Quix { namespace Transport {
             metadata[it->first] = it->second;
         }
 
-        auto bufferLen = protobufCodec.data().size();
-        auto buffer = new uint8_t[bufferLen];
-        memcpy((void*)buffer, protobufCodec.data().c_str(), protobufCodec.data().size());
-
         return new RawBytePackage(
             ModelKey(protobufCodec.modelkey()),
-            RawBytePackageValue(buffer, bufferLen),
+            RawBytePackageValue(protobufCodec.data()),
             metadata); 
     }
 
@@ -88,7 +82,6 @@ namespace Quix { namespace Transport {
                     throw DeserializingException(ss.str());
             };
         }catch(...){
-            delete data.data();
             throw;
         }
     }

@@ -43,15 +43,8 @@ namespace Quix { namespace Transport {
                 throw SerializingException(ss.str());
             }
 
-            try{
-                auto wrappedInPackage = TransportPackageValueCodec::Serialize(new RawBytePackage(modelKey, serializedData, package->metaData()));
-                delete serializedData.data();
-                return new RawBytePackage(modelKey, wrappedInPackage, package->metaData());
-            }catch(...){
-                delete serializedData.data();
-                throw;
-            }
-
+            auto wrappedInPackage = TransportPackageValueCodec::Serialize(new RawBytePackage(modelKey, serializedData, package->metaData()));
+            return new RawBytePackage(modelKey, wrappedInPackage, package->metaData());
         }catch(...){
             delete package;
             throw;

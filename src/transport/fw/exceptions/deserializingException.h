@@ -5,10 +5,10 @@
 
 namespace Quix { namespace Transport {
 
-    class DeserializingException : public std::runtime_error
+    class DeserializingException : public std::exception
     {
     public:
-        DeserializingException(const std::string& message) : std::runtime_error(message) {};
+        DeserializingException(const std::string& message){};
     };
 
 } }

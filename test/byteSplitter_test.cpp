@@ -3,6 +3,7 @@
 #include "transport/io/IPackage.h"
 
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 using namespace Quix::Transport;
@@ -42,9 +43,8 @@ TEST(byteSplitterTest, WithDataOutsideAbsoluteMaxSize_ShouldThrowSerializationEx
     ByteSplitter splitter(50);
     auto length = splitter.absoluteMaxMessageSize() + 1;
 
-    RawBytePackageValue data(new uint8_t[length], length);
-
-    delete data.data();
+    const std::shared_ptr<uint8_t> dataarr(new uint8_t[length], std::default_delete<uint8_t[]>()); 
+    RawBytePackageValue data(dataarr, length);
     // Act
     // Action action = () => splitter.Split(data).ToList();
 

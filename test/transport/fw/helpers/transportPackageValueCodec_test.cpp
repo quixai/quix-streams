@@ -3,6 +3,7 @@
 #include "transport/io/rawBytePackageValue.h"
 
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 using namespace Quix::Transport;
@@ -10,7 +11,9 @@ using namespace Quix::Transport;
 TEST(transportPackageValueCodec, simpleTest) {
     //arrange
     ModelKey modelKey("modelKey");
-    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue(new uint8_t[30], 30), MetaData());
+
+    const std::shared_ptr<uint8_t> data(new uint8_t[30], std::default_delete<uint8_t[]>()); 
+    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue(data, 30), MetaData());
 
     // Act
     RawBytePackageValue raw(TransportPackageValueCodec::Serialize(package));
@@ -21,12 +24,7 @@ TEST(transportPackageValueCodec, simpleTest) {
     ASSERT_EQ( *deserializedPackage, *package );
 
     // Cleanup
-    delete raw.data();
-
-    delete deserializedPackage->value().data();
     delete deserializedPackage;
-
-    delete package->value().data();
     delete package;
 
 }

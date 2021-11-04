@@ -56,11 +56,11 @@ namespace Quix { namespace Transport {
                     toSendDataLength = originalLen - startDataIndex;
                 }
                 size_t newPacketLen = toSendDataLength + sizeof(ByteSplitProtocolHeader);
-                uint8_t* newData = new uint8_t[newPacketLen];    //length with header
+                const std::shared_ptr<uint8_t> newData(new uint8_t[newPacketLen], std::default_delete<uint8_t[]>());
                 
                 //hack to headers via using struct
-                *((ByteSplitProtocolHeader*)newData) = ByteSplitProtocolHeader(messageId, curIndex, maxIndex);
-                memcpy(newData + sizeof(ByteSplitProtocolHeader), originalData + startDataIndex, toSendDataLength);
+                *((ByteSplitProtocolHeader*)&*newData) = ByteSplitProtocolHeader(messageId, curIndex, maxIndex);
+                memcpy(&*newData + sizeof(ByteSplitProtocolHeader), originalData + startDataIndex, toSendDataLength);
 
                 onNewPackage(new RawBytePackage(modelKey, RawBytePackageValue(newData, newPacketLen), originalMetadata));
 
@@ -70,10 +70,8 @@ namespace Quix { namespace Transport {
 
 
             delete originalPackage;
-            delete originalData;
         }catch(...){
             delete originalPackage;
-            delete originalData;
             throw;
         }
     };
