@@ -1,8 +1,8 @@
 #pragma once
 
 #include "./fw/serializingModifier.h"
-#include "./io/abstractPackage.h"
-#include "./io/abstractInput.h"
+#include "./io/IPackage.h"
+#include "./io/IPublisher.h"
 #include "./fw/byteSplitter.h"
 
 
@@ -15,8 +15,8 @@ private:
   SerializingModifier serializer;
 
 public:
-  TransportPublisher(AbstractInput* input, ByteSplitter* byteSplitter = nullptr);
-  void send(AbstractPackage* package);
+  TransportPublisher(IPublisher* input, ByteSplitter* byteSplitter = nullptr);
+  void send(IPackage* package);
 };
 
 } }

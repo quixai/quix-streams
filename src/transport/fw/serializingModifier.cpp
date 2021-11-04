@@ -4,13 +4,14 @@
 
 #include "./serializingModifier.h"
 #include "./exceptions/serializingException.h"
+#include "./helpers/transportPackageValueCodec.h"
 #include "../registry/modelKeyRegistry.h"
-#include "../io/abstractPackage.h"
+#include "../io/IPackage.h"
 #include "../registry/codecRegistry.h"
 
 namespace Quix { namespace Transport {
 
-    void SerializingModifier::send(AbstractPackage* package)
+    void SerializingModifier::send(IPackage* package)
     {
         //TODO: add cancellationToken
         // ModelKey modelKey;
@@ -32,7 +33,7 @@ namespace Quix { namespace Transport {
         onNewPackage(bytePackage); 
     };
 
-    RawBytePackage* SerializingModifier::serializePackage(AbstractPackage* package, AbstractCodec* codec, const ModelKey& modelKey) const{
+    RawBytePackage* SerializingModifier::serializePackage(IPackage* package, AbstractCodec* codec, const ModelKey& modelKey) const{
         try{
             RawBytePackageValue serializedData = codec->serialize(package->dataptr());
             delete package;
@@ -41,7 +42,16 @@ namespace Quix { namespace Transport {
                 ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
                 throw SerializingException(ss.str());
             }
-            return new RawBytePackage(modelKey, serializedData);
+
+            try{
+                auto wrappedInPackage = TransportPackageValueCodec::Serialize(new RawBytePackage(modelKey, serializedData, package->metaData()));
+                delete serializedData.data();
+                return new RawBytePackage(modelKey, wrappedInPackage, package->metaData());
+            }catch(...){
+                delete serializedData.data();
+                throw;
+            }
+
         }catch(...){
             delete package;
             throw;

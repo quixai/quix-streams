@@ -1,7 +1,7 @@
 // A2DD.cpp
 #include "transport.h"
 #include "./transportSubscriber.h"
-#include "./io/abstractPackage.h"
+#include "./io/IPackage.h"
 
 #include <functional>
 #include <iostream>
@@ -25,7 +25,7 @@ namespace Quix { namespace Transport {
 
 //     }
 
-//     void TransportWriter::send(AbstractPackage* package)
+//     void TransportWriter::send(IPackage* package)
 //     {
 //         //TODO: cancellationToken
 // //        if (cancellationToken.IsCancellationRequested) return Task.FromCanceled(cancellationToken);

@@ -3,9 +3,9 @@
 #include <string>
 #include <functional>
 
-#include "../io/abstractPackage.h"
+#include "../io/IPackage.h"
 #include "../codec/abstractCodec.h"
-#include "../io/abstractInput.h"
+#include "../io/IPublisher.h"
 
 namespace Quix { namespace Transport {
 
@@ -13,13 +13,13 @@ namespace Quix { namespace Transport {
      * Modifier, which serializes the package into bytes
      */
 
-    class SerializingModifier : public AbstractInput{
+    class SerializingModifier : public IPublisher{
         private:
-            RawBytePackage* serializePackage(AbstractPackage* package, AbstractCodec* codec, const ModelKey& modelKey) const;
+            RawBytePackage* serializePackage(IPackage* package, AbstractCodec* codec, const ModelKey& modelKey) const;
 
         public:
             std::function<void(RawBytePackage*)> onNewPackage;
-            void send(AbstractPackage* package);
+            void send(IPackage* package);
     };
 
 } }

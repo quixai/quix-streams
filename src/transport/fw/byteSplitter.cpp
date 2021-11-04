@@ -1,5 +1,5 @@
-#include "../io/abstractInput.h"
-#include "../io/abstractPackage.h"
+#include "../io/IPublisher.h"
+#include "../io/IPackage.h"
 #include "./byteSplitter.h"
 
 #include <cstring>
@@ -16,27 +16,35 @@ namespace Quix { namespace Transport {
         if( maxMessageSize <= sizeof(ByteSplitProtocolHeader) ) {
             std::stringstream ss;
             ss << "ByteSplitter maxMessageSize must be at least " << sizeof(ByteSplitProtocolHeader);
+            // todo: throw better exception type
             throw new SerializingException(ss.str());
         }
     };
+
+    const size_t ByteSplitter::absoluteMaxMessageSize() const {
+        return maxMessageSizeWithoutHeader_ * UINT8_MAX;
+    } 
 
     void ByteSplitter::send(RawBytePackage* originalPackage) {
         const size_t originalLen = originalPackage->value().len();
         const uint8_t* originalData = originalPackage->value().data();
         ModelKey modelKey = originalPackage->modelKey();
 
-        //reuse package if there is no need to splitting
-        if( originalLen < maxMessageSizeWithoutHeader_ ){
-            onNewPackage(originalPackage);
-            return;
-        }
-
-        uint32_t messageId = this->messageId++;
-        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
-        uint8_t curIndex = 0;
-
-
         try{
+
+            if( originalLen > absoluteMaxMessageSize()){
+                std::stringstream ss;
+                ss << "Message size " << originalLen << " bytes exceeds allowed maximum message size of " << absoluteMaxMessageSize() << " bytes";
+                // todo: throw better exception type
+                throw new SerializingException(ss.str());
+            }
+
+            uint32_t messageId = this->messageId++;
+            uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+            uint8_t curIndex = 0;
+
+            auto& originalMetadata = originalPackage->metaData();
+
             size_t startDataIndex = 0;       
             do{
                 size_t toSendDataLength;
@@ -54,7 +62,7 @@ namespace Quix { namespace Transport {
                 *((ByteSplitProtocolHeader*)newData) = ByteSplitProtocolHeader(messageId, curIndex, maxIndex);
                 memcpy(newData + sizeof(ByteSplitProtocolHeader), originalData + startDataIndex, toSendDataLength);
 
-                onNewPackage(new RawBytePackage(modelKey, RawBytePackageValue(newData, newPacketLen)));
+                onNewPackage(new RawBytePackage(modelKey, RawBytePackageValue(newData, newPacketLen), originalMetadata));
 
                 startDataIndex += maxMessageSizeWithoutHeader_;
                 curIndex++;

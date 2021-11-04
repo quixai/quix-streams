@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../io/abstractPackage.h"
+#include "../io/IPackage.h"
 
 #include <string>
 #include <memory>

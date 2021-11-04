@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "../io/abstractInput.h"
+#include "../io/IPublisher.h"
 
 namespace Quix { namespace Transport {
 
@@ -57,6 +57,8 @@ private:
 public:
     ByteSplitter(const size_t maxMessageSize);
     std::function<void(RawBytePackage*)> onNewPackage;
+    const size_t absoluteMaxMessageSize() const;
+
     void send(RawBytePackage* package);
 };
 
