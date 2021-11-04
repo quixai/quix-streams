@@ -64,27 +64,22 @@ namespace Quix { namespace Transport {
     }
 
     RawBytePackage* TransportPackageValueCodec::Deserialize(const RawBytePackageValue& data){
-        try{
-            if(data.len() < 1){
-                throw DeserializingException("Failed to Deserialize TransportPackageValueCodec. Recieved array must contain at least one byte.");
-            }
-            switch(data.data()[0]){
-                case TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF:
-                    //TODO: backwards Csharp compatibility
-                    return TransportPackageValueCodecProtobuf::Deserialize(data);
-                    break;                    
-                case TransportPackageValueCodec::PROTOCOL_ID_BYTE:
-                case TransportPackageValueCodec::PROTOCOL_ID_JSON:
-                    //TODO: backwards Csharp compatibility
-                default:
-                    std::stringstream ss;
-                    ss << "Failed to Deserialize TransportPackageValueCodec. Unknown codec '" << data.data()[0] << "'.";
-                    throw DeserializingException(ss.str());
-            };
-        }catch(...){
-            throw;
+        if(data.len() < 1){
+            throw DeserializingException("Failed to Deserialize TransportPackageValueCodec. Recieved array must contain at least one byte.");
         }
+        switch(data.data()[0]){
+            case TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF:
+                //TODO: backwards Csharp compatibility
+                return TransportPackageValueCodecProtobuf::Deserialize(data);
+                break;                    
+            case TransportPackageValueCodec::PROTOCOL_ID_BYTE:
+            case TransportPackageValueCodec::PROTOCOL_ID_JSON:
+                //TODO: backwards Csharp compatibility
+            default:
+                std::stringstream ss;
+                ss << "Failed to Deserialize TransportPackageValueCodec. Unknown codec '" << data.data()[0] << "'.";
+                throw DeserializingException(ss.str());
+        };
     }
-
 
 } }
