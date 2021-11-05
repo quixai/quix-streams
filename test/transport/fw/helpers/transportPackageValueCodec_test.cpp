@@ -8,11 +8,11 @@
 using namespace std;
 using namespace Quix::Transport;
 
-TEST(transportPackageValueCodec, simpleTest) {
+void testDeserialization(size_t size){
     //arrange
     ModelKey modelKey("modelKey");
 
-    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue::initEmpty(30), MetaData());
+    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue::initEmpty(size), MetaData());
 
     // Act
     RawBytePackageValue raw(TransportPackageValueCodec::Serialize(package));
@@ -25,6 +25,16 @@ TEST(transportPackageValueCodec, simpleTest) {
     // Cleanup
     delete deserializedPackage;
     delete package;
-
 }
+
+TEST(transportPackageValueCodec, simpleTest) {
+    testDeserialization(0);
+}
+
+TEST(transportPackageValueCodec, bigger) {
+    for(int i = 100; i < 20*100; i+=100){
+        testDeserialization(i);
+    }
+}
+
 

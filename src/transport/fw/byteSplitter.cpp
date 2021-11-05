@@ -26,8 +26,9 @@ namespace Quix { namespace Transport {
     } 
 
     void ByteSplitter::send(RawBytePackage* originalPackage) {
-        const size_t originalLen = originalPackage->value().len();
-        const uint8_t* originalData = originalPackage->value().data();
+        const auto& originalValue = originalPackage->value(); 
+        const size_t originalLen = originalValue.len();
+        const uint8_t* originalData = originalValue.data();
         ModelKey modelKey = originalPackage->modelKey();
 
         try{
@@ -55,14 +56,17 @@ namespace Quix { namespace Transport {
                     //last package >> leave rest of data
                     toSendDataLength = originalLen - startDataIndex;
                 }
-                size_t newPacketLen = toSendDataLength + sizeof(ByteSplitProtocolHeader);
-                const std::shared_ptr<uint8_t> newData(new uint8_t[newPacketLen], std::default_delete<uint8_t[]>());
-                
-                //hack to headers via using struct
-                *((ByteSplitProtocolHeader*)&*newData) = ByteSplitProtocolHeader(messageId, curIndex, maxIndex);
-                memcpy(&*newData + sizeof(ByteSplitProtocolHeader), originalData + startDataIndex, toSendDataLength);
 
-                onNewPackage(new RawBytePackage(modelKey, RawBytePackageValue(newData, newPacketLen), originalMetadata));
+                //creates the header 
+                ByteSplitProtocolHeader packetHeader(messageId, curIndex, maxIndex);
+
+                RawBytePackageValue packet = RawBytePackageValue::prependHeader(
+                    (uint8_t*)&packetHeader, //adds pointer into the packetHeader
+                    sizeof(ByteSplitProtocolHeader),    //header length
+                    RawBytePackageValue(originalValue, startDataIndex, toSendDataLength) //rest of package is subset of original message
+                );
+
+                onNewPackage(new RawBytePackage(modelKey, packet, originalMetadata));
 
                 startDataIndex += maxMessageSizeWithoutHeader_;
                 curIndex++;

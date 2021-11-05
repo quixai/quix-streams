@@ -37,14 +37,15 @@ namespace Quix { namespace Transport {
         try{
             RawBytePackageValue serializedData = codec->serialize(package->dataptr());
             delete package;
-            if(serializedData.data() == nullptr){
+            if(serializedData.begin() == nullptr){
                 std::stringstream ss;
                 ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
                 throw SerializingException(ss.str());
             }
 
-            auto wrappedInPackage = TransportPackageValueCodec::Serialize(new RawBytePackage(modelKey, serializedData, package->metaData()));
-            return new RawBytePackage(modelKey, wrappedInPackage, package->metaData());
+            const auto& metadata = package->metaData();
+            auto wrappedInPackage = TransportPackageValueCodec::Serialize(new RawBytePackage(modelKey, serializedData, metadata));
+            return new RawBytePackage(modelKey, wrappedInPackage, metadata);
         }catch(...){
             delete package;
             throw;

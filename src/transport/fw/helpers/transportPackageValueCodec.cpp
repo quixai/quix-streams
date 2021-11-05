@@ -28,7 +28,7 @@ namespace Quix { namespace Transport {
         }
 
         //serialize into array buffer
-        size_t size = protobufCodec.ByteSizeLong(); 
+        size_t size = protobufCodec.ByteSizeLong();
 
         //initialize return value
         auto bytePackageValue = RawBytePackageValue::initEmpty(size+1);
@@ -69,7 +69,7 @@ namespace Quix { namespace Transport {
         if(data.len() < 1){
             throw DeserializingException("Failed to Deserialize TransportPackageValueCodec. Recieved array must contain at least one byte.");
         }
-        switch(data.data()[0]){
+        switch(data.begin()[0]){
             case TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF:
                 //TODO: backwards Csharp compatibility
                 return TransportPackageValueCodecProtobuf::Deserialize(data);
@@ -79,7 +79,7 @@ namespace Quix { namespace Transport {
                 //TODO: backwards Csharp compatibility
             default:
                 std::stringstream ss;
-                ss << "Failed to Deserialize TransportPackageValueCodec. Unknown codec '" << data.data()[0] << "'.";
+                ss << "Failed to Deserialize TransportPackageValueCodec. Unknown codec '" << data.begin()[0] << "'.";
                 throw DeserializingException(ss.str());
         };
     }
