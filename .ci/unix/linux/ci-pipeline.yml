@@ -6,7 +6,7 @@
 steps:
 - script: |
     echo "Install dependencies"
-    chmod +x ./.ci/unix/install.sh
+    chmod +x ./.ci/unix/linux/install.sh
     ./.ci/unix/linux/install.sh
   displayName: 'Install dependencies'
 
