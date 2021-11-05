@@ -2,4 +2,5 @@
 set -x
 set -e
 
-apt update && apt-get install libprotobuf-dev
+sudo apt update
+sudo apt-get install libprotobuf-dev
