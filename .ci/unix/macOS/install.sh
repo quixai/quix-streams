@@ -2,5 +2,5 @@
 set -x
 set -e
 
-brew tap homebrew/homebrew-core
-brew install protobuf241
+# brew tap homebrew/homebrew-core
+brew install protobuf
