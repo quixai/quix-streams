@@ -2,4 +2,4 @@
 set -x
 set -e
 
-brew install protobuf
+brew install --devel protobuf
