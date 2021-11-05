@@ -6,6 +6,7 @@
 namespace Quix { namespace Transport {
 
 class MetaData : public std::map<std::string, std::string>{
+    
 };
 
 } }
