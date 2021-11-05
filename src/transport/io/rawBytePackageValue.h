@@ -24,6 +24,13 @@ public:
     RawBytePackageValue() : len_(0), start_(0), data_(nullptr) {};
     RawBytePackageValue(const RawBytePackageValue& other) = default;
     RawBytePackageValue(const RawBytePackageValue& other, size_t from, size_t len) : RawBytePackageValue(other.rawdata(), len, from) {};
+    static RawBytePackageValue initEmpty(size_t len)
+    {
+        return RawBytePackageValue(
+            std::shared_ptr<uint8_t>(new uint8_t[len], std::default_delete<uint8_t[]>()),
+            len
+        );
+    };
     inline const bool operator==(const RawBytePackageValue& other) const { 
         return 
             len_ == other.len() 
@@ -32,7 +39,7 @@ public:
             ;
     }
     inline const size_t len() const { return len_; }
-    inline const uint8_t* data() const { return &(*data_) + start_; }
+    inline uint8_t*const data() const { return &(*data_) + start_; }
     inline const std::shared_ptr<uint8_t> rawdata() const { return data_; }
 };
 

@@ -12,8 +12,7 @@ TEST(transportPackageValueCodec, simpleTest) {
     //arrange
     ModelKey modelKey("modelKey");
 
-    const std::shared_ptr<uint8_t> data(new uint8_t[30], std::default_delete<uint8_t[]>()); 
-    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue(data, 30), MetaData());
+    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue::initEmpty(30), MetaData());
 
     // Act
     RawBytePackageValue raw(TransportPackageValueCodec::Serialize(package));

@@ -30,12 +30,14 @@ namespace Quix { namespace Transport {
         //serialize into array buffer
         size_t size = protobufCodec.ByteSizeLong(); 
 
-        const std::shared_ptr<uint8_t> buffer(new uint8_t[size+1], std::default_delete<uint8_t[]>());
-        (&*buffer)[0] = TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF;
-        protobufCodec.SerializeToArray((&*buffer)+1, size);
+        //initialize return value
+        auto bytePackageValue = RawBytePackageValue::initEmpty(size+1);
+        auto array = bytePackageValue.data();
+        array[0] = TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF;
+        protobufCodec.SerializeToArray((uint8_t*)array+1, size);
 
         //return object containing raw array and its length
-        return RawBytePackageValue(buffer, size+1);
+        return bytePackageValue;
     }
 
     RawBytePackage* TransportPackageValueCodecProtobuf::Deserialize(const RawBytePackageValue& data){
