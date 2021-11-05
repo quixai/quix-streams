@@ -5,6 +5,11 @@
 
 steps:
 - script: |
+    echo "Install dependencies"
+    .ci\windows\install.cmd
+  displayName: 'Install dependencies'
+
+- script: |
     echo "Build dependencies"
     .ci\windows\build.cmd
   displayName: 'Build codebase'
