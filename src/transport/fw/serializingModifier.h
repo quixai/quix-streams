@@ -1,10 +1,12 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <functional>
 
 #include "../io/IPackage.h"
 #include "../codec/abstractCodec.h"
+#include "./codecs/codecBundle.h"
 #include "../io/IPublisher.h"
 
 namespace Quix { namespace Transport {
@@ -15,11 +17,11 @@ namespace Quix { namespace Transport {
 
     class SerializingModifier : public IPublisher{
         private:
-            RawBytePackage* serializePackage(IPackage* package, AbstractCodec* codec, const ModelKey& modelKey) const;
+            std::shared_ptr<RawBytePackage> serializePackage(std::shared_ptr<IPackage> package, AbstractCodec* codec, const CodecBundle& codecBundle) const;
 
         public:
-            std::function<void(RawBytePackage*)> onNewPackage;
-            void send(IPackage* package);
+            std::function<void(std::shared_ptr<RawBytePackage>)> onNewPackage;
+            void send(std::shared_ptr<IPackage> package);
     };
 
 } }

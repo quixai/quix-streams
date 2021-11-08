@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./fw/serializingModifier.h"
+#include "./fw/deserializingModifier.h"
 #include "./io/IPackage.h"
 #include "./io/ISubscriber.h"
 #include "./fw/byteSplitter.h"
@@ -8,15 +8,17 @@
 
 namespace Quix { namespace Transport {
 
-class TransportSubscriber
+class TransportSubscriber : public ISubscriber
 {
 
 private:
-  // DeserializingModifier deserializer;
+  DeserializingModifier deserializingModifier_;
+
+  void sendInternal(std::shared_ptr<IPackage> package);
 
 public:
-  // TransportSubscriber(ISubscriber* output, AbstractByteSplitter* byteSplitter = nullptr);
-  // void send(IPackage* package);
+  TransportSubscriber(ISubscriber* output);
+
 };
 
 } }

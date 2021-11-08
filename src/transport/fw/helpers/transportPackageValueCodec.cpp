@@ -1,22 +1,26 @@
 #include <cstring>
 #include <sstream>
+#include <memory>
 #include <string>
 
 #include "../exceptions/deserializingException.h"
 
+#include "../../codec/codecId.h"
+#include "./transportPackageValue.h"
 #include "./transportPackageValueCodec.h"
 #include "./transportPackageValueCodecProtobufRaw.pb.h"
 
 namespace Quix { namespace Transport {
 
-    RawBytePackageValue TransportPackageValueCodecProtobuf::Serialize(RawBytePackage* package){
-        auto packageValue = package->value();
-        auto packageMetadata = package->metaData();
+    RawBytePackageValue TransportPackageValueCodecProtobuf::serialize(std::shared_ptr<TransportPackageValue> package){
+        auto packageValue = package->value()->value();
+        auto packageMetadata = package->value()->metaData();
 
         TransportPackageValueCodecProtobufRaw protobufCodec;
-        //TODO: set codecId
+        //set codecId
+        protobufCodec.set_codecid(package->codecBundle().codecId().c_str());
         //set modelKey
-        protobufCodec.set_modelkey(package->modelKey().key().c_str());
+        protobufCodec.set_modelkey(package->codecBundle().modelKey().key().c_str());
         //set data array
         protobufCodec.set_data(std::string((const char*)packageValue.data(), packageValue.len()));
         auto revc = protobufCodec.data().size();
@@ -40,7 +44,7 @@ namespace Quix { namespace Transport {
         return bytePackageValue;
     }
 
-    RawBytePackage* TransportPackageValueCodecProtobuf::Deserialize(const RawBytePackageValue& data){
+    std::shared_ptr<TransportPackageValue> TransportPackageValueCodecProtobuf::deserialize(const RawBytePackageValue& data){
         TransportPackageValueCodecProtobufRaw protobufCodec;
 
         //parse from the index 1 and not 0 because index 0 is controlling character to specify codec type
@@ -55,24 +59,35 @@ namespace Quix { namespace Transport {
             metadata[it->first] = it->second;
         }
 
-        return new RawBytePackage(
-            ModelKey(protobufCodec.modelkey()),
-            RawBytePackageValue(protobufCodec.data()),
-            metadata); 
+        return 
+            std::shared_ptr<TransportPackageValue>(
+                new TransportPackageValue(
+                    std::shared_ptr<RawBytePackage>(
+                        new RawBytePackage(
+                            ModelKey(protobufCodec.modelkey()),
+                            RawBytePackageValue(protobufCodec.data()),
+                            metadata)
+                    ),
+                    CodecBundle(
+                        ModelKey(protobufCodec.modelkey()), 
+                        CodecId(protobufCodec.codecid())
+                    )
+                )
+            );                
     }
 
-    RawBytePackageValue TransportPackageValueCodec::Serialize(RawBytePackage* package){
-        return TransportPackageValueCodecProtobuf::Serialize(package);
+    RawBytePackageValue TransportPackageValueCodec::serialize(std::shared_ptr<TransportPackageValue> package){
+        return TransportPackageValueCodecProtobuf::serialize(package);
     }
 
-    RawBytePackage* TransportPackageValueCodec::Deserialize(const RawBytePackageValue& data){
+    std::shared_ptr<TransportPackageValue> TransportPackageValueCodec::deserialize(const RawBytePackageValue& data){
         if(data.len() < 1){
             throw DeserializingException("Failed to Deserialize TransportPackageValueCodec. Recieved array must contain at least one byte.");
         }
         switch(data.begin()[0]){
             case TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF:
                 //TODO: backwards Csharp compatibility
-                return TransportPackageValueCodecProtobuf::Deserialize(data);
+                return TransportPackageValueCodecProtobuf::deserialize(data);
                 break;                    
             case TransportPackageValueCodec::PROTOCOL_ID_BYTE:
             case TransportPackageValueCodec::PROTOCOL_ID_JSON:

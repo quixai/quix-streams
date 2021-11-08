@@ -1,39 +1,68 @@
 #include "gtest/gtest.h"
+#include "transport/fw/codecs/codecBundle.h"
 #include "transport/fw/helpers/transportPackageValueCodec.h"
 #include "transport/io/rawBytePackageValue.h"
 
 #include <algorithm>
 #include <memory>
+#include <functional>
 
 using namespace std;
 using namespace Quix::Transport;
 
-void testDeserialization(size_t size){
+void testDeserialization(size_t size, std::function<RawBytePackageValue(std::shared_ptr<TransportPackageValue>)> serializer){
     //arrange
-    ModelKey modelKey("modelKey");
+    CodecBundle codecBundle(
+        ModelKey("modelKey"),
+        CodecId("codecId")
+    );
 
-    RawBytePackage* package = new RawBytePackage(modelKey, RawBytePackageValue::initEmpty(size), MetaData());
+    std::shared_ptr<TransportPackageValue> package = 
+        std::shared_ptr<TransportPackageValue>(
+            new TransportPackageValue(
+                std::shared_ptr<RawBytePackage>(
+                    new RawBytePackage(
+                        codecBundle.modelKey(), 
+                        RawBytePackageValue::initEmpty(size),
+                        MetaData()
+                    )
+                ),
+                codecBundle
+            )
+        )
+    ;
 
     // Act
-    RawBytePackageValue raw(TransportPackageValueCodec::Serialize(package));
-    RawBytePackage* deserializedPackage = TransportPackageValueCodec::Deserialize(raw);
+    RawBytePackageValue raw(serializer(package));
+    std::shared_ptr<TransportPackageValue> deserializedPackage = TransportPackageValueCodec::deserialize(raw);
 
     // Assert
-    
     ASSERT_EQ( *deserializedPackage, *package );
-
-    // Cleanup
-    delete deserializedPackage;
-    delete package;
 }
 
+
+///// Test serialize with default codec implementation
+
 TEST(transportPackageValueCodec, simpleTest) {
-    testDeserialization(0);
+    testDeserialization(0, TransportPackageValueCodec::serialize);
 }
 
 TEST(transportPackageValueCodec, bigger) {
     for(int i = 100; i < 20*100; i+=100){
-        testDeserialization(i);
+        testDeserialization(i, TransportPackageValueCodec::serialize);
+    }
+}
+
+
+///// Test serialize with Protobuf codec implementation
+
+TEST(transportPackageValueCodecProtobuf, simpleTest) {
+    testDeserialization(0, TransportPackageValueCodecProtobuf::serialize);
+}
+
+TEST(transportPackageValueCodecProtobuf, bigger) {
+    for(int i = 100; i < 20*100; i+=100){
+        testDeserialization(i, TransportPackageValueCodecProtobuf::serialize);
     }
 }
 

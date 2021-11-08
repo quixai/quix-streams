@@ -1,6 +1,7 @@
 // A2DD.cpp
 #include "transport.h"
 #include "./transportSubscriber.h"
+#include "./fw/deserializingModifier.h"
 #include "./io/IPackage.h"
 
 #include <functional>
@@ -9,27 +10,30 @@
 
 namespace Quix { namespace Transport {
 
-//     TransportWriter::TransportWriter(AbstractInput* input, AbstractByteSplitter* byteSplitter)
-//     {
-//         if(byteSplitter != nullptr)
-//         {
-//             //pipe serializer into splitter and then to the input
-//             serializer.onNewPackage = std::bind( &AbstractByteSplitter::send, input, std::placeholders::_1 );
-//             byteSplitter->onNewPackage = std::bind( &AbstractInput::send, input, std::placeholders::_1 );
-//         }
-//         else
-//         {
-//             //pipe the serializer directly to the input
-//             serializer.onNewPackage = std::bind( &AbstractInput::send, input, std::placeholders::_1 );
-//         }
+    TransportSubscriber::TransportSubscriber(ISubscriber* subscriber)
+    {
+        std::vector<void*> outputsAndInputs;
 
-//     }
+        // output -> merger -> deserializer -> commitModifier -> raise
+        outputsAndInputs.push_back(subscriber);
+        outputsAndInputs.push_back((void*)&deserializingModifier_);
 
-//     void TransportWriter::send(IPackage* package)
-//     {
-//         //TODO: cancellationToken
-// //        if (cancellationToken.IsCancellationRequested) return Task.FromCanceled(cancellationToken);
-//         return serializer.send(package);
-//     }
+        // Now that we have the modifier, lets connect them up
+        auto previous = outputsAndInputs[0];
+        for (int index = 1; index < outputsAndInputs.size(); index++)
+        {
+            auto modifier = outputsAndInputs[index];
+            ((ISubscriber*)previous)->onNewPackage = std::bind( &IPublisher::send, (IPublisher*)modifier, std::placeholders::_1 );
+            previous = modifier;
+        }
+
+        // Connect last output to TransportSubscriber (this class)
+        ((ISubscriber*)previous)->onNewPackage = std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
+
+    }
+
+    void TransportSubscriber::sendInternal(std::shared_ptr<IPackage> package){
+        onNewPackage(package);
+    }
 
 } }

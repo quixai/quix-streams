@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include "../io/IPublisher.h"
 
@@ -56,10 +57,10 @@ private:
     size_t maxMessageSizeWithoutHeader_;
 public:
     ByteSplitter(const size_t maxMessageSize);
-    std::function<void(RawBytePackage*)> onNewPackage;
+    std::function<void(std::shared_ptr<RawBytePackage>)> onNewPackage;
     const size_t absoluteMaxMessageSize() const;
 
-    void send(RawBytePackage* package);
+    void send(std::shared_ptr<RawBytePackage> package);
 };
 
 } }

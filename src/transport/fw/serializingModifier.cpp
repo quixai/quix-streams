@@ -1,9 +1,11 @@
 #include <string>
 #include <sstream>
+#include <memory>
 #include <functional>
 
 #include "./serializingModifier.h"
 #include "./exceptions/serializingException.h"
+#include "./helpers/transportPackageValue.h"
 #include "./helpers/transportPackageValueCodec.h"
 #include "../registry/modelKeyRegistry.h"
 #include "../io/IPackage.h"
@@ -11,16 +13,10 @@
 
 namespace Quix { namespace Transport {
 
-    void SerializingModifier::send(IPackage* package)
+    void SerializingModifier::send(std::shared_ptr<IPackage> package)
     {
         //TODO: add cancellationToken
-        // ModelKey modelKey;
-        // ModelKeyRegistry::instance()->tryGetModelKey(package->modelKey(), modelKey);
-        auto modelKey = package->modelKey();
-        // if (modelKey == ModelKey.WellKnownModelKeys.Default)
-        // {
-        //     modelKey = new ModelKey(package.Type);
-        // }
+        const auto& modelKey = package->modelKey();
 
         auto codec = CodecRegistry::instance()->retrieveFirstCodec(modelKey);
         if(codec == nullptr){
@@ -29,27 +25,34 @@ namespace Quix { namespace Transport {
             throw SerializingException(ss.str());
         }
 
-        auto bytePackage = serializePackage(package, codec, modelKey);
+        auto bytePackage = serializePackage(package, codec, CodecBundle(modelKey, codec->codecId()));
         onNewPackage(bytePackage); 
     };
 
-    RawBytePackage* SerializingModifier::serializePackage(IPackage* package, AbstractCodec* codec, const ModelKey& modelKey) const{
-        try{
-            RawBytePackageValue serializedData = codec->serialize(package->dataptr());
-            delete package;
-            if(serializedData.begin() == nullptr){
-                std::stringstream ss;
-                ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
-                throw SerializingException(ss.str());
-            }
-
-            const auto& metadata = package->metaData();
-            auto wrappedInPackage = TransportPackageValueCodec::Serialize(new RawBytePackage(modelKey, serializedData, metadata));
-            return new RawBytePackage(modelKey, wrappedInPackage, metadata);
-        }catch(...){
-            delete package;
-            throw;
+    std::shared_ptr<RawBytePackage> SerializingModifier::serializePackage(std::shared_ptr<IPackage> package, AbstractCodec* codec, const CodecBundle& codecBundle) const{
+        RawBytePackageValue serializedData = codec->serialize(package);
+        const ModelKey& modelKey = codecBundle.modelKey();
+        if(serializedData.begin() == nullptr){
+            std::stringstream ss;
+            ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
+            throw SerializingException(ss.str());
         }
+
+        const auto& metadata = package->metaData();
+        auto wrappedInPackage = TransportPackageValueCodec::serialize(
+            std::shared_ptr<TransportPackageValue>(
+                new TransportPackageValue(
+                    std::shared_ptr<RawBytePackage>(
+                        new RawBytePackage(modelKey, serializedData, metadata)
+                    ),
+                    codecBundle
+                )
+            )
+        );
+
+        return std::shared_ptr<RawBytePackage>(
+            new RawBytePackage(modelKey, wrappedInPackage, metadata)
+        );
     }
 
     

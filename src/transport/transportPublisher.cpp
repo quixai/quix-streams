@@ -25,7 +25,7 @@ namespace Quix { namespace Transport {
 
     }
 
-    void TransportPublisher::send(IPackage* package)
+    void TransportPublisher::send(std::shared_ptr<IPackage> package)
     {
         //TODO: cancellationToken
 //        if (cancellationToken.IsCancellationRequested) return Task.FromCanceled(cancellationToken);

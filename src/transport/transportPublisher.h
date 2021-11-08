@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "./fw/serializingModifier.h"
 #include "./io/IPackage.h"
 #include "./io/IPublisher.h"
@@ -8,7 +10,7 @@
 
 namespace Quix { namespace Transport {
 
-class TransportPublisher
+class TransportPublisher : public ISubscriber
 {
 
 private:
@@ -16,7 +18,7 @@ private:
 
 public:
   TransportPublisher(IPublisher* input, ByteSplitter* byteSplitter = nullptr);
-  void send(IPackage* package);
+  void send(std::shared_ptr<IPackage> package);
 };
 
 } }

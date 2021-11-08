@@ -7,7 +7,8 @@ namespace Quix { namespace Transport {
 class ISubscriber{
 
 public:
-    virtual void send(IPackage* package) = 0;
+    std::function<void(std::shared_ptr<IPackage>)> onNewPackage;
+    virtual ~ISubscriber();
 };
 
 } }

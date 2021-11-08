@@ -2,12 +2,16 @@
 
 #include "./IPackage.h"
 
+#include <memory>
+
+
 namespace Quix { namespace Transport {
 
 class IPublisher{
 
 public:
-    virtual void send(IPackage* package) = 0;
+    virtual void send(std::shared_ptr<IPackage> package) = 0;
+    virtual ~IPublisher();
 };
 
 } }

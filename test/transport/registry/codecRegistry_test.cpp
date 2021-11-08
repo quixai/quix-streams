@@ -3,6 +3,8 @@
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"
+#include "transport/fw/exceptions/deserializingException.h"
+#include "transport/fw/exceptions/serializingException.h"
 
 #include <algorithm>
 
@@ -13,6 +15,13 @@ class MockCodec : public AbstractCodec{
     private:
     public:
         MockCodec(const std::string& id): AbstractCodec(id){};
+        RawBytePackageValue serialize(const std::shared_ptr<IPackage> obj) const{
+            throw SerializingException("UNREACHABLE");
+        };
+        const std::shared_ptr<IPackage> deserialize(const RawBytePackageValue& value) const{
+            throw DeserializingException("UNREACHABLE");
+        };
+
 };
 
 TEST(codecRegistryTest, shouldRegisterCodec) {
@@ -24,10 +33,10 @@ TEST(codecRegistryTest, shouldRegisterCodec) {
     registry->registerCodec(modelKey, &codec1);
 
     // Act
-    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.key());
+    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.codecId());
 
     // Assert
-    EXPECT_EQ (codec1.key(),  "TestCodec");
+    EXPECT_EQ (codec1.codecId(),  "TestCodec");
     EXPECT_EQ (retrievedCodec,  &codec1);
 }
 
@@ -66,7 +75,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
 
     // Act
     registry->clearCodecs(modelKey);
-    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.key());
+    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.codecId());
     auto allCodecs = registry->retrieveCodecs(modelKey);
 
     // Assert
@@ -85,7 +94,7 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     registry->registerCodec(modelKey, &codec1);
 
     ModelKey outModelKey("");
-    bool typeFound = ModelKeyRegistry::instance()->tryGetModelKey(codec1.key(), outModelKey);
+    bool typeFound = ModelKeyRegistry::instance()->tryGetModelKey(codec1.codecId(), outModelKey);
 
     // Assert
     ASSERT_TRUE ( typeFound );
