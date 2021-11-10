@@ -13,7 +13,7 @@
 
 namespace Quix { namespace Transport {
 
-    void SerializingModifier::send(std::shared_ptr<IPackage> package)
+    void SerializingModifier::send(std::shared_ptr<IPackage> package) const
     {
         //TODO: add cancellationToken
         const auto& modelKey = package->modelKey();
@@ -30,9 +30,9 @@ namespace Quix { namespace Transport {
     };
 
     std::shared_ptr<RawBytePackage> SerializingModifier::serializePackage(std::shared_ptr<IPackage> package, AbstractCodec* codec, const CodecBundle& codecBundle) const{
-        RawBytePackageValue serializedData = codec->serialize(package);
-        const ModelKey& modelKey = codecBundle.modelKey();
+        ByteArray serializedData = codec->serialize(package);
         if(serializedData.begin() == nullptr){
+            const ModelKey& modelKey = codecBundle.modelKey();
             std::stringstream ss;
             ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
             throw SerializingException(ss.str());
@@ -43,7 +43,7 @@ namespace Quix { namespace Transport {
             std::shared_ptr<TransportPackageValue>(
                 new TransportPackageValue(
                     std::shared_ptr<RawBytePackage>(
-                        new RawBytePackage(modelKey, serializedData, metadata)
+                        new RawBytePackage(serializedData, metadata)
                     ),
                     codecBundle
                 )
@@ -51,7 +51,7 @@ namespace Quix { namespace Transport {
         );
 
         return std::shared_ptr<RawBytePackage>(
-            new RawBytePackage(modelKey, wrappedInPackage, metadata)
+            new RawBytePackage(wrappedInPackage, metadata)
         );
     }
 

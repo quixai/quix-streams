@@ -5,10 +5,21 @@
 
 namespace Quix { namespace Transport {
 
-    class SerializingException : public std::exception
+/**
+ * Raised when an error has occured during serialization
+ */
+class SerializingException : public std::exception
+{
+public:
+    /**
+     * Initialize with message
+     * 
+     * @param message message
+     */
+    SerializingException(const std::string& message)
     {
-    public:
-        SerializingException(const std::string& message) {};
+
     };
+};
 
 } }

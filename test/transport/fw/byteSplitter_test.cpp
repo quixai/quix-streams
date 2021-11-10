@@ -26,12 +26,15 @@ TEST(byteSplitterTest, doCompilerChecks) {
     if( is_big_endian() ) {
         is_little_endian = false;
     }
+
     //enforce endianness because the ByteSplitProtocolHeader is loading data through cast
     ASSERT_TRUE( is_little_endian );
 }
 
 TEST(byteSplitterTest, WithTooLowMaxMessageSize_ShouldThrowArgumentOutOfRangException) {
     ByteSplitter* data = nullptr;
+
+    //TODO: implement OutOfRangeException
     EXPECT_ANY_THROW( data = new ByteSplitter(7) );
     if(data != nullptr){
         delete data;
@@ -44,7 +47,7 @@ TEST(byteSplitterTest, WithDataOutsideAbsoluteMaxSize_ShouldThrowSerializationEx
     auto length = splitter.absoluteMaxMessageSize() + 1;
 
     const std::shared_ptr<uint8_t> dataarr(new uint8_t[length], std::default_delete<uint8_t[]>()); 
-    RawBytePackageValue data(dataarr, length);
+    ByteArray data(dataarr, length);
     // Act
     // Action action = () => splitter.Split(data).ToList();
 

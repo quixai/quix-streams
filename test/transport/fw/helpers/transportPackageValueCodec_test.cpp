@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 #include "transport/fw/codecs/codecBundle.h"
 #include "transport/fw/helpers/transportPackageValueCodec.h"
-#include "transport/io/rawBytePackageValue.h"
+#include "transport/fw/helpers/transportPackageValueCodecProtobuf.h"
+#include "transport/io/byteArray.h"
 
 #include <algorithm>
 #include <memory>
@@ -10,7 +11,7 @@
 using namespace std;
 using namespace Quix::Transport;
 
-void testDeserialization(size_t size, std::function<RawBytePackageValue(std::shared_ptr<TransportPackageValue>)> serializer){
+void testDeserialization(size_t size, std::function<ByteArray(std::shared_ptr<TransportPackageValue>)> serializer){
     //arrange
     CodecBundle codecBundle(
         ModelKey("modelKey"),
@@ -22,8 +23,7 @@ void testDeserialization(size_t size, std::function<RawBytePackageValue(std::sha
             new TransportPackageValue(
                 std::shared_ptr<RawBytePackage>(
                     new RawBytePackage(
-                        codecBundle.modelKey(), 
-                        RawBytePackageValue::initEmpty(size),
+                        ByteArray::initEmpty(size),
                         MetaData()
                     )
                 ),
@@ -33,7 +33,7 @@ void testDeserialization(size_t size, std::function<RawBytePackageValue(std::sha
     ;
 
     // Act
-    RawBytePackageValue raw(serializer(package));
+    ByteArray raw(serializer(package));
     std::shared_ptr<TransportPackageValue> deserializedPackage = TransportPackageValueCodec::deserialize(raw);
 
     // Assert

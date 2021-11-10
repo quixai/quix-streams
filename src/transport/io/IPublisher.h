@@ -10,8 +10,7 @@ namespace Quix { namespace Transport {
 class IPublisher{
 
 public:
-    virtual void send(std::shared_ptr<IPackage> package) = 0;
-    virtual ~IPublisher();
+    virtual void send(std::shared_ptr<IPackage> package) const = 0;
 };
 
 } }

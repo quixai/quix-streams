@@ -15,10 +15,10 @@ class MockCodec : public AbstractCodec{
     private:
     public:
         MockCodec(const std::string& id): AbstractCodec(id){};
-        RawBytePackageValue serialize(const std::shared_ptr<IPackage> obj) const{
+        ByteArray serialize(const std::shared_ptr<IPackage> obj) const{
             throw SerializingException("UNREACHABLE");
         };
-        const std::shared_ptr<IPackage> deserialize(const RawBytePackageValue& value) const{
+        const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<RawBytePackage> package) const{
             throw DeserializingException("UNREACHABLE");
         };
 

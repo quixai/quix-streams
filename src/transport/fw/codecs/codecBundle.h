@@ -19,15 +19,35 @@ namespace Quix { namespace Transport {
             ModelKey modelKey_;
             CodecId codecId_;
         public:
-            CodecBundle(const ModelKey& modelKey, const CodecId& codecId ) : modelKey_(modelKey), codecId_(codecId) {
+            /**
+             * Initializes a new instance of
+             *  
+             * @param modelKey The key to identify the model
+             * @param codecId The id of the codec used for model serialization
+             */
+            CodecBundle(const ModelKey& modelKey, const CodecId& codecId )
+             : 
+             modelKey_(modelKey), 
+             codecId_(codecId) 
+            {
+                
             };
-            const ModelKey& modelKey() const{
+            /**
+             * Gets the key to identify the Data
+             */
+            const ModelKey& modelKey() const
+            {
                 return modelKey_;
             };
-            const CodecId& codecId() const{
+            /**
+             * Gets the codec id to used to serialize the model
+             */
+            const CodecId& codecId() const
+            {
                 return codecId_;
             };
-            bool operator==(const CodecBundle& other) const{
+            bool operator==(const CodecBundle& other) const
+            {
                 return 
                     modelKey_ == other.modelKey()
                         &&

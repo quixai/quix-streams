@@ -22,7 +22,7 @@ namespace Quix { namespace Transport {
             AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
         public:
             std::function<void(std::shared_ptr<IPackage>)> onNewPackage;
-            void send(std::shared_ptr<IPackage> package);
+            void send(std::shared_ptr<IPackage> package) const;
     };
 
 } }

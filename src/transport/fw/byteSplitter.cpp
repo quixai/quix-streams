@@ -58,15 +58,15 @@ namespace Quix { namespace Transport {
             //creates the header 
             ByteSplitProtocolHeader packetHeader(messageId, curIndex, maxIndex);
 
-            RawBytePackageValue packet = RawBytePackageValue::prependHeader(
+            ByteArray packet = ByteArray::prependHeader(
                 (uint8_t*)&packetHeader, //adds pointer into the packetHeader
                 sizeof(ByteSplitProtocolHeader),    //header length
-                RawBytePackageValue(originalValue, startDataIndex, toSendDataLength) //rest of package is subset of original message
+                ByteArray(originalValue, startDataIndex, toSendDataLength) //rest of package is subset of original message
             );
 
             onNewPackage(
                 std::shared_ptr<RawBytePackage>(
-                    new RawBytePackage(modelKey, packet, originalMetadata)
+                    new RawBytePackage(packet, originalMetadata)
                 )
             );
 

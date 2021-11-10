@@ -19,7 +19,7 @@ namespace Quix { namespace Transport {
         auto& modelCodecs = codecs[model];
 
         auto codecKey = codec->codecId();
-        auto it = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecKey](AbstractCodec* val){
+        auto it = std::find_if(modelCodecs.begin(), modelCodecs.end(), [&](AbstractCodec* val){
             return val->codecId() == codecKey;
         });
         if( it == modelCodecs.end() ) {
@@ -47,7 +47,7 @@ namespace Quix { namespace Transport {
         auto modelCodecs = retrieveCodecs(modelKey);
 
         //find first codec from the list which has the key matching codecKey
-        auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [codecKey](AbstractCodec* val){
+        auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [&](AbstractCodec* val){
             return val->codecId() == codecKey;
         });
 

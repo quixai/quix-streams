@@ -13,7 +13,7 @@
 
 namespace Quix { namespace Transport {
 
-    void DeserializingModifier::send(std::shared_ptr<IPackage> package)
+    void DeserializingModifier::send(std::shared_ptr<IPackage> package) const
     {
         //TODO: add cancellationToken
 
@@ -21,7 +21,8 @@ namespace Quix { namespace Transport {
         const auto codecBundle = transportMessageValue->codecBundle();
 
         auto codec = getCodec(transportMessageValue);
-        const auto deserializedPackage = codec->deserialize((*(transportMessageValue->value())).value());
+        const auto deserializedPackage = codec->deserialize(transportMessageValue->value());
+
 
         onNewPackage(deserializedPackage); 
     };

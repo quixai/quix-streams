@@ -5,10 +5,21 @@
 
 namespace Quix { namespace Transport {
 
-    class DeserializingException : public std::exception
+/**
+ * Raised when an error has occured during deserialization
+ */
+class DeserializingException : public std::exception
+{
+public:
+    /**
+     * Initialize with message
+     * 
+     * @param message message
+     */
+    DeserializingException(const std::string& message)
     {
-    public:
-        DeserializingException(const std::string& message){};
+
     };
+};
 
 } }

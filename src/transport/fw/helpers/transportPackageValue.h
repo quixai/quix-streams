@@ -3,32 +3,74 @@
 #include <string>
 #include <functional>
 
-#include "../../io/rawBytePackageValue.h"
+#include "../../io/byteArray.h"
 #include "../codecs/codecBundle.h"
+#include "../../io/Package.h"
 #include "../../io/IPackage.h"
 
 namespace Quix { namespace Transport {
 
+/**
+ * Describes how to de/serialize the IPackage.value()
+ */
 class TransportPackageValue
 {
     std::shared_ptr<RawBytePackage> value_;
     CodecBundle codecBundle_;
+
 public:
-    TransportPackageValue(std::shared_ptr<RawBytePackage> value, const CodecBundle& codecBundle) : value_(value), codecBundle_(codecBundle) {};
+    /**
+     * Initializes a new instance TransportPackageValue
+     * 
+     * @param value The value to de/serialize
+     * @param codecBundle The codec details to use for de/serialization
+     */
+    TransportPackageValue(
+        std::shared_ptr<RawBytePackage> value, 
+        const CodecBundle& codecBundle
+    )
+     : 
+     value_(value), 
+     codecBundle_(codecBundle)
+    {
+
+    };
+
+    /**
+     * copy constructor
+     */
     TransportPackageValue(const TransportPackageValue& other) = default;
-    std::shared_ptr<RawBytePackage> value() const {
+
+    /**
+     * The value to de/serialize
+     */
+    std::shared_ptr<RawBytePackage> value() const 
+    {
         return value_;
     }
-    const CodecBundle& codecBundle() const {
+
+    /**
+     * The metadata that belongs to the value
+     */
+    const CodecBundle& codecBundle() const
+    {
         return codecBundle_;
     }
-    bool operator==(const TransportPackageValue& other) const {
+
+    /**
+     * Compare with other TransportPackageValue
+     * 
+     * @param other TransportPackageValue to compare with
+     */
+    bool operator==(const TransportPackageValue& other) const
+    {
         return 
             codecBundle_ == other.codecBundle()
                 &&
             *value_ == *(other.value())
             ;
     }
+
 };
 
 } }

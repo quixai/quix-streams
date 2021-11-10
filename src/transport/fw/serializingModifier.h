@@ -4,6 +4,7 @@
 #include <memory>
 #include <functional>
 
+#include "../io/Package.h"
 #include "../io/IPackage.h"
 #include "../codec/abstractCodec.h"
 #include "./codecs/codecBundle.h"
@@ -21,7 +22,7 @@ namespace Quix { namespace Transport {
 
         public:
             std::function<void(std::shared_ptr<RawBytePackage>)> onNewPackage;
-            void send(std::shared_ptr<IPackage> package);
+            void send(std::shared_ptr<IPackage> package) const;
     };
 
 } }
