@@ -8,7 +8,8 @@
 using namespace std;
 using namespace Quix::Transport;
 
-TEST(transportContextTest, GenericConstructor_DefaultEmpty) {
+TEST(transportContextTest, GenericConstructor_DefaultEmpty)
+{
     // Arrange
     TransportContext context;
 
@@ -16,7 +17,8 @@ TEST(transportContextTest, GenericConstructor_DefaultEmpty) {
     EXPECT_TRUE( context.empty() );
 }
 
-TEST(transportContextTest, GenericConstructor_FromDict) {
+TEST(transportContextTest, GenericConstructor_FromDict)
+{
     // Arrange
     map<string, string> map;
     map["key"] = "value";

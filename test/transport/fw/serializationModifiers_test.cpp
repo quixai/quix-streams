@@ -15,7 +15,8 @@
 using namespace std;
 using namespace Quix::Transport;
 
-TEST(transportContextTest, WithSingleObject_ShouldCorrespondToSerializingModifier) {
+TEST(transportContextTest, WithSingleObject_ShouldCorrespondToSerializingModifier) 
+{
     // This test checks that DeserializingModifier and SerializingModifier are reverse of each other
 
     // Arrange
@@ -52,7 +53,8 @@ TEST(transportContextTest, WithSingleObject_ShouldCorrespondToSerializingModifie
     EXPECT_EQ( *deserializedPackageTyped, *packagePtr );
 }
 
-TEST(transportContextTest, WithQuixByteArray_ShouldCorrespondToSerializingModifier) {
+TEST(transportContextTest, WithQuixByteArray_ShouldCorrespondToSerializingModifier) 
+{
     // This test checks that DeserializingModifier and SerializingModifier are reverse of each other
 
     // Arrange
@@ -88,7 +90,8 @@ TEST(transportContextTest, WithQuixByteArray_ShouldCorrespondToSerializingModifi
     EXPECT_EQ( *deserializedPackageTyped, *packagePtr );
 }
 
-TEST(transportContextTest, WithStringArray_ShouldCorrespondToSerializingModifier) {
+TEST(transportContextTest, WithStringArray_ShouldCorrespondToSerializingModifier) 
+{
     // This test checks that DeserializingModifier and SerializingModifier are reverse of each other
 
     // Arrange

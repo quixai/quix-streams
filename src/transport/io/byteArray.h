@@ -183,6 +183,7 @@ public:
     { 
         return data_;
     }
+
 };
 
 } }

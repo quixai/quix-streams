@@ -16,9 +16,10 @@ using namespace std;
 using namespace Quix::Transport;
 
 
-class MyException : public std::exception{};
+class MyException : public std::exception { };
 
-TEST(transportPublisherTest, ExceptionThrownByInput_ShouldThrowException) {
+TEST(transportPublisherTest, ExceptionThrownByInput_ShouldThrowException)
+{
     // Arrange
     Passthrough passthrough([](std::shared_ptr<IPackage> val){
         throw MyException();

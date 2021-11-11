@@ -13,7 +13,8 @@ namespace Quix { namespace Transport {
         maxMessageSize_(maxMessageSize), 
         maxMessageSizeWithoutHeader_(maxMessageSize - sizeof(ByteSplitProtocolHeader))
     {
-        if( maxMessageSize <= sizeof(ByteSplitProtocolHeader) ) {
+        if( maxMessageSize <= sizeof(ByteSplitProtocolHeader) ) 
+        {
             std::stringstream ss;
             ss << "ByteSplitter maxMessageSize must be at least " << sizeof(ByteSplitProtocolHeader);
             // todo: throw better exception type
@@ -21,17 +22,22 @@ namespace Quix { namespace Transport {
         }
     };
 
-    const size_t ByteSplitter::absoluteMaxMessageSize() const {
+
+    const size_t ByteSplitter::absoluteMaxMessageSize() const 
+    {
         return maxMessageSizeWithoutHeader_ * UINT8_MAX;
     } 
 
-    void ByteSplitter::send(std::shared_ptr<RawBytePackage> originalPackage) {
+
+    void ByteSplitter::send(std::shared_ptr<RawBytePackage> originalPackage) 
+    {
         const auto& originalValue = originalPackage->value(); 
         const size_t originalLen = originalValue.len();
         const uint8_t* originalData = originalValue.data();
         ModelKey modelKey = originalPackage->modelKey();
 
-        if( originalLen > absoluteMaxMessageSize()){
+        if( originalLen > absoluteMaxMessageSize())
+        {
             std::stringstream ss;
             ss << "Message size " << originalLen << " bytes exceeds allowed maximum message size of " << absoluteMaxMessageSize() << " bytes";
             // todo: throw better exception type
@@ -45,12 +51,16 @@ namespace Quix { namespace Transport {
         auto& originalMetadata = originalPackage->metaData();
 
         size_t startDataIndex = 0;       
-        do{
+        do
+        {
             size_t toSendDataLength;
-            if( startDataIndex + maxMessageSizeWithoutHeader_ > originalLen ){
+            if( startDataIndex + maxMessageSizeWithoutHeader_ > originalLen )
+            {
                 //not the last package
                 toSendDataLength = maxMessageSizeWithoutHeader_;
-            }else{
+            }
+            else
+            {
                 //last package >> leave rest of data
                 toSendDataLength = originalLen - startDataIndex;
             }
@@ -74,5 +84,6 @@ namespace Quix { namespace Transport {
             curIndex++;
         }while(startDataIndex < originalLen);
     };
+
 
 } }

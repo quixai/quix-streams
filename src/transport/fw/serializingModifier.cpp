@@ -29,9 +29,16 @@ namespace Quix { namespace Transport {
         onNewPackage(bytePackage); 
     };
 
-    std::shared_ptr<RawBytePackage> SerializingModifier::serializePackage(std::shared_ptr<IPackage> package, AbstractCodec* codec, const CodecBundle& codecBundle) const{
+
+    std::shared_ptr<RawBytePackage> SerializingModifier::serializePackage(
+        std::shared_ptr<IPackage> package, 
+        AbstractCodec* codec, 
+        const CodecBundle& codecBundle
+    ) const
+    {
         ByteArray serializedData = codec->serialize(package);
-        if(serializedData.begin() == nullptr){
+        if(serializedData.begin() == nullptr)
+        {
             const ModelKey& modelKey = codecBundle.modelKey();
             std::stringstream ss;
             ss << "Failed to serialize '" << modelKey.key() << "' because codec returned nullptr.";
@@ -54,7 +61,6 @@ namespace Quix { namespace Transport {
             new RawBytePackage(wrappedInPackage, metadata)
         );
     }
-
-    
+ 
 
 } }

@@ -32,7 +32,8 @@ namespace Quix { namespace Transport {
 
     }
 
-    void TransportSubscriber::sendInternal(std::shared_ptr<IPackage> package){
+    void TransportSubscriber::sendInternal(std::shared_ptr<IPackage> package)
+    {
         onNewPackage(package);
     }
 

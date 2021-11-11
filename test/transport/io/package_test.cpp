@@ -15,7 +15,8 @@
 using namespace std;
 using namespace Quix::Transport;
 
-TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyMetadata) {
+TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyMetadata)
+{
     // Arrange
     TestModel model;
     Package<TestModel> package(model);
@@ -24,7 +25,8 @@ TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyMetadata) {
     EXPECT_TRUE( package.metaData().empty() );
 }
 
-TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyTransportContext) {
+TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyTransportContext)
+{
     // Arrange
     TestModel model;
     Package<TestModel> package(model);
@@ -33,7 +35,8 @@ TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyTransportContext) {
     EXPECT_TRUE( package.transportContext().empty() );
 }
 
-TEST(transportPackageTest, GenericConstructor_ShouldSetTypeToProvided) {
+TEST(transportPackageTest, GenericConstructor_ShouldSetTypeToProvided)
+{
     // Arrange
     TestModel model;
     Package<TestModel> package(model);
@@ -42,7 +45,8 @@ TEST(transportPackageTest, GenericConstructor_ShouldSetTypeToProvided) {
     EXPECT_EQ( package.modelKey() , model.modelKey() );
 }
 
-TEST(transportPackageTest, GenericConstructor_ShouldSetValueToProvided) {
+TEST(transportPackageTest, GenericConstructor_ShouldSetValueToProvided)
+{
     // Arrange
     TestModel model;
     Package<TestModel> package(model);

@@ -5,6 +5,7 @@
 
 using namespace Quix::Transport;
 
-void initialize(){
+void initialize()
+{
     ByteCodec::initialize();
 }

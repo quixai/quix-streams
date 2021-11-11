@@ -11,7 +11,8 @@
 using namespace std;
 using namespace Quix::Transport;
 
-void testDeserialization(size_t size, std::function<ByteArray(std::shared_ptr<TransportPackageValue>)> serializer){
+void testDeserialization(size_t size, std::function<ByteArray(std::shared_ptr<TransportPackageValue>)> serializer)
+{
     //arrange
     CodecBundle codecBundle(
         ModelKey("modelKey"),
@@ -43,11 +44,13 @@ void testDeserialization(size_t size, std::function<ByteArray(std::shared_ptr<Tr
 
 ///// Test serialize with default codec implementation
 
-TEST(transportPackageValueCodec, simpleTest) {
+TEST(transportPackageValueCodec, simpleTest)
+{
     testDeserialization(0, TransportPackageValueCodec::serialize);
 }
 
-TEST(transportPackageValueCodec, bigger) {
+TEST(transportPackageValueCodec, bigger)
+{
     for(int i = 100; i < 20*100; i+=100){
         testDeserialization(i, TransportPackageValueCodec::serialize);
     }
@@ -56,11 +59,13 @@ TEST(transportPackageValueCodec, bigger) {
 
 ///// Test serialize with Protobuf codec implementation
 
-TEST(transportPackageValueCodecProtobuf, simpleTest) {
+TEST(transportPackageValueCodecProtobuf, simpleTest)
+{
     testDeserialization(0, TransportPackageValueCodecProtobuf::serialize);
 }
 
-TEST(transportPackageValueCodecProtobuf, bigger) {
+TEST(transportPackageValueCodecProtobuf, bigger)
+{
     for(int i = 100; i < 20*100; i+=100){
         testDeserialization(i, TransportPackageValueCodecProtobuf::serialize);
     }

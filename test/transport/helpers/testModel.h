@@ -10,24 +10,36 @@
 #include "transport/fw/modelKey.h"
 #include "transport/registry/codecRegistry.h"
 
-class TestModelCodec: public Quix::Transport::AbstractCodec{
+class TestModelCodec: public Quix::Transport::AbstractCodec
+{
+
 public:
     TestModelCodec();
+
     Quix::Transport::ByteArray serialize(const std::shared_ptr<Quix::Transport::IPackage> obj) const;
-    const std::shared_ptr<Quix::Transport::IPackage> deserialize(const std::shared_ptr<Quix::Transport::RawBytePackage> rawPackage) const;
+
+    const std::shared_ptr<Quix::Transport::IPackage> deserialize(
+        const std::shared_ptr<Quix::Transport::RawBytePackage> rawPackage
+    ) const;
+
 };
 
-class TestModel : public Quix::Transport::IModel{
+class TestModel : public Quix::Transport::IModel
+{
+
 public:
     static TestModelCodec defaultCodec;
+
     const Quix::Transport::ModelKey modelKey() const
     {
         return Quix::Transport::ModelKey("TestModel");
     };
+
     bool operator==(const TestModel& other) const;
+
     static class _init
     {
-        public:
+    public:
         _init()
         {
             Quix::Transport::CodecRegistry::instance()->registerCodec(
@@ -36,4 +48,5 @@ public:
             );
         }
     } _initializer;
+
 };

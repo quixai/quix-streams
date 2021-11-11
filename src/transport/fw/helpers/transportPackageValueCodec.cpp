@@ -20,10 +20,12 @@ namespace Quix { namespace Transport {
 
     std::shared_ptr<TransportPackageValue> TransportPackageValueCodec::deserialize(const ByteArray& data)
     {
-        if(data.len() < 1){
+        if(data.len() < 1)
+        {
             throw DeserializingException("Failed to Deserialize TransportPackageValueCodec. Recieved array must contain at least one byte.");
         }
-        switch(data.begin()[0]){
+        switch(data.begin()[0])
+        {
             case TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF:
                 //Protobuf codec
                 return TransportPackageValueCodecProtobuf::deserialize(data);

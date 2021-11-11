@@ -11,7 +11,8 @@
 using namespace std;
 using namespace Quix::Transport;
 
-class MockCodec : public AbstractCodec{
+class MockCodec : public AbstractCodec
+{
     private:
     public:
         MockCodec(const std::string& id): AbstractCodec(id){};
@@ -24,7 +25,8 @@ class MockCodec : public AbstractCodec{
 
 };
 
-TEST(codecRegistryTest, shouldRegisterCodec) {
+TEST(codecRegistryTest, shouldRegisterCodec)
+{
     //arrange
     MockCodec codec1("TestCodec");
 
@@ -40,7 +42,8 @@ TEST(codecRegistryTest, shouldRegisterCodec) {
     EXPECT_EQ (retrievedCodec,  &codec1);
 }
 
-TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec) {
+TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec)
+{
     //arrange
     MockCodec codec1("TestCodec1");
     MockCodec codec2("TestCodec2");
@@ -65,7 +68,8 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec) {
     EXPECT_EQ ( *it++, &codec2 );
 }
 
-TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
+TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull)
+{
     //arrange
     MockCodec codec1("TestCodec");
 
@@ -83,7 +87,8 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
     EXPECT_TRUE ( allCodecs.empty() );
 }
 
-TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
+TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry)
+{
     //arrange
     MockCodec codec1("TestCodec");
 

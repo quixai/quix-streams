@@ -18,7 +18,8 @@ int is_big_endian(void)
     return e.c[0];
 }
 
-TEST(byteSplitterTest, doCompilerChecks) {
+TEST(byteSplitterTest, doCompilerChecks) 
+{
     // Arrange
     ASSERT_EQ( sizeof(ByteSplitProtocolHeader), 10 );
 
@@ -31,7 +32,8 @@ TEST(byteSplitterTest, doCompilerChecks) {
     ASSERT_TRUE( is_little_endian );
 }
 
-TEST(byteSplitterTest, WithTooLowMaxMessageSize_ShouldThrowArgumentOutOfRangException) {
+TEST(byteSplitterTest, WithTooLowMaxMessageSize_ShouldThrowArgumentOutOfRangException) 
+{
     ByteSplitter* data = nullptr;
 
     //TODO: implement OutOfRangeException
@@ -41,7 +43,8 @@ TEST(byteSplitterTest, WithTooLowMaxMessageSize_ShouldThrowArgumentOutOfRangExce
     }
 }
 
-TEST(byteSplitterTest, WithDataOutsideAbsoluteMaxSize_ShouldThrowSerializationException) {
+TEST(byteSplitterTest, WithDataOutsideAbsoluteMaxSize_ShouldThrowSerializationException) 
+{
     // Arrange
     ByteSplitter splitter(50);
     auto length = splitter.absoluteMaxMessageSize() + 1;
