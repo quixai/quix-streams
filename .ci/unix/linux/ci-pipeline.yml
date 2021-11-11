@@ -6,15 +6,17 @@
 steps:
 - script: |
     echo "Install dependencies"
-    .ci\windows\install.cmd
+    chmod +x ./.ci/unix/linux/install.sh
+    ./.ci/unix/linux/install.sh
   displayName: 'Install dependencies'
 
 - script: |
     echo "Build dependencies"
-    .ci\windows\build.cmd
+    chmod +x ./.ci/unix/build.sh
+    ./.ci/unix/build.sh
   displayName: 'Build codebase'
 
 - script: |
     echo "Running test"
-    build\test\Release\QuixStreaming_tst.exe
+    ./build/test/QuixStreaming_tst
   displayName: 'Run test'

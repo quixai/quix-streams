@@ -9,13 +9,15 @@
 using namespace std;
 using namespace Quix::Transport;
 
-class MockCodec : public AbstractCodec{
+class MockCodec : public AbstractCodec
+{
     private:
     public:
         MockCodec(const std::string& id): AbstractCodec(id){};
 };
 
-TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected) {
+TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected)
+{
     // Arrange
     ModelKey modelKey("TESTModel");
     auto codecKey = std::string("TESTCodec");
@@ -33,7 +35,8 @@ TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected
     ASSERT_EQ ( outModelKey, modelKey );
 }
 
-TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldNotFound) {
+TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldNotFound)
+{
     // Arrange
     ModelKey modelKey("TESTModel");
     ModelKey modelKey2("TESTModel2");

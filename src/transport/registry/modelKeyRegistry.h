@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "../codec/abstractCodec.h"
-#include "../modelKey.h"
+#include "../fw/modelKey.h"
 
 namespace Quix { namespace Transport {
 

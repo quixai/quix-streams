@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package Quix.Transport;
+
+message TransportPackageValueCodecProtobufRaw {
+    string codecId = 1;
+    string modelKey = 2;
+    bytes data = 3;
+}

@@ -3,19 +3,30 @@
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"
+#include "transport/fw/exceptions/deserializingException.h"
+#include "transport/fw/exceptions/serializingException.h"
 
 #include <algorithm>
 
 using namespace std;
 using namespace Quix::Transport;
 
-class MockCodec : public AbstractCodec{
+class MockCodec : public AbstractCodec
+{
     private:
     public:
         MockCodec(const std::string& id): AbstractCodec(id){};
+        ByteArray serialize(const std::shared_ptr<IPackage> obj) const{
+            throw SerializingException("UNREACHABLE");
+        };
+        const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<ByteArrayPackage> package) const{
+            throw DeserializingException("UNREACHABLE");
+        };
+
 };
 
-TEST(codecRegistryTest, shouldRegisterCodec) {
+TEST(codecRegistryTest, shouldRegisterCodec)
+{
     //arrange
     MockCodec codec1("TestCodec");
 
@@ -24,14 +35,15 @@ TEST(codecRegistryTest, shouldRegisterCodec) {
     registry->registerCodec(modelKey, &codec1);
 
     // Act
-    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.key());
+    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.codecId());
 
     // Assert
-    EXPECT_EQ (codec1.key(),  "TestCodec");
+    EXPECT_EQ (codec1.codecId(),  "TestCodec");
     EXPECT_EQ (retrievedCodec,  &codec1);
 }
 
-TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec) {
+TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec)
+{
     //arrange
     MockCodec codec1("TestCodec1");
     MockCodec codec2("TestCodec2");
@@ -56,7 +68,8 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnRegisteredCodec) {
     EXPECT_EQ ( *it++, &codec2 );
 }
 
-TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
+TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull)
+{
     //arrange
     MockCodec codec1("TestCodec");
 
@@ -66,7 +79,7 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
 
     // Act
     registry->clearCodecs(modelKey);
-    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.key());
+    auto retrievedCodec = registry->retrieveCodec(modelKey, codec1.codecId());
     auto allCodecs = registry->retrieveCodecs(modelKey);
 
     // Assert
@@ -74,7 +87,8 @@ TEST(codecRegistryTest, hasPreviousRegistration_ShouldReturnNull) {
     EXPECT_TRUE ( allCodecs.empty() );
 }
 
-TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
+TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry)
+{
     //arrange
     MockCodec codec1("TestCodec");
 
@@ -85,7 +99,7 @@ TEST(codecRegistryTest, validCodec_ShouldAlsoRegisterInModelKeyRegistry) {
     registry->registerCodec(modelKey, &codec1);
 
     ModelKey outModelKey("");
-    bool typeFound = ModelKeyRegistry::instance()->tryGetModelKey(codec1.key(), outModelKey);
+    bool typeFound = ModelKeyRegistry::instance()->tryGetModelKey(codec1.codecId(), outModelKey);
 
     // Assert
     ASSERT_TRUE ( typeFound );

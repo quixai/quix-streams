@@ -6,8 +6,8 @@
 steps:
 - script: |
     echo "Install dependencies"
-    chmod +x ./.ci/unix/install.sh
-    ./.ci/unix/install.sh
+    chmod +x ./.ci/unix/macOS/install.sh
+    ./.ci/unix/macOS/install.sh
   displayName: 'Install dependencies'
 
 - script: |
