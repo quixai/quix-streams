@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "../fw/modelKey.h"
-#include "../io/metaData.h"
 #include "./byteArray.h"
+#include "./transportContext.h"
 
 namespace Quix { namespace Transport {
 
@@ -23,9 +23,9 @@ public:
     virtual const ModelKey modelKey() const = 0;
 
     /**
-     * The content meta data
+     * The transport context of the package
      */
-    virtual const MetaData metaData() const = 0;
+    virtual const TransportContext& transportContext() const = 0;
 
 };
 

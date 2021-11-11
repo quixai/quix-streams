@@ -22,10 +22,9 @@ void testDeserialization(size_t size, std::function<ByteArray(std::shared_ptr<Tr
     std::shared_ptr<TransportPackageValue> package = 
         std::shared_ptr<TransportPackageValue>(
             new TransportPackageValue(
-                std::shared_ptr<RawBytePackage>(
-                    new RawBytePackage(
-                        ByteArray::initEmpty(size),
-                        MetaData()
+                std::shared_ptr<ByteArrayPackage>(
+                    new ByteArrayPackage(
+                        ByteArray::initEmpty(size)
                     )
                 ),
                 codecBundle
@@ -44,14 +43,9 @@ void testDeserialization(size_t size, std::function<ByteArray(std::shared_ptr<Tr
 
 ///// Test serialize with default codec implementation
 
-TEST(transportPackageValueCodec, simpleTest)
+TEST(transportPackageValueCodec, checkIncrementingSizes)
 {
-    testDeserialization(0, TransportPackageValueCodec::serialize);
-}
-
-TEST(transportPackageValueCodec, bigger)
-{
-    for(int i = 100; i < 20*100; i+=100)
+    for(int i = 0; i < 20*100; i+=100)
     {
         testDeserialization(i, TransportPackageValueCodec::serialize);
     }
@@ -60,14 +54,9 @@ TEST(transportPackageValueCodec, bigger)
 
 ///// Test serialize with Protobuf codec implementation
 
-TEST(transportPackageValueCodecProtobuf, simpleTest)
+TEST(transportPackageValueCodecProtobuf, checkIncrementingSizes)
 {
-    testDeserialization(0, TransportPackageValueCodecProtobuf::serialize);
-}
-
-TEST(transportPackageValueCodecProtobuf, bigger)
-{
-    for(int i = 100; i < 20*100; i+=100){
+    for(int i = 0; i < 20*100; i+=100){
         testDeserialization(i, TransportPackageValueCodecProtobuf::serialize);
     }
 }

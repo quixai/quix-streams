@@ -1,11 +1,29 @@
 #include "codecRegistry.h"
 #include "modelKeyRegistry.h"
 
+#include "../fw/codecs/byteCodec.h"
+
 #include <algorithm>
 #include <iostream>
 
 namespace Quix { namespace Transport {
     using namespace std;
+
+    CodecRegistry::CodecRegistry()
+    {
+        initializeCodecs();
+    }
+
+    void CodecRegistry::initializeCodecs()
+    {
+        //initialize bytecodec
+        static ByteCodec byteCodec;
+        this->registerCodec(
+            ByteArray().modelKey(), 
+            &byteCodec
+        );
+   }
+
 
     void CodecRegistry::registerCodec(const ModelKey& model, AbstractCodec* codec)
     {

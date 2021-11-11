@@ -10,7 +10,7 @@ namespace Quix { namespace Transport {
 
 
 /**
- * Class representing the Array with its length
+ * Class representing the Array segment with its length and start
  * 
  * Note: public API is prepared to be used for potential ArraySegment implementation
  */
@@ -136,7 +136,7 @@ public:
      */
     inline const ModelKey modelKey() const 
     { 
-        return ModelKey("RawBytePackage");
+        return ModelKey("ByteArrayPackage");
     };
 
     /**

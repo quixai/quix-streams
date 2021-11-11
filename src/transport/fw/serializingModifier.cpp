@@ -30,7 +30,7 @@ namespace Quix { namespace Transport {
     };
 
 
-    std::shared_ptr<RawBytePackage> SerializingModifier::serializePackage(
+    std::shared_ptr<ByteArrayPackage> SerializingModifier::serializePackage(
         std::shared_ptr<IPackage> package, 
         AbstractCodec* codec, 
         const CodecBundle& codecBundle
@@ -45,20 +45,19 @@ namespace Quix { namespace Transport {
             throw SerializingException(ss.str());
         }
 
-        const auto& metadata = package->metaData();
         auto wrappedInPackage = TransportPackageValueCodec::serialize(
             std::shared_ptr<TransportPackageValue>(
                 new TransportPackageValue(
-                    std::shared_ptr<RawBytePackage>(
-                        new RawBytePackage(serializedData, metadata)
+                    std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(serializedData)
                     ),
                     codecBundle
                 )
             )
         );
 
-        return std::shared_ptr<RawBytePackage>(
-            new RawBytePackage(wrappedInPackage, metadata)
+        return std::shared_ptr<ByteArrayPackage>(
+            new ByteArrayPackage(wrappedInPackage)
         );
     }
  

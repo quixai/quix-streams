@@ -12,22 +12,25 @@
 
 class TestModelCodec: public Quix::Transport::AbstractCodec
 {
-
 public:
     TestModelCodec();
 
     Quix::Transport::ByteArray serialize(const std::shared_ptr<Quix::Transport::IPackage> obj) const;
 
     const std::shared_ptr<Quix::Transport::IPackage> deserialize(
-        const std::shared_ptr<Quix::Transport::RawBytePackage> rawPackage
+        const std::shared_ptr<Quix::Transport::ByteArrayPackage> rawPackage
     ) const;
 
 };
 
 class TestModel : public Quix::Transport::IModel
 {
+    char datastr_[10];
+    unsigned int number_;
 
 public:
+    TestModel();
+
     static TestModelCodec defaultCodec;
 
     const Quix::Transport::ModelKey modelKey() const

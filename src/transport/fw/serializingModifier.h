@@ -25,7 +25,7 @@ private:
      * @param codec The codec to use to serialize the package
      * @param codecBundle The model details to put inside the package value
      */
-    std::shared_ptr<RawBytePackage> serializePackage(
+    std::shared_ptr<ByteArrayPackage> serializePackage(
         std::shared_ptr<IPackage> package, 
         AbstractCodec* codec, 
         const CodecBundle& codecBundle
@@ -36,7 +36,7 @@ public:
     /**
      * The callback that is used when serialized package is available
      */
-    std::function<void(std::shared_ptr<RawBytePackage>)> onNewPackage;
+    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
 
     /**
      * Send a package, which the modifier attemptes to serialize. Serialization result is raised via <see cref="OnNewPackage"/>

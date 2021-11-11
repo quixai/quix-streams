@@ -19,7 +19,7 @@ class MockCodec : public AbstractCodec
         ByteArray serialize(const std::shared_ptr<IPackage> obj) const{
             throw SerializingException("UNREACHABLE");
         };
-        const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<RawBytePackage> package) const{
+        const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<ByteArrayPackage> package) const{
             throw DeserializingException("UNREACHABLE");
         };
 

@@ -15,16 +15,6 @@
 using namespace std;
 using namespace Quix::Transport;
 
-TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyMetadata)
-{
-    // Arrange
-    TestModel model;
-    Package<TestModel> package(model);
-
-    // Act
-    EXPECT_TRUE( package.metaData().empty() );
-}
-
 TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyTransportContext)
 {
     // Arrange

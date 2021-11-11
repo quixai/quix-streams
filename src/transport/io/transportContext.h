@@ -27,7 +27,7 @@ public:
      : 
         std::map<std::string, std::string>(input) 
     {
-        
+
     };
 
 };

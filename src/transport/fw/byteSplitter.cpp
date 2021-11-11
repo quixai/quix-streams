@@ -29,7 +29,7 @@ namespace Quix { namespace Transport {
     } 
 
 
-    void ByteSplitter::send(std::shared_ptr<RawBytePackage> originalPackage) 
+    void ByteSplitter::send(std::shared_ptr<ByteArrayPackage> originalPackage) 
     {
         const auto& originalValue = originalPackage->value(); 
         const size_t originalLen = originalValue.len();
@@ -48,9 +48,7 @@ namespace Quix { namespace Transport {
         uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
         uint8_t curIndex = 0;
 
-        auto& originalMetadata = originalPackage->metaData();
-
-        size_t startDataIndex = 0;       
+        size_t startDataIndex = 0;
         do
         {
             size_t toSendDataLength;
@@ -75,8 +73,8 @@ namespace Quix { namespace Transport {
             );
 
             onNewPackage(
-                std::shared_ptr<RawBytePackage>(
-                    new RawBytePackage(packet, originalMetadata)
+                std::shared_ptr<ByteArrayPackage>(
+                    new ByteArrayPackage(packet)
                 )
             );
 

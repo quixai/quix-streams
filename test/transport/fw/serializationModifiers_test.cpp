@@ -21,11 +21,8 @@ TEST(transportContextTest, WithSingleObject_ShouldCorrespondToSerializingModifie
 
     // Arrange
     TestModel testModel;
-    MetaData metaData;
-    metaData[std::string("Key1")] = std::string("Value1");
-    metaData[std::string("Key2")] = std::string("Value2");
 
-    shared_ptr<Package<TestModel>> packagePtr(new Package<TestModel>(testModel, metaData));
+    shared_ptr<Package<TestModel>> packagePtr(new Package<TestModel>(testModel));
     DeserializingModifier deserializingModifier;
     SerializingModifier serializingModifier;
 
@@ -59,10 +56,8 @@ TEST(transportContextTest, WithQuixByteArray_ShouldCorrespondToSerializingModifi
 
     // Arrange
     ByteArray testModel = ByteArray::initEmpty(100);
-    MetaData metaData;
-    metaData[std::string("Key2")] = std::string("Value2");
 
-    shared_ptr<Package<ByteArray>> packagePtr(new Package<ByteArray>(testModel, metaData));
+    shared_ptr<Package<ByteArray>> packagePtr(new Package<ByteArray>(testModel));
     DeserializingModifier deserializingModifier;
     SerializingModifier serializingModifier;
 
@@ -96,10 +91,8 @@ TEST(transportContextTest, WithStringArray_ShouldCorrespondToSerializingModifier
 
     // Arrange
     ByteArray testModel(string("TEST_STRING_12412315345"));
-    MetaData metaData;
-    metaData[std::string("Key1")] = std::string("Value1");
 
-    shared_ptr<Package<ByteArray>> packagePtr(new Package<ByteArray>(testModel, metaData));
+    shared_ptr<Package<ByteArray>> packagePtr(new Package<ByteArray>(testModel));
     DeserializingModifier deserializingModifier;
     SerializingModifier serializingModifier;
 

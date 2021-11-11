@@ -129,7 +129,7 @@ public:
      * 
      * The callback that is used when the split package is available
      */
-    std::function<void(std::shared_ptr<RawBytePackage>)> onNewPackage;
+    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
 
     /**
      * Get maximum message size of packet
@@ -141,7 +141,7 @@ public:
      * 
      * @param package The package to split
      */
-    void send(std::shared_ptr<RawBytePackage> package);
+    void send(std::shared_ptr<ByteArrayPackage> package);
 };
 
 } }

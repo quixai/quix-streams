@@ -15,7 +15,13 @@ namespace Quix { namespace Transport {
     class CodecRegistry{
 
         private:
-            CodecRegistry(){};
+            CodecRegistry();
+
+            /**
+             *  Initialize default codecs
+             */
+            void initializeCodecs();
+
 
             /**
              *  Map containing all registered codecs stored in vector with modelKey as key. 

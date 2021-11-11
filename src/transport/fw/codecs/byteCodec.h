@@ -19,17 +19,13 @@ namespace Quix { namespace Transport {
         public:
             ByteCodec();
             /**
-             *  Static initializer used for the registering codec into the CodecRegistry
-             */
-            static void initialize();
-            /**
              *  Serialize object into the ByteArray
              */
             virtual ByteArray serialize(const std::shared_ptr<IPackage> obj) const;
             /**
              *  Deserialize object from the ByteArray
              */
-            virtual const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<RawBytePackage> package) const;
+            virtual const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<ByteArrayPackage> package) const;
     };
 
 } }
