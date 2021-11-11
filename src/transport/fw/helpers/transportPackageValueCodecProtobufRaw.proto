@@ -5,6 +5,5 @@ package Quix.Transport;
 message TransportPackageValueCodecProtobufRaw {
     string codecId = 1;
     string modelKey = 2;
-    map<string, string> metadata = 3;
-    bytes data = 4;
+    bytes data = 3;
 }

@@ -19,16 +19,8 @@
 #endif
 // @@protoc_insertion_point(includes)
 
-namespace protobuf_transportPackageValueCodecProtobufRaw_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_transportPackageValueCodecProtobufRaw_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse;
-}  // namespace protobuf_transportPackageValueCodecProtobufRaw_2eproto
 namespace Quix {
 namespace Transport {
-class TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUseDefaultTypeInternal {
- public:
-  ::google::protobuf::internal::ExplicitlyConstructed<TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse>
-      _instance;
-} _TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse_default_instance_;
 class TransportPackageValueCodecProtobufRawDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<TransportPackageValueCodecProtobufRaw>
@@ -37,19 +29,6 @@ class TransportPackageValueCodecProtobufRawDefaultTypeInternal {
 }  // namespace Transport
 }  // namespace Quix
 namespace protobuf_transportPackageValueCodecProtobufRaw_2eproto {
-static void InitDefaultsTransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::Quix::Transport::_TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse_default_instance_;
-    new (ptr) ::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse();
-  }
-  ::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsTransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse}, {}};
-
 static void InitDefaultsTransportPackageValueCodecProtobufRaw() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -61,27 +40,16 @@ static void InitDefaultsTransportPackageValueCodecProtobufRaw() {
   ::Quix::Transport::TransportPackageValueCodecProtobufRaw::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_TransportPackageValueCodecProtobufRaw =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsTransportPackageValueCodecProtobufRaw}, {
-      &protobuf_transportPackageValueCodecProtobufRaw_2eproto::scc_info_TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse.base,}};
+::google::protobuf::internal::SCCInfo<0> scc_info_TransportPackageValueCodecProtobufRaw =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsTransportPackageValueCodecProtobufRaw}, {}};
 
 void InitDefaults() {
-  ::google::protobuf::internal::InitSCC(&scc_info_TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_TransportPackageValueCodecProtobufRaw.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[2];
+::google::protobuf::Metadata file_level_metadata[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse, key_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse, value_),
-  0,
-  1,
   ~0u,  // no _has_bits_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -89,16 +57,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, codecid_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, modelkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, metadata_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, data_),
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 7, sizeof(::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse)},
-  { 9, -1, sizeof(::Quix::Transport::TransportPackageValueCodecProtobufRaw)},
+  { 0, -1, sizeof(::Quix::Transport::TransportPackageValueCodecProtobufRaw)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::Quix::Transport::_TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::Quix::Transport::_TransportPackageValueCodecProtobufRaw_default_instance_),
 };
 
@@ -117,23 +82,19 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 2);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n+transportPackageValueCodecProtobufRaw."
-      "proto\022\016Quix.Transport\"\340\001\n%TransportPacka"
-      "geValueCodecProtobufRaw\022\017\n\007codecId\030\001 \001(\t"
-      "\022\020\n\010modelKey\030\002 \001(\t\022U\n\010metadata\030\003 \003(\0132C.Q"
-      "uix.Transport.TransportPackageValueCodec"
-      "ProtobufRaw.MetadataEntry\022\014\n\004data\030\004 \001(\014\032"
-      "/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002"
-      " \001(\t:\0028\001b\006proto3"
+      "proto\022\016Quix.Transport\"X\n%TransportPackag"
+      "eValueCodecProtobufRaw\022\017\n\007codecId\030\001 \001(\t\022"
+      "\020\n\010modelKey\030\002 \001(\t\022\014\n\004data\030\003 \001(\014b\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 296);
+      descriptor, 159);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "transportPackageValueCodecProtobufRaw.proto", &protobuf_RegisterTypes);
 }
@@ -154,29 +115,11 @@ namespace Transport {
 
 // ===================================================================
 
-TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse() {}
-TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse(::google::protobuf::Arena* arena) : SuperType(arena) {}
-void TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::MergeFrom(const TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse& other) {
-  MergeFromInternal(other);
-}
-::google::protobuf::Metadata TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::GetMetadata() const {
-  ::protobuf_transportPackageValueCodecProtobufRaw_2eproto::protobuf_AssignDescriptorsOnce();
-  return ::protobuf_transportPackageValueCodecProtobufRaw_2eproto::file_level_metadata[0];
-}
-void TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::MergeFrom(
-    const ::google::protobuf::Message& other) {
-  ::google::protobuf::Message::MergeFrom(other);
-}
-
-
-// ===================================================================
-
 void TransportPackageValueCodecProtobufRaw::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int TransportPackageValueCodecProtobufRaw::kCodecIdFieldNumber;
 const int TransportPackageValueCodecProtobufRaw::kModelKeyFieldNumber;
-const int TransportPackageValueCodecProtobufRaw::kMetadataFieldNumber;
 const int TransportPackageValueCodecProtobufRaw::kDataFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -191,7 +134,6 @@ TransportPackageValueCodecProtobufRaw::TransportPackageValueCodecProtobufRaw(con
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  metadata_.MergeFrom(from.metadata_);
   codecid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.codecid().size() > 0) {
     codecid_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.codecid_);
@@ -244,7 +186,6 @@ void TransportPackageValueCodecProtobufRaw::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  metadata_.Clear();
   codecid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   modelkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -293,37 +234,10 @@ bool TransportPackageValueCodecProtobufRaw::MergePartialFromCodedStream(
         break;
       }
 
-      // map<string, string> metadata = 3;
+      // bytes data = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
-          TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse::Parser< ::google::protobuf::internal::MapField<
-              TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse,
-              ::std::string, ::std::string,
-              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-              0 >,
-            ::google::protobuf::Map< ::std::string, ::std::string > > parser(&metadata_);
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-              input, &parser));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            parser.key().data(), static_cast<int>(parser.key().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Quix.Transport.TransportPackageValueCodecProtobufRaw.MetadataEntry.key"));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            parser.value().data(), static_cast<int>(parser.value().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Quix.Transport.TransportPackageValueCodecProtobufRaw.MetadataEntry.value"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // bytes data = 4;
-      case 4: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_data()));
         } else {
@@ -378,63 +292,10 @@ void TransportPackageValueCodecProtobufRaw::SerializeWithCachedSizes(
       2, this->modelkey(), output);
   }
 
-  // map<string, string> metadata = 3;
-  if (!this->metadata().empty()) {
-    typedef ::google::protobuf::Map< ::std::string, ::std::string >::const_pointer
-        ConstPtr;
-    typedef ConstPtr SortItem;
-    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
-    struct Utf8Check {
-      static void Check(ConstPtr p) {
-        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          p->first.data(), static_cast<int>(p->first.length()),
-          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-          "Quix.Transport.TransportPackageValueCodecProtobufRaw.MetadataEntry.key");
-        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          p->second.data(), static_cast<int>(p->second.length()),
-          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-          "Quix.Transport.TransportPackageValueCodecProtobufRaw.MetadataEntry.value");
-      }
-    };
-
-    if (output->IsSerializationDeterministic() &&
-        this->metadata().size() > 1) {
-      ::std::unique_ptr<SortItem[]> items(
-          new SortItem[this->metadata().size()]);
-      typedef ::google::protobuf::Map< ::std::string, ::std::string >::size_type size_type;
-      size_type n = 0;
-      for (::google::protobuf::Map< ::std::string, ::std::string >::const_iterator
-          it = this->metadata().begin();
-          it != this->metadata().end(); ++it, ++n) {
-        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
-      }
-      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
-      ::std::unique_ptr<TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse> entry;
-      for (size_type i = 0; i < n; i++) {
-        entry.reset(metadata_.NewEntryWrapper(
-            items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second));
-        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-            3, *entry, output);
-        Utf8Check::Check(items[static_cast<ptrdiff_t>(i)]);
-      }
-    } else {
-      ::std::unique_ptr<TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse> entry;
-      for (::google::protobuf::Map< ::std::string, ::std::string >::const_iterator
-          it = this->metadata().begin();
-          it != this->metadata().end(); ++it) {
-        entry.reset(metadata_.NewEntryWrapper(
-            it->first, it->second));
-        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-            3, *entry, output);
-        Utf8Check::Check(&*it);
-      }
-    }
-  }
-
-  // bytes data = 4;
+  // bytes data = 3;
   if (this->data().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      4, this->data(), output);
+      3, this->data(), output);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -473,68 +334,11 @@ void TransportPackageValueCodecProtobufRaw::SerializeWithCachedSizes(
         2, this->modelkey(), target);
   }
 
-  // map<string, string> metadata = 3;
-  if (!this->metadata().empty()) {
-    typedef ::google::protobuf::Map< ::std::string, ::std::string >::const_pointer
-        ConstPtr;
-    typedef ConstPtr SortItem;
-    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
-    struct Utf8Check {
-      static void Check(ConstPtr p) {
-        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          p->first.data(), static_cast<int>(p->first.length()),
-          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-          "Quix.Transport.TransportPackageValueCodecProtobufRaw.MetadataEntry.key");
-        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          p->second.data(), static_cast<int>(p->second.length()),
-          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-          "Quix.Transport.TransportPackageValueCodecProtobufRaw.MetadataEntry.value");
-      }
-    };
-
-    if (deterministic &&
-        this->metadata().size() > 1) {
-      ::std::unique_ptr<SortItem[]> items(
-          new SortItem[this->metadata().size()]);
-      typedef ::google::protobuf::Map< ::std::string, ::std::string >::size_type size_type;
-      size_type n = 0;
-      for (::google::protobuf::Map< ::std::string, ::std::string >::const_iterator
-          it = this->metadata().begin();
-          it != this->metadata().end(); ++it, ++n) {
-        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
-      }
-      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
-      ::std::unique_ptr<TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse> entry;
-      for (size_type i = 0; i < n; i++) {
-        entry.reset(metadata_.NewEntryWrapper(
-            items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second));
-        target = ::google::protobuf::internal::WireFormatLite::
-                   InternalWriteMessageNoVirtualToArray(
-                       3, *entry, deterministic, target);
-;
-        Utf8Check::Check(items[static_cast<ptrdiff_t>(i)]);
-      }
-    } else {
-      ::std::unique_ptr<TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse> entry;
-      for (::google::protobuf::Map< ::std::string, ::std::string >::const_iterator
-          it = this->metadata().begin();
-          it != this->metadata().end(); ++it) {
-        entry.reset(metadata_.NewEntryWrapper(
-            it->first, it->second));
-        target = ::google::protobuf::internal::WireFormatLite::
-                   InternalWriteMessageNoVirtualToArray(
-                       3, *entry, deterministic, target);
-;
-        Utf8Check::Check(&*it);
-      }
-    }
-  }
-
-  // bytes data = 4;
+  // bytes data = 3;
   if (this->data().size() > 0) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        4, this->data(), target);
+        3, this->data(), target);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -554,20 +358,6 @@ size_t TransportPackageValueCodecProtobufRaw::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         (::google::protobuf::internal::GetProto3PreserveUnknownsDefault()   ? _internal_metadata_.unknown_fields()   : _internal_metadata_.default_instance()));
   }
-  // map<string, string> metadata = 3;
-  total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->metadata_size());
-  {
-    ::std::unique_ptr<TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse> entry;
-    for (::google::protobuf::Map< ::std::string, ::std::string >::const_iterator
-        it = this->metadata().begin();
-        it != this->metadata().end(); ++it) {
-      entry.reset(metadata_.NewEntryWrapper(it->first, it->second));
-      total_size += ::google::protobuf::internal::WireFormatLite::
-          MessageSizeNoVirtual(*entry);
-    }
-  }
-
   // string codecId = 1;
   if (this->codecid().size() > 0) {
     total_size += 1 +
@@ -582,7 +372,7 @@ size_t TransportPackageValueCodecProtobufRaw::ByteSizeLong() const {
         this->modelkey());
   }
 
-  // bytes data = 4;
+  // bytes data = 3;
   if (this->data().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::BytesSize(
@@ -616,7 +406,6 @@ void TransportPackageValueCodecProtobufRaw::MergeFrom(const TransportPackageValu
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  metadata_.MergeFrom(from.metadata_);
   if (from.codecid().size() > 0) {
 
     codecid_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.codecid_);
@@ -655,7 +444,6 @@ void TransportPackageValueCodecProtobufRaw::Swap(TransportPackageValueCodecProto
 }
 void TransportPackageValueCodecProtobufRaw::InternalSwap(TransportPackageValueCodecProtobufRaw* other) {
   using std::swap;
-  metadata_.Swap(&other->metadata_);
   codecid_.Swap(&other->codecid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   modelkey_.Swap(&other->modelkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -676,9 +464,6 @@ void TransportPackageValueCodecProtobufRaw::InternalSwap(TransportPackageValueCo
 }  // namespace Quix
 namespace google {
 namespace protobuf {
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse* Arena::CreateMaybeMessage< ::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse >(Arena* arena) {
-  return Arena::CreateInternal< ::Quix::Transport::TransportPackageValueCodecProtobufRaw_MetadataEntry_DoNotUse >(arena);
-}
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::Quix::Transport::TransportPackageValueCodecProtobufRaw* Arena::CreateMaybeMessage< ::Quix::Transport::TransportPackageValueCodecProtobufRaw >(Arena* arena) {
   return Arena::CreateInternal< ::Quix::Transport::TransportPackageValueCodecProtobufRaw >(arena);
 }

@@ -15,7 +15,7 @@ namespace Quix { namespace Transport {
  */
 class TransportPackageValue
 {
-    std::shared_ptr<RawBytePackage> value_;
+    std::shared_ptr<ByteArrayPackage> value_;
     CodecBundle codecBundle_;
 
 public:
@@ -26,7 +26,7 @@ public:
      * @param codecBundle The codec details to use for de/serialization
      */
     TransportPackageValue(
-        std::shared_ptr<RawBytePackage> value, 
+        std::shared_ptr<ByteArrayPackage> value, 
         const CodecBundle& codecBundle
     )
      : 
@@ -44,7 +44,7 @@ public:
     /**
      * The value to de/serialize
      */
-    std::shared_ptr<RawBytePackage> value() const 
+    std::shared_ptr<ByteArrayPackage> value() const 
     {
         return value_;
     }
