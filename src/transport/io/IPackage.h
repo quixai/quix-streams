@@ -9,11 +9,24 @@
 
 namespace Quix { namespace Transport {
 
+/**
+ * Interface that defines the behavior of Package.
+ * 
+ * Package holds a value and its metadata with extra context relevant for transporting it.
+ */
 class IPackage{
+
 public:
+    /**
+     * Get ModelKey of the underlying wrapped value
+     */
     virtual const ModelKey modelKey() const = 0;
-    virtual const void* dataptr() const = 0;
+
+    /**
+     * The content meta data
+     */
     virtual const MetaData metaData() const = 0;
+
 };
 
 } }

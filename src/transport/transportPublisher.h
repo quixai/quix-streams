@@ -10,15 +10,28 @@
 
 namespace Quix { namespace Transport {
 
-class TransportPublisher : public ISubscriber
+/**
+ * A prebuilt pipeline, which serializes and optionally splits the provided packages then passes into the specified input.
+ */
+class TransportPublisher : public IPublisher
 {
 
 private:
   SerializingModifier serializer;
 
 public:
+  /**
+   * Initializes a new instance of TransportPublisher with the specified ISubscriber
+   *
+   * @param publisher The publisher to pass the serialized packages into
+   * @param byteSplitter The optional byte splitter to use
+   */
   TransportPublisher(IPublisher* input, ByteSplitter* byteSplitter = nullptr);
-  void send(std::shared_ptr<IPackage> package);
+
+  /**
+   * Send a package, which the TransportPublisher serializes and optionally splits then passes to the provided IPublisher
+   */
+  void send(std::shared_ptr<IPackage> package) const;
 };
 
 } }

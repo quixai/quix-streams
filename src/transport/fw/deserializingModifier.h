@@ -13,16 +13,37 @@
 
 namespace Quix { namespace Transport {
 
-    /**
-     * Modifier, which serializes the package into bytes
-     */
+/**
+ * Modifier, which deserializes the package into the model described in the package.
+ */
+class DeserializingModifier : public IPublisher, ISubscriber{
 
-    class DeserializingModifier : public IPublisher, ISubscriber{
-        private:
-            AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
-        public:
-            std::function<void(std::shared_ptr<IPackage>)> onNewPackage;
-            void send(std::shared_ptr<IPackage> package) const;
-    };
+private:
+    /**
+     * Retrieves the codec from the provided package value
+     * 
+     * @param transportPackageValue package to deserialize
+     * 
+     * @return Pointer to the codec from the package value
+     */
+    AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
+
+public:
+
+    /**
+     * The callback that is used when deserialized package is available
+     */
+    std::function<void(std::shared_ptr<IPackage>)> onNewPackage;
+
+    /**
+     * Send a package, which the modifier attemptes to deserialize. Deserialization results is raised via onNewPackage
+     * 
+     * @param package The package to deserialize
+     * 
+     * @throw When deserialization fails due to unknown codec or invalid data for codec
+     */
+    void send(std::shared_ptr<IPackage> package) const;
+
+};
 
 } }

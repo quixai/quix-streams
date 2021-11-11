@@ -5,10 +5,31 @@
 
 namespace Quix { namespace Transport {
 
+/**
+ * Context holder for package when transporting through the pipeline
+ */
 class TransportContext : public std::map<std::string, std::string>{
+
 public:
+    /**
+     * Initializes a new instance of TransportContext that is empty
+     */
     inline TransportContext() = default;
-    inline TransportContext(const std::map<std::string, std::string>& input) : std::map<std::string, std::string>(input) {};
+
+    /**
+     * Initializes a new instance of TransportContext using the provided map
+     * 
+     * @param input The map to use as base
+     */
+    inline TransportContext(
+        const std::map<std::string, std::string>& input
+    )
+     : 
+        std::map<std::string, std::string>(input) 
+    {
+        
+    };
+
 };
 
 } }

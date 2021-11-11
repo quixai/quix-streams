@@ -9,6 +9,9 @@
 
 namespace Quix { namespace Transport {
 
+    /**
+     * Codec registry. If multiple codecs are registered for the same ModelKey, the last one registered will be used
+     */
     class CodecRegistry{
 
         private:

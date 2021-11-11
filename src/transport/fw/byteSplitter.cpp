@@ -61,7 +61,7 @@ namespace Quix { namespace Transport {
             ByteArray packet = ByteArray::prependHeader(
                 (uint8_t*)&packetHeader, //adds pointer into the packetHeader
                 sizeof(ByteSplitProtocolHeader),    //header length
-                ByteArray(originalValue, startDataIndex, toSendDataLength) //rest of package is subset of original message
+                ByteArray(originalValue, toSendDataLength, startDataIndex) //rest of package is subset of original message
             );
 
             onNewPackage(

@@ -9,6 +9,11 @@
 
 namespace Quix { namespace Transport {
 
+/**
+ * Protobuf Codec used to serialize TransportPackageValue
+ * Utilizes the Protocol buffers to achieve optimal speed while 
+ * keeping the platform independence
+*/
 class TransportPackageValueCodecProtobuf
 {
 public:

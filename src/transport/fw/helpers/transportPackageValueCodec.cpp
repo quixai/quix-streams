@@ -12,6 +12,7 @@
 #include "./transportPackageValueCodecProtobufRaw.pb.h"
 
 namespace Quix { namespace Transport {
+
     ByteArray TransportPackageValueCodec::serialize(std::shared_ptr<TransportPackageValue> package)
     {
         return TransportPackageValueCodecProtobuf::serialize(package);
@@ -24,12 +25,12 @@ namespace Quix { namespace Transport {
         }
         switch(data.begin()[0]){
             case TransportPackageValueCodec::PROTOCOL_ID_PROTOBUF:
-                //TODO: backwards Csharp compatibility
+                //Protobuf codec
                 return TransportPackageValueCodecProtobuf::deserialize(data);
                 break;                    
             case TransportPackageValueCodec::PROTOCOL_ID_BYTE:
             case TransportPackageValueCodec::PROTOCOL_ID_JSON:
-                //TODO: backwards Csharp compatibility
+                //TODO: implement backwards Csharp compatibility
             default:
                 std::stringstream ss;
                 ss << "Failed to Deserialize TransportPackageValueCodec. Unknown codec '" << data.begin()[0] << "'.";
