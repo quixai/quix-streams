@@ -5,7 +5,7 @@
 
 #include "../../io/byteArray.h"
 #include "../codecs/codecBundle.h"
-#include "../../io/Package.h"
+#include "../../io/package.h"
 #include "../../io/IPackage.h"
 
 namespace Quix { namespace Transport {
