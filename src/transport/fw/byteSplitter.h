@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "../io/Package.h"
+#include "../io/package.h"
 #include "../io/IPublisher.h"
 
 namespace Quix { namespace Transport {

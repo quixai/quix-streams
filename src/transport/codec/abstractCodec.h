@@ -11,7 +11,7 @@
 
 #include "./codecId.h"
 #include "../io/IPackage.h"
-#include "../io/Package.h"
+#include "../io/package.h"
 
 
 namespace Quix { namespace Transport {

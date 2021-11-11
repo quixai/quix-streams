@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "transport/io/TransportContext.h"
-#include "transport/io/Package.h"
+#include "transport/io/transportContext.h"
+#include "transport/io/package.h"
 #include "transport/fw/deserializingModifier.h"
 #include "transport/fw/serializingModifier.h"
 

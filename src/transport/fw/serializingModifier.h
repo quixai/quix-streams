@@ -4,7 +4,7 @@
 #include <memory>
 #include <functional>
 
-#include "../io/Package.h"
+#include "../io/package.h"
 #include "../io/IPackage.h"
 #include "../codec/abstractCodec.h"
 #include "./codecs/codecBundle.h"

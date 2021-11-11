@@ -5,7 +5,7 @@
 
 #include "transport/codec/abstractCodec.h"
 #include "transport/codec/codecId.h"
-#include "transport/io/Package.h"
+#include "transport/io/package.h"
 #include "transport/io/IModel.h"
 #include "transport/fw/modelKey.h"
 #include "transport/registry/codecRegistry.h"
