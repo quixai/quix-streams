@@ -51,7 +51,8 @@ TEST(transportPackageValueCodec, simpleTest)
 
 TEST(transportPackageValueCodec, bigger)
 {
-    for(int i = 100; i < 20*100; i+=100){
+    for(int i = 100; i < 20*100; i+=100)
+    {
         testDeserialization(i, TransportPackageValueCodec::serialize);
     }
 }
