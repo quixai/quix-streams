@@ -6,10 +6,16 @@ set(SOURCES ${TEST_SOURCES})
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
+set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/include")
+
+
+# include_directories(${protobufIncludeDir})
+
 
 add_executable(${BINARY} ${TEST_SOURCES})
 
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 
 
-target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib gtest)
+target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib gtest protobuf)
+target_include_directories(${BINARY} INTERFACE "${protobufIncludeDir}")
