@@ -21,12 +21,21 @@ macro(configure_protobuf VERSION)
     set(protobufPackageUrl "https://github.com/google/protobuf/releases/download/v${VERSION}/${protobufPackage}")
     set(protobufExternal protobuf-external)
 
-    ExternalProject_Add(${protobufExternal}
-        URL "${protobufPackageUrl}"
-        CONFIGURE_COMMAND
-            <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-        BUILD_COMMAND ${MAKE}
-    )
+    IF (WIN32)
+        ExternalProject_Add(${protobufExternal}
+            URL "${protobufPackageUrl}"
+            CONFIGURE_COMMAND
+                <SOURCE_DIR>/BUILD --prefix=<INSTALL_DIR>
+            BUILD_COMMAND ${MAKE}
+        )
+    ELSE()
+        ExternalProject_Add(${protobufExternal}
+            URL "${protobufPackageUrl}"
+            CONFIGURE_COMMAND
+                <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+            BUILD_COMMAND ${MAKE}
+        )
+    ENDIF()
 
     set(protobufBinaryDir  "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/bin")
     set(protobufLibraryDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/lib")
