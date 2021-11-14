@@ -25,7 +25,7 @@ macro(configure_protobuf VERSION)
         ExternalProject_Add(${protobufExternal}
             URL "${protobufPackageUrl}"
             CONFIGURE_COMMAND
-                <SOURCE_DIR>/BUILD --prefix=<INSTALL_DIR>
+                ${CMAKE_COMMAND}
             BUILD_COMMAND ${MAKE}
         )
     ELSE()
