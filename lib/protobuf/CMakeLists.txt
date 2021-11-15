@@ -41,10 +41,12 @@ macro(configure_protobuf VERSION)
             #     cd cmake && ${CMAKE_COMMAND} -DBUILD_TESTING=OFF .
             # CONFIGURE_COMMAND
             #     ${CMAKE_COMMAND} --build cmake -DBUILD_TESTING=OFF
-            CONFIGURE_COMMAND
-                ${CMAKE_COMMAND} <SOURCE_DIR>/cmake --verbose --help
+            # CONFIGURE_COMMAND
+                # ${CMAKE_COMMAND} <SOURCE_DIR>/cmake
             # BUILD_COMMAND cd cmake && ${MAKE}
-            BUILD_COMMAND ${MAKE}
+            # BUILD_COMMAND ${MAKE}
+            BUILD_COMMAND
+                ${CMAKE_COMMAND} --build <SOURCE_DIR>/cmake
         )
     ELSE()
         ExternalProject_Add(${protobufExternal}
