@@ -21,11 +21,21 @@ macro(configure_protobuf VERSION)
     set(protobufPackageUrl "https://github.com/google/protobuf/releases/download/v${VERSION}/${protobufPackage}")
     set(protobufExternal protobuf-external)
 
-    IF (WIN32)
+    IF (WIN32) 
+        # ExternalProject_Add(${protobufExternal}
+        #     PREFIX cmake
+        #     GIT_REPOSITORY "https://github.com/google/protobuf.git"
+        #     GIT_TAG "v2.6.1"
+        #     CONFIGURE_COMMAND "devenv ${CMAKE_CURRENT_BINARY_DIR}\\protobuf\\src\\vsprojects\\protobuf.sln /Upgrade"
+        #     BUILD_COMMAND "msbuild ${CMAKE_CURRENT_BINARY_DIR}\\protobuf\\src\\vsprojects\\protobuf.sln"
+        #     INSTALL_COMMAND " "
+        #     TEST_COMMAND " "
+        # )
         ExternalProject_Add(${protobufExternal}
+            PREFIX cmake
             URL "${protobufPackageUrl}"
             CONFIGURE_COMMAND
-                ${CMAKE_COMMAND}
+                ${CMAKE_COMMAND} ..
             BUILD_COMMAND ${MAKE}
         )
     ELSE()
