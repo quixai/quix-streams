@@ -42,7 +42,7 @@ macro(configure_protobuf VERSION)
             # CONFIGURE_COMMAND
             #     ${CMAKE_COMMAND} --build cmake -DBUILD_TESTING=OFF
             CONFIGURE_COMMAND
-                ${CMAKE_COMMAND} cmake --help
+                ${CMAKE_COMMAND} cmake --verbose --help
             # BUILD_COMMAND cd cmake && ${MAKE}
             BUILD_COMMAND ${MAKE}
         )
