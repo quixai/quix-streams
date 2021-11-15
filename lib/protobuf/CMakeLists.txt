@@ -52,7 +52,7 @@ macro(configure_protobuf VERSION)
         ExternalProject_Add(${protobufExternal}
             URL "${protobufPackageUrl}"
             CONFIGURE_COMMAND
-                <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+                <SOURCE_DIR>/configure -Dprotobuf_BUILD_TESTS=OFF --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${MAKE}
         )
     ENDIF()
