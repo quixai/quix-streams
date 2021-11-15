@@ -36,7 +36,7 @@ macro(configure_protobuf VERSION)
             URL "${protobufPackageUrl}"
             SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}\\cmake"
             CONFIGURE_COMMAND
-                ${CMAKE_COMMAND} ..
+                ${CMAKE_COMMAND} -DBUILD_TESTING=OFF ..
             BUILD_COMMAND ${MAKE}
         )
     ELSE()
