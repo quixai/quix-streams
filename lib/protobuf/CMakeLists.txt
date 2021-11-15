@@ -34,7 +34,7 @@ macro(configure_protobuf VERSION)
         ExternalProject_Add(${protobufExternal}
             PREFIX cmake
             URL "${protobufPackageUrl}"
-            SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake"
+            # SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake"
             # SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake" --build . --config Release
             # CONFIGURE_COMMAND
             #     ${CMAKE_COMMAND} --build cmake --config Release -DBUILD_TESTING=OFF ..
