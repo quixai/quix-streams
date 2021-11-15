@@ -41,10 +41,11 @@ macro(configure_protobuf VERSION)
             #     cd cmake && ${CMAKE_COMMAND} -DBUILD_TESTING=OFF .
             # CONFIGURE_COMMAND
             #     ${CMAKE_COMMAND} --build cmake -DBUILD_TESTING=OFF
-            CONFIGURE_COMMAND
+            CONFIGURE_COMMAND 
                 ${CMAKE_COMMAND} -Dprotobuf_BUILD_TESTS=OFF <SOURCE_DIR>/cmake
             # BUILD_COMMAND cd cmake && ${MAKE}
             BUILD_COMMAND ${MAKE}
+            INSTALL_COMMAND ""
             # BUILD_COMMAND
             #     ${CMAKE_COMMAND} --build <SOURCE_DIR>/cmake
         )
@@ -52,8 +53,9 @@ macro(configure_protobuf VERSION)
         ExternalProject_Add(${protobufExternal}
             URL "${protobufPackageUrl}"
             CONFIGURE_COMMAND
-                <SOURCE_DIR>/configure -Dprotobuf_BUILD_TESTS=OFF --prefix=<INSTALL_DIR>
+                <SOURCE_DIR>/configure --disable-build-tests --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${MAKE}
+            INSTALL_COMMAND ""
         )
     ENDIF()
 
