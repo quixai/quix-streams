@@ -55,7 +55,6 @@ macro(configure_protobuf VERSION)
             CONFIGURE_COMMAND
                 <SOURCE_DIR>/configure --disable-build-tests --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${MAKE}
-            INSTALL_COMMAND ""
         )
     ENDIF()
 
