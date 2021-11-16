@@ -33,7 +33,7 @@ macro(configure_protobuf VERSION)
         ExternalProject_Add(${protobufExternal}
             URL "${protobufPackageUrl}"
             CONFIGURE_COMMAND
-                <SOURCE_DIR>/configure -DDEBUG --disable-build-tests --prefix=<INSTALL_DIR>
+                <SOURCE_DIR>/configure --disable-build-tests --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${MAKE}
         )
     ENDIF()
