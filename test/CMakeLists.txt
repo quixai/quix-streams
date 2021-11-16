@@ -7,16 +7,12 @@ set(SOURCES ${TEST_SOURCES})
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 IF (WIN32) 
-    set(PROTOBUF_USE_DLLS OFF)
     set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/src/protobuf-external/src")
 ELSE()
     set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/include")
 ENDIF()
 
 
-# include_directories(${protobufIncludeDir})
-
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 add_executable(${BINARY} ${TEST_SOURCES})
 
 add_test(NAME ${BINARY} COMMAND ${BINARY})

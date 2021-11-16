@@ -33,13 +33,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 20,
+				"line" : 16,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 25,
+				"line" : 21,
 				"parent" : 0
 			},
 			{
@@ -48,13 +48,13 @@
 			{
 				"command" : 3,
 				"file" : 1,
-				"line" : 155,
+				"line" : 100,
 				"parent" : 3
 			},
 			{
 				"command" : 2,
 				"file" : 1,
-				"line" : 117,
+				"line" : 71,
 				"parent" : 4
 			},
 			{
@@ -129,12 +129,12 @@
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 2,
-			"id" : "gtest::@1ea2dfc0605fe3ab2a3f"
-		},
-		{
 			"backtrace" : 5,
 			"id" : "protobuf-external::@13ad6ad03a85683ed6f7"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "gtest::@1ea2dfc0605fe3ab2a3f"
 		},
 		{
 			"backtrace" : 2,
@@ -165,7 +165,7 @@
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "C:\\Users\\Ales-QUIX\\Downloads\\libprotobuf-static-3.19.1-h7755175_0.tar\\Library\\lib\\libprotobuf-lite.lib",
+				"fragment" : "lib\\protobuf\\protobuf-external-prefix\\src\\protobuf-external-build\\Release\\libprotobuf-lite.lib",
 				"role" : "libraries"
 			},
 			{
