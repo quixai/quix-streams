@@ -45,7 +45,7 @@ macro(configure_protobuf VERSION)
         set(protobufLibraryDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/src/protobuf-external-build/Release")
         set(protobufCompiler   "${protobufBinaryDir}/protoc.exe")
  
-        set(protobufLibrary    "${protobufLibraryDir}/libprotobuf-lite.lib")
+        set(protobufLibrary    "${protobufLibraryDir}/libprotobuf.lib")
 
         set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/src/protobuf-external/src")
     ELSE()
