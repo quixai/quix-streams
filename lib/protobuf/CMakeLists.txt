@@ -41,8 +41,10 @@ macro(configure_protobuf VERSION)
             #     cd cmake && ${CMAKE_COMMAND} -DBUILD_TESTING=OFF .
             # CONFIGURE_COMMAND
             #     ${CMAKE_COMMAND} --build cmake -DBUILD_TESTING=OFF
+            # CONFIGURE_COMMAND 
+            #     ${CMAKE_COMMAND} -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPROTOBUF_USE_DLLS=ON  -Dprotobuf_BUILD_EXAMPLES=OFF -DMSVC_STATIC_RUNTIME=ON <SOURCE_DIR>/cmake
             CONFIGURE_COMMAND 
-                ${CMAKE_COMMAND} -Dprotobuf_BUILD_TESTS=OFF <SOURCE_DIR>/cmake
+                ${CMAKE_COMMAND} -Dprotobuf_BUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DMSVC_STATIC_RUNTIME=ON <SOURCE_DIR>/cmake
             # BUILD_COMMAND cd cmake && ${MAKE}
             BUILD_COMMAND ${MAKE}
             INSTALL_COMMAND ""
@@ -58,17 +60,36 @@ macro(configure_protobuf VERSION)
         )
     ENDIF()
 
-    set(protobufBinaryDir  "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/bin")
-    set(protobufLibraryDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/lib")
-    set(protobufCompiler   "${protobufBinaryDir}/protoc")
- 
-    if(MY_PROJECT_SHARED_LIBS)
-        set(protobufLibrary "${protobufLibraryDir}/libprotobuf.so")
-    else()
-        set(protobufLibrary "${protobufLibraryDir}/libprotobuf.a")
-    endif()
 
-    set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/include")
+    IF (WIN32) 
+
+        set(protobufBinaryDir  "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/src/protobuf-external-build/Release")
+        set(protobufLibraryDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/src/protobuf-external-build/Release")
+        set(protobufCompiler   "${protobufBinaryDir}/protoc.exe")
+ 
+        if(MY_PROJECT_SHARED_LIBS)
+            set(protobufLibrary "${protobufLibraryDir}/libprotobuf.so")
+        else()
+            set(protobufLibrary "${protobufLibraryDir}/libprotobuf.lib")
+        endif()
+
+        set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/src/protobuf-external/src")
+    ELSE()
+
+        set(protobufBinaryDir  "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/bin")
+        set(protobufLibraryDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/lib")
+        set(protobufCompiler   "${protobufBinaryDir}/protoc")
+ 
+        if(MY_PROJECT_SHARED_LIBS)
+            set(protobufLibrary "${protobufLibraryDir}/libprotobuf.so")
+        else()
+            set(protobufLibrary "${protobufLibraryDir}/libprotobuf.a")
+        endif()
+
+        set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/include")
+    ENDIF()
+
+    # set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/${protobufExternal}-prefix/include")
 
     if(MY_PROJECT_SHARED_LIBS)
         set(libType SHARED)

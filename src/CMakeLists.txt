@@ -6,7 +6,12 @@ set(SOURCES ${SOURCES})
 
 include_directories(${protobufIncludeDir})
 
-set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/include")
+IF (WIN32) 
+    set(PROTOBUF_USE_DLLS OFF)
+    set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/src/protobuf-external/src")
+ELSE()
+    set(protobufIncludeDir "${CMAKE_BINARY_DIR}/lib/protobuf/protobuf-external-prefix/include")
+ENDIF()
 
 
 message(STATUS "PROTOBUF INCLUDE DIR ${protobufIncludeDir}")
