@@ -1,0 +1,21 @@
+# ninja log v5
+1326	1382	6587331543638209	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build	5e70ee0bcae7cead
+0	189	6587331531703580	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-mkdir	4f8f62ec8d7c921
+1160	1215	6587331541968208	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update	d3e7e8335a228472
+0	189	6587331531703580	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-mkdir	4f8f62ec8d7c921
+1215	1269	6587331542508207	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch	2f4f677c3d87ddd8
+190	1160	6587331541406547	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-download	7e5d8eb127271cf
+190	1160	6587331541406547	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-download	7e5d8eb127271cf
+1160	1215	6587331541968208	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update	d3e7e8335a228472
+1215	1269	6587331542508207	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch	2f4f677c3d87ddd8
+1270	1326	6587331543068208	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure	63718165f75894af
+1496	1576	6587331545568208	CMakeFiles/googletest-populate-complete	772c138ec425391
+1270	1326	6587331543068208	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure	63718165f75894af
+1496	1576	6587331545568208	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-done	772c138ec425391
+1326	1382	6587331543638209	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build	5e70ee0bcae7cead
+1383	1439	6587331544208209	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install	a6c0073c0ae7d74b
+1383	1439	6587331544208209	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install	a6c0073c0ae7d74b
+1440	1495	6587331544768223	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test	fd1d05c19bc1af0b
+1440	1495	6587331544768223	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test	fd1d05c19bc1af0b
+1496	1576	6587331545568208	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/CMakeFiles/googletest-populate-complete	772c138ec425391
+1496	1576	6587331545568208	C:/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/out/build/x64-Debug/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-done	772c138ec425391

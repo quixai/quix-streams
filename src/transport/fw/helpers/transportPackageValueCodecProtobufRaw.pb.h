@@ -26,11 +26,9 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
-#include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 #define PROTOBUF_INTERNAL_EXPORT_transportPackageValueCodecProtobufRaw_2eproto
@@ -52,7 +50,6 @@ struct TableStruct_transportPackageValueCodecProtobufRaw_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const uint32_t offsets[];
 };
-extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_transportPackageValueCodecProtobufRaw_2eproto;
 namespace Quix {
 namespace Transport {
 class TransportPackageValueCodecProtobufRaw;
@@ -69,7 +66,7 @@ namespace Transport {
 // ===================================================================
 
 class TransportPackageValueCodecProtobufRaw final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Quix.Transport.TransportPackageValueCodecProtobufRaw) */ {
+    public ::PROTOBUF_NAMESPACE_ID::MessageLite /* @@protoc_insertion_point(class_definition:Quix.Transport.TransportPackageValueCodecProtobufRaw) */ {
  public:
   inline TransportPackageValueCodecProtobufRaw() : TransportPackageValueCodecProtobufRaw(nullptr) {}
   ~TransportPackageValueCodecProtobufRaw() override;
@@ -99,15 +96,6 @@ class TransportPackageValueCodecProtobufRaw final :
     return *this;
   }
 
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
   static const TransportPackageValueCodecProtobufRaw& default_instance() {
     return *internal_default_instance();
   }
@@ -145,13 +133,9 @@ class TransportPackageValueCodecProtobufRaw final :
   TransportPackageValueCodecProtobufRaw* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<TransportPackageValueCodecProtobufRaw>(arena);
   }
-  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CheckTypeAndMergeFrom(const ::PROTOBUF_NAMESPACE_ID::MessageLite& from)  final;
   void CopyFrom(const TransportPackageValueCodecProtobufRaw& from);
-  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const TransportPackageValueCodecProtobufRaw& from);
-  private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
-  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -164,7 +148,7 @@ class TransportPackageValueCodecProtobufRaw final :
   private:
   void SharedCtor();
   void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const;
   void InternalSwap(TransportPackageValueCodecProtobufRaw* other);
 
   private:
@@ -180,10 +164,7 @@ class TransportPackageValueCodecProtobufRaw final :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  static const ClassData _class_data_;
-  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  std::string GetTypeName() const final;
 
   // nested types ----------------------------------------------------
 

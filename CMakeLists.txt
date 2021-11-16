@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(QuixStreaming)
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")

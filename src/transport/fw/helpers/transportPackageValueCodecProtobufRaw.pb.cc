@@ -8,10 +8,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/wire_format.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 
@@ -34,48 +31,6 @@ struct TransportPackageValueCodecProtobufRawDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT TransportPackageValueCodecProtobufRawDefaultTypeInternal _TransportPackageValueCodecProtobufRaw_default_instance_;
 }  // namespace Transport
 }  // namespace Quix
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_transportPackageValueCodecProtobufRaw_2eproto[1];
-static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_transportPackageValueCodecProtobufRaw_2eproto = nullptr;
-static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_transportPackageValueCodecProtobufRaw_2eproto = nullptr;
-
-const uint32_t TableStruct_transportPackageValueCodecProtobufRaw_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, codecid_),
-  PROTOBUF_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, modelkey_),
-  PROTOBUF_FIELD_OFFSET(::Quix::Transport::TransportPackageValueCodecProtobufRaw, data_),
-};
-static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, -1, sizeof(::Quix::Transport::TransportPackageValueCodecProtobufRaw)},
-};
-
-static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Quix::Transport::_TransportPackageValueCodecProtobufRaw_default_instance_),
-};
-
-const char descriptor_table_protodef_transportPackageValueCodecProtobufRaw_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n+transportPackageValueCodecProtobufRaw."
-  "proto\022\016Quix.Transport\"X\n%TransportPackag"
-  "eValueCodecProtobufRaw\022\017\n\007codecId\030\001 \001(\t\022"
-  "\020\n\010modelKey\030\002 \001(\t\022\014\n\004data\030\003 \001(\014b\006proto3"
-  ;
-static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_transportPackageValueCodecProtobufRaw_2eproto_once;
-const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_transportPackageValueCodecProtobufRaw_2eproto = {
-  false, false, 159, descriptor_table_protodef_transportPackageValueCodecProtobufRaw_2eproto, "transportPackageValueCodecProtobufRaw.proto", 
-  &descriptor_table_transportPackageValueCodecProtobufRaw_2eproto_once, nullptr, 0, 1,
-  schemas, file_default_instances, TableStruct_transportPackageValueCodecProtobufRaw_2eproto::offsets,
-  file_level_metadata_transportPackageValueCodecProtobufRaw_2eproto, file_level_enum_descriptors_transportPackageValueCodecProtobufRaw_2eproto, file_level_service_descriptors_transportPackageValueCodecProtobufRaw_2eproto,
-};
-PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_transportPackageValueCodecProtobufRaw_2eproto_getter() {
-  return &descriptor_table_transportPackageValueCodecProtobufRaw_2eproto;
-}
-
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_transportPackageValueCodecProtobufRaw_2eproto(&descriptor_table_transportPackageValueCodecProtobufRaw_2eproto);
 namespace Quix {
 namespace Transport {
 
@@ -87,7 +42,7 @@ class TransportPackageValueCodecProtobufRaw::_Internal {
 
 TransportPackageValueCodecProtobufRaw::TransportPackageValueCodecProtobufRaw(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  : ::PROTOBUF_NAMESPACE_ID::MessageLite(arena, is_message_owned) {
   SharedCtor();
   if (!is_message_owned) {
     RegisterArenaDtor(arena);
@@ -95,8 +50,8 @@ TransportPackageValueCodecProtobufRaw::TransportPackageValueCodecProtobufRaw(::P
   // @@protoc_insertion_point(arena_constructor:Quix.Transport.TransportPackageValueCodecProtobufRaw)
 }
 TransportPackageValueCodecProtobufRaw::TransportPackageValueCodecProtobufRaw(const TransportPackageValueCodecProtobufRaw& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  : ::PROTOBUF_NAMESPACE_ID::MessageLite() {
+  _internal_metadata_.MergeFrom<std::string>(from._internal_metadata_);
   codecid_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     codecid_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
@@ -143,7 +98,7 @@ TransportPackageValueCodecProtobufRaw::~TransportPackageValueCodecProtobufRaw() 
   // @@protoc_insertion_point(destructor:Quix.Transport.TransportPackageValueCodecProtobufRaw)
   if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
-  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Delete<std::string>();
 }
 
 inline void TransportPackageValueCodecProtobufRaw::SharedDtor() {
@@ -172,7 +127,7 @@ void TransportPackageValueCodecProtobufRaw::Clear() {
   codecid_.ClearToEmpty();
   modelkey_.ClearToEmpty();
   data_.ClearToEmpty();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear<std::string>();
 }
 
 const char* TransportPackageValueCodecProtobufRaw::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
@@ -186,7 +141,7 @@ const char* TransportPackageValueCodecProtobufRaw::_InternalParse(const char* pt
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
           auto str = _internal_mutable_codecid();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "Quix.Transport.TransportPackageValueCodecProtobufRaw.codecId"));
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, nullptr));
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -196,7 +151,7 @@ const char* TransportPackageValueCodecProtobufRaw::_InternalParse(const char* pt
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
           auto str = _internal_mutable_modelkey();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "Quix.Transport.TransportPackageValueCodecProtobufRaw.modelKey"));
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, nullptr));
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -221,7 +176,7 @@ const char* TransportPackageValueCodecProtobufRaw::_InternalParse(const char* pt
     }
     ptr = UnknownFieldParse(
         tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        _internal_metadata_.mutable_unknown_fields<std::string>(),
         ptr, ctx);
     CHK_(ptr != nullptr);
   }  // while
@@ -266,8 +221,8 @@ uint8_t* TransportPackageValueCodecProtobufRaw::_InternalSerialize(
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+    target = stream->WriteRaw(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).data(),
+        static_cast<int>(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size()), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:Quix.Transport.TransportPackageValueCodecProtobufRaw)
   return target;
@@ -302,21 +257,19 @@ size_t TransportPackageValueCodecProtobufRaw::ByteSizeLong() const {
         this->_internal_data());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    total_size += _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size();
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData TransportPackageValueCodecProtobufRaw::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    TransportPackageValueCodecProtobufRaw::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*TransportPackageValueCodecProtobufRaw::GetClassData() const { return &_class_data_; }
-
-void TransportPackageValueCodecProtobufRaw::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<TransportPackageValueCodecProtobufRaw *>(to)->MergeFrom(
-      static_cast<const TransportPackageValueCodecProtobufRaw &>(from));
+void TransportPackageValueCodecProtobufRaw::CheckTypeAndMergeFrom(
+    const ::PROTOBUF_NAMESPACE_ID::MessageLite& from) {
+  MergeFrom(*::PROTOBUF_NAMESPACE_ID::internal::DownCast<const TransportPackageValueCodecProtobufRaw*>(
+      &from));
 }
-
 
 void TransportPackageValueCodecProtobufRaw::MergeFrom(const TransportPackageValueCodecProtobufRaw& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:Quix.Transport.TransportPackageValueCodecProtobufRaw)
@@ -333,7 +286,7 @@ void TransportPackageValueCodecProtobufRaw::MergeFrom(const TransportPackageValu
   if (!from._internal_data().empty()) {
     _internal_set_data(from._internal_data());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<std::string>(from._internal_metadata_);
 }
 
 void TransportPackageValueCodecProtobufRaw::CopyFrom(const TransportPackageValueCodecProtobufRaw& from) {
@@ -369,11 +322,10 @@ void TransportPackageValueCodecProtobufRaw::InternalSwap(TransportPackageValueCo
   );
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata TransportPackageValueCodecProtobufRaw::GetMetadata() const {
-  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
-      &descriptor_table_transportPackageValueCodecProtobufRaw_2eproto_getter, &descriptor_table_transportPackageValueCodecProtobufRaw_2eproto_once,
-      file_level_metadata_transportPackageValueCodecProtobufRaw_2eproto[0]);
+std::string TransportPackageValueCodecProtobufRaw::GetTypeName() const {
+  return "Quix.Transport.TransportPackageValueCodecProtobufRaw";
 }
+
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace Transport

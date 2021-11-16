@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\lib",
+    "\\lib\\googletest",
+    "\\lib\\out",
+    "\\lib\\out\\build",
+    "\\lib\\protobuf",
+    "\\src",
+    "\\src\\transport",
+    "\\test",
+    "\\test\\transport"
+  ],
+  "SelectedNode": "\\.ci\\windows\\ci-pipeline.yml",
+  "PreviewInSolutionExplorer": false
+}
