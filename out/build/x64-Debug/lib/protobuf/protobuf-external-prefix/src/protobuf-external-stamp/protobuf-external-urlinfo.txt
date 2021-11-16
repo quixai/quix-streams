@@ -1,3 +1,0 @@
-repository='external project URL'
-module='https://github.com/google/protobuf/releases/download/v3.19.1/protobuf-cpp-3.19.1.zip'
-tag=''
