@@ -37,7 +37,8 @@ private:
             std::shared_ptr<ByteArrayPackage> originalPackage, 
             size_t maxMessageSizeWithoutHeader, 
             uint32_t messageId, 
-            uint8_t curIndex = 0
+            uint8_t curIndex = 0,
+            bool splitMessage = true
         );
 
         reference operator*() const;
@@ -53,6 +54,7 @@ private:
         friend bool operator!= (const Iterator& a, const Iterator& b) { return a.curIndex_ != b.curIndex_; };     
 
     private:
+        bool splitMessage_;
         std::shared_ptr<ByteArrayPackage> originalPackage_;
         const size_t maxMessageSizeWithoutHeader_;
         uint8_t curIndex_;

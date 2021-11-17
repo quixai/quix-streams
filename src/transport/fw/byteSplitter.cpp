@@ -21,7 +21,7 @@ namespace Quix { namespace Transport {
             std::stringstream ss;
             ss << "ByteSplitter maxMessageSize must be at least " << sizeof(ByteSplitProtocolHeader);
             // todo: throw better exception type
-            throw new SerializingException(ss.str());
+            throw SerializingException(ss.str());
         }
     };
 
@@ -35,12 +35,23 @@ namespace Quix { namespace Transport {
     {
         const size_t originalLen = originalPackage->value().len();
 
+        if(originalLen < maxMessageSize_){
+            //not a split message
+            return Iterator(
+                originalPackage,   //originalPackage
+                maxMessageSize_,   //maxMessageSizeWithoutHeader 
+                0,                 //messageId does not matter
+                0,                 //index
+                false              //is split message
+            );            
+        }
+
         if( originalLen > absoluteMaxMessageSize())
         {
             std::stringstream ss;
             ss << "Message size " << originalLen << " bytes exceeds allowed maximum message size of " << absoluteMaxMessageSize() << " bytes";
             // todo: throw better exception type
-            throw new SerializingException(ss.str());
+            throw SerializingException(ss.str());
         }
 
         return Iterator(
@@ -54,6 +65,17 @@ namespace Quix { namespace Transport {
     {
         const auto& originalValue = originalPackage->value(); 
         const size_t originalLen = originalValue.len();
+
+        if(originalLen < maxMessageSize_){
+            //not a split message
+            return Iterator(
+                originalPackage,   //originalPackage
+                maxMessageSize_,   //maxMessageSizeWithoutHeader 
+                0,                 //messageId does not matter
+                1,                 //index
+                false              //is split message
+            );            
+        }
 
         uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
 
@@ -73,7 +95,8 @@ namespace Quix { namespace Transport {
         auto dataEnd = end(originalPackage);
         while( dataIt != dataEnd )
         {
-            ret.push_back(*dataIt++);
+            ret.push_back(*dataIt);
+            ++dataIt;
         }
         return ret;
     }
@@ -89,9 +112,11 @@ namespace Quix { namespace Transport {
         std::shared_ptr<ByteArrayPackage> originalPackage, 
         size_t maxMessageSizeWithoutHeader, 
         uint32_t messageId, 
-        uint8_t curIndex
+        uint8_t curIndex,
+        bool splitMessage
     )
     : 
+    splitMessage_(splitMessage),
     curIndex_(curIndex),
     messageId_(messageId),
     originalPackage_(originalPackage),
@@ -102,6 +127,11 @@ namespace Quix { namespace Transport {
 
     std::shared_ptr<ByteArrayPackage> ByteSplitter::Iterator::operator*() const
     {
+        if(!splitMessage_){
+            //not split message
+            return originalPackage_;
+        }
+
         const auto& originalValue = originalPackage_->value(); 
         const size_t originalLen = originalValue.len();
 
@@ -118,19 +148,19 @@ namespace Quix { namespace Transport {
             std::stringstream ss;
             ss << "ByteSplitter Iterator of bound position " << startDataIndex << " ( max allowed " << startDataIndex << ")";
             // todo: throw better exception type
-            throw new SerializingException(ss.str());
+            throw SerializingException(ss.str());
         }
 
         size_t toSendDataLength;
         if( startDataIndex + maxMessageSizeWithoutHeader_ > originalLen )
         {
-            //not the last package
-            toSendDataLength = maxMessageSizeWithoutHeader_;
+            //last package >> leave rest of data
+            toSendDataLength = originalLen - startDataIndex;
         }
         else
         {
-            //last package >> leave rest of data
-            toSendDataLength = originalLen - startDataIndex;
+            //not the last package
+            toSendDataLength = maxMessageSizeWithoutHeader_;
         }
 
         ByteArray packet = ByteArray::prependHeader(
