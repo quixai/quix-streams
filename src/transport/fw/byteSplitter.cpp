@@ -127,7 +127,8 @@ namespace Quix { namespace Transport {
 
     std::shared_ptr<ByteArrayPackage> ByteSplitter::Iterator::operator*() const
     {
-        if(!splitMessage_){
+        if(!splitMessage_)
+        {
             //not split message
             return originalPackage_;
         }
@@ -169,8 +170,9 @@ namespace Quix { namespace Transport {
             ByteArray(originalValue, toSendDataLength, startDataIndex) //rest of package is subset of original message
         );
 
-        return std::shared_ptr<ByteArrayPackage>(
-                    new ByteArrayPackage(packet)
+        return 
+            std::shared_ptr<ByteArrayPackage>(
+                new ByteArrayPackage(packet)
             );
     }
 
