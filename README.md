@@ -1,6 +1,8 @@
 # Quix streaming SDK module
 
 [![Build Status](https://dev.azure.com/quix-analytics/Quix%20streams/_apis/build/status/quixai.quix-streams?branchName=main)](https://dev.azure.com/quix-analytics/Quix%20streams/_build/latest?definitionId=51&branchName=main)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/quixai/quix-streams/issues)
+[![HitCount](http://hits.dwyl.com/{username}/{project-name}.svg)](http://hits.dwyl.com/quixai/quix-streams)
 
 ## Overview
 
