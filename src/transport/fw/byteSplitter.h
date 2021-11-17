@@ -42,7 +42,6 @@ private:
         );
 
         reference operator*() const;
-        // pointer operator->();
 
         // Prefix increment
         Iterator& operator++() { curIndex_++; return *this; }  
