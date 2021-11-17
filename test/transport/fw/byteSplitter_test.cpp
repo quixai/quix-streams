@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "transport/fw/byteSplitter.h"
 #include "transport/io/IPackage.h"
+#include "transport/fw/exceptions/serializingException.h"
 
 #include <algorithm>
 #include <memory>
@@ -49,8 +50,18 @@ TEST(byteSplitterTest, WithDataOutsideAbsoluteMaxSize_ShouldThrowSerializationEx
     ByteSplitter splitter(50);
     auto length = splitter.absoluteMaxMessageSize() + 1;
 
-    const std::shared_ptr<uint8_t> dataarr(new uint8_t[length], std::default_delete<uint8_t[]>()); 
-    ByteArray data(dataarr, length);
+    ByteArray packet = ByteArray::initEmpty(length);
+
+    EXPECT_THROW( 
+            splitter.split(
+                std::shared_ptr<ByteArrayPackage>(
+                    new ByteArrayPackage(packet)
+                )
+            ) 
+            , 
+            SerializingException
+        );
+
     // Act
     // Action action = () => splitter.Split(data).ToList();
 

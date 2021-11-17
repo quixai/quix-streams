@@ -9,6 +9,9 @@
 
 namespace Quix { namespace Transport {
 
+
+    /****** BEGIN ByteSplitter ************/
+
     ByteSplitter::ByteSplitter(const size_t maxMessageSize) : 
         maxMessageSize_(maxMessageSize), 
         maxMessageSizeWithoutHeader_(maxMessageSize - sizeof(ByteSplitProtocolHeader))
@@ -28,13 +31,9 @@ namespace Quix { namespace Transport {
         return maxMessageSizeWithoutHeader_ * UINT8_MAX;
     } 
 
-
-    void ByteSplitter::send(std::shared_ptr<ByteArrayPackage> originalPackage) 
+    ByteSplitter::Iterator ByteSplitter::begin(std::shared_ptr<ByteArrayPackage> originalPackage)
     {
-        const auto& originalValue = originalPackage->value(); 
-        const size_t originalLen = originalValue.len();
-        const uint8_t* originalData = originalValue.data();
-        ModelKey modelKey = originalPackage->modelKey();
+        const size_t originalLen = originalPackage->value().len();
 
         if( originalLen > absoluteMaxMessageSize())
         {
@@ -44,44 +43,107 @@ namespace Quix { namespace Transport {
             throw new SerializingException(ss.str());
         }
 
-        uint32_t messageId = this->messageId++;
-        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
-        uint8_t curIndex = 0;
-
-        size_t startDataIndex = 0;
-        do
-        {
-            size_t toSendDataLength;
-            if( startDataIndex + maxMessageSizeWithoutHeader_ > originalLen )
-            {
-                //not the last package
-                toSendDataLength = maxMessageSizeWithoutHeader_;
-            }
-            else
-            {
-                //last package >> leave rest of data
-                toSendDataLength = originalLen - startDataIndex;
-            }
-
-            //creates the header 
-            ByteSplitProtocolHeader packetHeader(messageId, curIndex, maxIndex);
-
-            ByteArray packet = ByteArray::prependHeader(
-                (uint8_t*)&packetHeader, //adds pointer into the packetHeader
-                sizeof(ByteSplitProtocolHeader),    //header length
-                ByteArray(originalValue, toSendDataLength, startDataIndex) //rest of package is subset of original message
-            );
-
-            onNewPackage(
-                std::shared_ptr<ByteArrayPackage>(
-                    new ByteArrayPackage(packet)
-                )
-            );
-
-            startDataIndex += maxMessageSizeWithoutHeader_;
-            curIndex++;
-        }while(startDataIndex < originalLen);
+        return Iterator(
+            originalPackage,                //originalPackage
+            maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
+            this->messageId++ //messageId
+        );
     };
 
+    ByteSplitter::Iterator ByteSplitter::end(std::shared_ptr<ByteArrayPackage> originalPackage) const
+    {
+        const auto& originalValue = originalPackage->value(); 
+        const size_t originalLen = originalValue.len();
+
+        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+
+        //curIndex is maxIndex + 1
+        return Iterator(
+            originalPackage,                //originalPackage
+            maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
+            0,              //messageId does not matter
+            maxIndex+1
+        );
+    };
+
+    std::vector<std::shared_ptr<ByteArrayPackage>> ByteSplitter::split(std::shared_ptr<ByteArrayPackage> originalPackage)
+    {
+        std::vector<std::shared_ptr<ByteArrayPackage>> ret;
+        auto dataIt = begin(originalPackage);
+        auto dataEnd = end(originalPackage);
+        while( dataIt != dataEnd )
+        {
+            ret.push_back(*dataIt++);
+        }
+        return ret;
+    }
+
+
+    /****** END ByteSplitter ************/
+
+
+
+    /****** BEGIN ByteSplitter::Iterator ************/
+    
+    ByteSplitter::Iterator::Iterator(
+        std::shared_ptr<ByteArrayPackage> originalPackage, 
+        size_t maxMessageSizeWithoutHeader, 
+        uint32_t messageId, 
+        uint8_t curIndex
+    )
+    : 
+    curIndex_(curIndex),
+    messageId_(messageId),
+    originalPackage_(originalPackage),
+    maxMessageSizeWithoutHeader_(maxMessageSizeWithoutHeader)
+    {
+
+    }
+
+    std::shared_ptr<ByteArrayPackage> ByteSplitter::Iterator::operator*() const
+    {
+        const auto& originalValue = originalPackage_->value(); 
+        const size_t originalLen = originalValue.len();
+
+        uint8_t curIndex = curIndex_;
+        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+
+
+        ByteSplitProtocolHeader packetHeader(messageId_, curIndex, maxIndex);
+
+        size_t startDataIndex = curIndex * maxMessageSizeWithoutHeader_;
+
+        if(startDataIndex >= originalLen)
+        {
+            std::stringstream ss;
+            ss << "ByteSplitter Iterator of bound position " << startDataIndex << " ( max allowed " << startDataIndex << ")";
+            // todo: throw better exception type
+            throw new SerializingException(ss.str());
+        }
+
+        size_t toSendDataLength;
+        if( startDataIndex + maxMessageSizeWithoutHeader_ > originalLen )
+        {
+            //not the last package
+            toSendDataLength = maxMessageSizeWithoutHeader_;
+        }
+        else
+        {
+            //last package >> leave rest of data
+            toSendDataLength = originalLen - startDataIndex;
+        }
+
+        ByteArray packet = ByteArray::prependHeader(
+            (uint8_t*)&packetHeader, //adds pointer into the packetHeader
+            sizeof(ByteSplitProtocolHeader),    //header length
+            ByteArray(originalValue, toSendDataLength, startDataIndex) //rest of package is subset of original message
+        );
+
+        return std::shared_ptr<ByteArrayPackage>(
+                    new ByteArrayPackage(packet)
+            );
+    }
+
+    /****** END ByteSplitter::Iterator ************/
 
 } }
