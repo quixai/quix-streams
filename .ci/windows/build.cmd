@@ -15,6 +15,6 @@ echo "CONFIGURING DONE"
 :: ##  BUILD  ##
 :: #############
 echo "BUILDING"
-cmake --build . --config Release
+cmake --build . --config Release --verbose
 
 echo "BUILDING DONE"
