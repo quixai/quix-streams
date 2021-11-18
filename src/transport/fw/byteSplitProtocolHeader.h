@@ -72,7 +72,25 @@ public:
     {
         
     }
-    
+
+    /**
+     * Initialize header from byte array
+     */
+    inline ByteSplitProtocolHeader(const ByteArray& package)
+    {
+        (*this) = *((ByteSplitProtocolHeader*)(package.data()));
+    }
+
+    /**
+     * Initialize header from byte package
+     */
+    inline ByteSplitProtocolHeader(const std::shared_ptr<ByteArrayPackage>& package)
+    :
+    ByteSplitProtocolHeader(package->value())
+    {
+
+    }
+
     /**
      * Check if the protocol header is valid and has all the correct control characters
      */
@@ -85,6 +103,14 @@ public:
             splitSeparator2_ == ByteSplitSeparator
             &&
             splitEnd_ == ByteSplitEnd;
+    }
+
+    /**
+     * package size in bytes
+     */
+    inline static const int size()
+    {
+        return sizeof(ByteSplitProtocolHeader);
     }
 
     /// get index value of the header

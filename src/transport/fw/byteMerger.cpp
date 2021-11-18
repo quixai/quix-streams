@@ -14,6 +14,24 @@ namespace Quix { namespace Transport {
         shared_ptr<ByteArrayPackage>    originalPackage, 
         const std::string&              msgGroupKey,
         shared_ptr<ByteArrayPackage>&   outPackage
+        
+    )
+    {
+        ByteMergerBufferKey bufferKey;
+        return tryMerge(
+            originalPackage, 
+            msgGroupKey,
+            outPackage,
+            bufferKey
+        );
+    }
+
+    bool ByteMerger::tryMerge
+    (
+        shared_ptr<ByteArrayPackage>    originalPackage, 
+        const std::string&              msgGroupKey,
+        shared_ptr<ByteArrayPackage>&   outPackage,
+        ByteMergerBufferKey&            bufferKey
     )
     {
         ByteSplitProtocolHeader header;
@@ -27,16 +45,16 @@ namespace Quix { namespace Transport {
 
         ///TODO: add lock
         //add into buffer
-        const ByteMergerBufferKey key( msgGroupKey, header.msgId() );
-        if( buffer_.find(key) == buffer_.end() ){
+        bufferKey = ByteMergerBufferKey( msgGroupKey, header.msgId() );
+        if( buffer_.find(bufferKey) == buffer_.end() ){
             buffer_.emplace(
-                key, 
+                bufferKey, 
                 shared_ptr<ByteMergerBufferItem>(
                     new ByteMergerBufferItem(header.maxIndex() + 1)
                 )
             );
         }
-        buffer_[key]->addPackage(originalPackage);
+        buffer_[bufferKey]->addPackage(originalPackage);
         ///TODO: add lock end
 
         if( header.index() != header.maxIndex() )
@@ -47,7 +65,8 @@ namespace Quix { namespace Transport {
 
         //assemble return package
         return tryAssemblePackage(
-            key,
+            bufferKey,
+            header,
             outPackage
         );
     };
@@ -59,18 +78,19 @@ namespace Quix { namespace Transport {
     ) const
     {
         const auto& originalPackageValue = originalPackage->value();
-        if( originalPackageValue.len() < sizeof(ByteSplitProtocolHeader) )
+        if( originalPackageValue.len() < ByteSplitProtocolHeader::size() )
         {
             return false;
         }
 
-        outHeader = *((ByteSplitProtocolHeader*)(originalPackageValue.data()));
+        outHeader = ByteSplitProtocolHeader(originalPackageValue);
 
         return outHeader.isValid();
     };
 
     bool ByteMerger::tryAssemblePackage(
         const ByteMergerBufferKey&          key, 
+        ByteSplitProtocolHeader&            header,
         std::shared_ptr<ByteArrayPackage>&  outPackage
     ) {
 
@@ -90,11 +110,18 @@ namespace Quix { namespace Transport {
 
 
 
-        // Merge data into buffer
-        ByteArray packet = ByteArray::initEmpty(bufferItem->totalDataLength);
-
         auto packetSegmentIterator = bufferItem->receivedPackages.cbegin();
         auto packetSegmentIteratorEnd = bufferItem->receivedPackages.cend();
+
+        // Empty message or not all packets received
+        const auto packetsNo = packetSegmentIteratorEnd - packetSegmentIterator;
+        if( packetsNo == 0 || packetsNo != header.maxIndex() + 1 )
+        {
+            return false;
+        }
+
+        // Merge data into buffer
+        ByteArray packet = ByteArray::initEmpty(bufferItem->totalDataLength);
 
         size_t dataIndex = 0;
         for(;packetSegmentIterator < packetSegmentIteratorEnd; ++packetSegmentIterator){
@@ -102,13 +129,13 @@ namespace Quix { namespace Transport {
 
             //TODO: rewrite this operation using only ByteArray for preparation for the ArraySegment
             //pointer to start of the segment data ( after the header )
-            auto segmentDataBegin = segment->value().data() + sizeof(ByteSplitProtocolHeader);
-            const auto segmentLength = segment->value().len() - sizeof(ByteSplitProtocolHeader);
+            auto segmentDataBegin = segment->value().data() + ByteSplitProtocolHeader::size();
+            const auto segmentLength = segment->value().len() - ByteSplitProtocolHeader::size();
             //copy data from string to the array
             memcpy(
                 packet.data() + dataIndex,     //dst
-                segmentDataBegin,                       //src
-                segmentLength                           //len
+                segmentDataBegin,              //src
+                segmentLength                  //len
             );
             dataIndex += segmentLength;
         }
@@ -120,16 +147,70 @@ namespace Quix { namespace Transport {
         return true;
     }
 
-    void ByteMerger::purge(ByteMerger::ByteMergerBufferKey key)
+    void ByteMerger::purge(const ByteMergerBufferKey& key)//const std::string& msgGroupKey)
     {
+        ///TODO: add lock
+        const auto it = buffer_.find(key);
+        if( it != buffer_.end() )
+        {
+            buffer_.erase(it);
+        }
+        ///TODO: add lock END
 
+
+        // ///TODO: add lock
+
+        // //find all keys to remove
+        // vector<ByteMergerBufferKey> keysToRemove;
+        // const auto end = buffer_.end();
+        // for( auto it = buffer_.begin(); it != end ; ++it ){
+        //     if( it->first.msgGroupKey() == msgGroupKey )
+        //     {
+        //         keysToRemove.push_back(it->first);
+        //     }
+        // }
+
+        // //remove those keys
+        // for( auto it = keysToRemove.begin(); it != keysToRemove.end(); ++it )
+        // {
+        //     buffer_.erase(*it);
+        // }
+
+        // ///TODO: add lock END
     }
+
+    bool ByteMerger::exists(ByteMergerBufferKey key)
+    {
+        ///TODO: add lock
+        return buffer_.find(key) != buffer_.end();
+        ///TODO: add lock END
+    }
+
+    bool ByteMerger::exists(ByteMergerBufferKey key, int msgId)
+    {
+        ///TODO: add lock
+        const auto it = buffer_.find(key);
+        if( it == buffer_.end() ) {
+            return false;
+        }
+        const auto& receivedPackages = it->second->receivedPackages;
+        const auto findIt = std::find_if(
+            receivedPackages.begin(), 
+            receivedPackages.end(), 
+            [&](const std::shared_ptr<ByteArrayPackage>& val){
+                return ByteSplitProtocolHeader(val).msgId() == msgId;
+            }
+        );
+        return findIt != receivedPackages.end();
+        ///TODO: add lock END
+    }
+
 
 
     void ByteMerger::ByteMergerBufferItem::addPackage(const std::shared_ptr<ByteArrayPackage>& package)
     {
         receivedPackages.push_back(package);
-        totalDataLength += package->value().len() - sizeof(ByteSplitProtocolHeader);
+        totalDataLength += package->value().len() - ByteSplitProtocolHeader::size();
     }
 
 } }

@@ -24,7 +24,7 @@ int is_big_endian(void)
 TEST(byteSplitterTest, doCompilerChecks) 
 {
     // Arrange
-    ASSERT_EQ( sizeof(ByteSplitProtocolHeader), 10 );
+    ASSERT_EQ( ByteSplitProtocolHeader::size(), 10 );
 
     bool is_little_endian = true;
     if( is_big_endian() ) {
@@ -92,7 +92,7 @@ TEST(byteSplitterTest, WithDataOutsideAllowedMessageSizeButWithinAbsoluteMaxSize
     {
         auto& segment = segments[index];
 
-        ByteSplitProtocolHeader header = *((ByteSplitProtocolHeader*)segment->value().data());
+        ByteSplitProtocolHeader header(segment);
 
         EXPECT_TRUE( header.isValid() );
 
@@ -111,10 +111,10 @@ TEST(byteSplitterTest, WithDataOutsideAllowedMessageSizeButWithinAbsoluteMaxSize
         ASSERT_EQ( header.index(), index );
         ASSERT_EQ( header.maxIndex(), expectedMaxMessageIndex );
         
-        auto messageDataLength = segment->value().len() - sizeof(ByteSplitProtocolHeader);
+        auto messageDataLength = segment->value().len() - ByteSplitProtocolHeader::size();
         for ( auto i = 0; i < messageDataLength; ++i )
         {
-            ASSERT_EQ( segment->value().data()[sizeof(ByteSplitProtocolHeader) + i], packet.data()[dataByteIndex] );            
+            ASSERT_EQ( segment->value().data()[ByteSplitProtocolHeader::size() + i], packet.data()[dataByteIndex] );            
             dataByteIndex++;
         }
     }

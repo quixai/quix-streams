@@ -19,6 +19,8 @@ namespace Quix { namespace Transport {
 */
 class ByteMerger{
 
+public:
+
     class ByteMergerBufferKey{
         
     private:
@@ -38,6 +40,11 @@ class ByteMerger{
             }
         };
 
+        inline ByteMergerBufferKey()
+        {
+
+        }
+
         inline ByteMergerBufferKey(const std::string& msgGroupKey, int msgId)
          :
          msgId_(msgId),
@@ -46,7 +53,8 @@ class ByteMerger{
 
         }
 
-        inline bool operator==(const ByteMergerBufferKey& other) const {
+        inline bool operator==(const ByteMergerBufferKey& other) const 
+        {
             return 
                 msgId_ == other.msgId_
                     &&
@@ -54,12 +62,17 @@ class ByteMerger{
                 ; 
         }
 
-        inline bool operator<(const ByteMergerBufferKey& other) const {
+        inline bool operator<(const ByteMergerBufferKey& other) const 
+        {
             if(msgId_ < other.msgId_)
                 return true;
             if(msgGroupKey_ < other.msgGroupKey_)
                 return true;
             return false;
+        }
+
+        inline const std::string& msgGroupKey() const {
+            return msgGroupKey_;
         }
     };
 
@@ -69,9 +82,12 @@ class ByteMerger{
         std::vector<std::shared_ptr<ByteArrayPackage>> receivedPackages;
 
         inline ByteMergerBufferItem(size_t initialSize = -1)
+        :
+        totalDataLength(0)
         {
             if(initialSize >= 0)
             {
+                //pre allocate array in single step for optimization
                 receivedPackages.reserve(initialSize);
             }
         }
@@ -79,7 +95,7 @@ class ByteMerger{
         void addPackage(const std::shared_ptr<ByteArrayPackage>& package);
     };
 
-
+private:
     /// all temporary received packages
     std::unordered_map<ByteMergerBufferKey, std::shared_ptr<ByteMergerBufferItem>, ByteMergerBufferKey::Hasher> buffer_;
 
@@ -92,6 +108,7 @@ class ByteMerger{
 
     bool tryAssemblePackage(
         const ByteMergerBufferKey&          key, 
+        ByteSplitProtocolHeader&            header,
         std::shared_ptr<ByteArrayPackage>&  outPackage
     );
 
@@ -106,12 +123,29 @@ public:
     /// <summary>
     /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
     /// </summary>
-    void purge(ByteMergerBufferKey key);
+    bool exists(ByteMergerBufferKey key);
+
+    /// <summary>
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    /// </summary>
+    bool exists(ByteMergerBufferKey key, int msgId);
+
+    /// <summary>
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    /// </summary>
+    void purge(const ByteMergerBufferKey& key);
 
     bool tryMerge(
         std::shared_ptr<ByteArrayPackage>   originalPackage, 
         const std::string&                  msgGroupKey,
         std::shared_ptr<ByteArrayPackage>&  outPackage
+    );
+
+    bool tryMerge(
+        std::shared_ptr<ByteArrayPackage>   originalPackage, 
+        const std::string&                  msgGroupKey,
+        std::shared_ptr<ByteArrayPackage>&  outPackage,
+        ByteMergerBufferKey&                bufferKey
     );
 
 };

@@ -14,12 +14,12 @@ namespace Quix { namespace Transport {
 
     ByteSplitter::ByteSplitter(const size_t maxMessageSize) : 
         maxMessageSize_(maxMessageSize), 
-        maxMessageSizeWithoutHeader_(maxMessageSize - sizeof(ByteSplitProtocolHeader))
+        maxMessageSizeWithoutHeader_(maxMessageSize - ByteSplitProtocolHeader::size())
     {
-        if( maxMessageSize <= sizeof(ByteSplitProtocolHeader) ) 
+        if( maxMessageSize <= ByteSplitProtocolHeader::size() ) 
         {
             std::stringstream ss;
-            ss << "ByteSplitter maxMessageSize must be at least " << sizeof(ByteSplitProtocolHeader);
+            ss << "ByteSplitter maxMessageSize must be at least " << ByteSplitProtocolHeader::size();
             // todo: throw better exception type
             throw SerializingException(ss.str());
         }
