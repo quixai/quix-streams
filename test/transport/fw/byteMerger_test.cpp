@@ -19,7 +19,7 @@ void getSplitData(vector<shared_ptr<ByteArrayPackage>>& splitData, shared_ptr<By
     auto length = splitter.absoluteMaxMessageSize() - 10; // just a bit less than max;
 
     originalData = shared_ptr<ByteArrayPackage>(
-                        new ByteArrayPackage(ByteArray::initEmpty(length))
+                        new ByteArrayPackage(ByteArray::initRandom(length))
                     );
 
     splitData = splitter.split(originalData);
@@ -29,7 +29,7 @@ TEST(byteMergerTest, Merge_WithDataThatIsNotSplit_ShouldReturnSameBytes)
 {
     // Arrange
     uint8_t rawdata[17]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-    ByteArray packet = ByteArray::initEmpty(17);
+    ByteArray packet = ByteArray::initRandom(17);
     shared_ptr<ByteArrayPackage> inpPackage(
             new ByteArrayPackage(packet)
         );

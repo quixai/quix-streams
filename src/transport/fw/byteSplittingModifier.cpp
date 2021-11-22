@@ -10,7 +10,7 @@ namespace Quix { namespace Transport {
     using namespace std;
 
     ByteSplittingModifier::ByteSplittingModifier(
-        ByteSplitter* byteSplitter
+        IByteSplitter* byteSplitter
     )
     :
     byteSplitter_(byteSplitter)

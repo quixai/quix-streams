@@ -52,7 +52,7 @@ TEST(byteSplitterTest, WithDataOutsideAbsoluteMaxSize_ShouldThrowSerializationEx
     ByteSplitter splitter(50);
     auto length = splitter.absoluteMaxMessageSize() + 1;
 
-    ByteArray packet = ByteArray::initEmpty(length);
+    ByteArray packet = ByteArray::initRandom(length);
 
     // Assert
     EXPECT_THROW( 
@@ -73,7 +73,7 @@ TEST(byteSplitterTest, WithDataOutsideAllowedMessageSizeButWithinAbsoluteMaxSize
     ByteSplitter splitter(maxMsgLength);
     auto length = splitter.absoluteMaxMessageSize() - 10;  // just a bit less than max;
 
-    ByteArray packet = ByteArray::initEmpty(length);
+    ByteArray packet = ByteArray::initRandom(length);
 
     // Act
     auto segments = splitter.split(
@@ -129,7 +129,7 @@ TEST(byteSplitterTest, WithDataWithAbsoluteMaxSize_ShouldNotThrowSerializationEx
     ByteSplitter splitter(50);
     auto length = splitter.absoluteMaxMessageSize();
 
-    ByteArray packet = ByteArray::initEmpty(length);
+    ByteArray packet = ByteArray::initRandom(length);
 
     // Assert
     EXPECT_NO_THROW( 
@@ -147,7 +147,7 @@ TEST(byteSplitterTest, WithDataWithinAllowedMessageSize_ShouldReturnSameBytes)
     ByteSplitter splitter(50);
     auto length = 48;
 
-    ByteArray packet = ByteArray::initEmpty(length);
+    ByteArray packet = ByteArray::initRandom(length);
 
     // Assert
     const auto segments = splitter.split(

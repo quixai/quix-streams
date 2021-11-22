@@ -16,7 +16,7 @@ namespace Quix { namespace Transport {
 class ByteSplittingModifier: public IPublisher{
 
 private:
-    ByteSplitter* byteSplitter_;
+    IByteSplitter* byteSplitter_;
 
 public:
     /**
@@ -24,7 +24,7 @@ public:
      * 
      * @param maxMessageSize The maximum message size
      */
-    ByteSplittingModifier(ByteSplitter* byteSplitter);
+    ByteSplittingModifier(IByteSplitter* byteSplitter);
 
     /**
      * 

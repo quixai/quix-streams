@@ -55,7 +55,7 @@ TEST(transportContextTest, WithQuixByteArray_ShouldCorrespondToSerializingModifi
     // This test checks that DeserializingModifier and SerializingModifier are reverse of each other
 
     // Arrange
-    ByteArray testModel = ByteArray::initEmpty(100);
+    ByteArray testModel = ByteArray::initRandom(100);
 
     shared_ptr<Package<ByteArray>> packagePtr(new Package<ByteArray>(testModel));
     DeserializingModifier deserializingModifier;

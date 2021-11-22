@@ -103,6 +103,16 @@ public:
     };
 
     /**
+     *  Initialize the array filled in with random bytes of size len
+     */
+    static inline ByteArray initRandom(size_t len)
+    {
+        auto ret = ByteArray::initEmpty(len);
+        return ret;
+    };
+
+
+    /**
      *  Concatenate one chunk with before the rest of array ( e.g. (HEADER->REST) )
      * 
      *  @param headerArray pointer to the beginning of the data chunk to be prepended

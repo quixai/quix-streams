@@ -31,13 +31,13 @@ namespace Quix { namespace Transport {
         return maxMessageSizeWithoutHeader_ * UINT8_MAX;
     } 
 
-    ByteSplitter::Iterator ByteSplitter::begin(std::shared_ptr<ByteArrayPackage> originalPackage)
+    IByteSplitter::Iterator ByteSplitter::begin(const std::shared_ptr<ByteArrayPackage>& originalPackage)
     {
         const size_t originalLen = originalPackage->value().len();
 
         if(originalLen < maxMessageSize_){
             //not a split message
-            return Iterator(
+            return IByteSplitter::Iterator(
                 originalPackage,   //originalPackage
                 maxMessageSize_,   //maxMessageSizeWithoutHeader 
                 0,                 //messageId does not matter
@@ -54,21 +54,21 @@ namespace Quix { namespace Transport {
             throw SerializingException(ss.str());
         }
 
-        return Iterator(
+        return IByteSplitter::Iterator(
             originalPackage,                //originalPackage
             maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
             this->messageId++ //messageId
         );
     };
 
-    ByteSplitter::Iterator ByteSplitter::end(std::shared_ptr<ByteArrayPackage> originalPackage) const
+    IByteSplitter::Iterator ByteSplitter::end(const std::shared_ptr<ByteArrayPackage>& originalPackage) const
     {
         const auto& originalValue = originalPackage->value(); 
         const size_t originalLen = originalValue.len();
 
         if(originalLen < maxMessageSize_){
             //not a split message
-            return Iterator(
+            return IByteSplitter::Iterator(
                 originalPackage,   //originalPackage
                 maxMessageSize_,   //maxMessageSizeWithoutHeader 
                 0,                 //messageId does not matter
@@ -80,7 +80,7 @@ namespace Quix { namespace Transport {
         uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
 
         //curIndex is maxIndex + 1
-        return Iterator(
+        return IByteSplitter::Iterator(
             originalPackage,                //originalPackage
             maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
             0,              //messageId does not matter
@@ -88,7 +88,7 @@ namespace Quix { namespace Transport {
         );
     };
 
-    std::vector<std::shared_ptr<ByteArrayPackage>> ByteSplitter::split(std::shared_ptr<ByteArrayPackage> originalPackage)
+    std::vector<std::shared_ptr<ByteArrayPackage>> ByteSplitter::split(const std::shared_ptr<ByteArrayPackage>& originalPackage)
     {
         std::vector<std::shared_ptr<ByteArrayPackage>> ret;
         auto dataIt = begin(originalPackage);
@@ -106,17 +106,17 @@ namespace Quix { namespace Transport {
 
 
 
-    /****** BEGIN ByteSplitter::Iterator ************/
+    /****** BEGIN ByteSplitterIterator ************/
     
-    ByteSplitter::Iterator::Iterator(
-        std::shared_ptr<ByteArrayPackage> originalPackage, 
+    IByteSplitter::Iterator::Iterator(
+        const std::shared_ptr<ByteArrayPackage>& originalPackage, 
         size_t maxMessageSizeWithoutHeader, 
         uint32_t messageId, 
         uint8_t curIndex,
         bool splitMessage
     )
     : 
-    splitMessage_(splitMessage),
+    type_(splitMessage ? IteratorType::splitMessage : IteratorType:: singleMessage),
     curIndex_(curIndex),
     messageId_(messageId),
     originalPackage_(originalPackage),
@@ -125,14 +125,32 @@ namespace Quix { namespace Transport {
 
     }
 
-    std::shared_ptr<ByteArrayPackage> ByteSplitter::Iterator::operator*() const
+    IByteSplitter::Iterator::Iterator(
+        const std::vector<std::shared_ptr<ByteArrayPackage>>::iterator iterator, 
+        uint8_t curIndex
+    )
+    :
+    type_(IteratorType::vectorIterator),
+    curIndex_(curIndex),
+    iterator_(iterator)
     {
-        if(!splitMessage_)
-        {
-            //not split message
-            return originalPackage_;
+
+    }
+
+
+    std::shared_ptr<ByteArrayPackage> IByteSplitter::Iterator::operator*() const
+    {
+        switch(type_){
+            case IteratorType::splitMessage:
+                goto rest;
+            case IteratorType::singleMessage:
+                //not split message
+                return originalPackage_;
+            case IteratorType::vectorIterator:
+                return *(iterator_ + curIndex_);
         }
 
+        rest:
         const auto& originalValue = originalPackage_->value(); 
         const size_t originalLen = originalValue.len();
 
