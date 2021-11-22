@@ -91,6 +91,64 @@ TEST(byteSplittingModifierTest, Modify_ByteSplitDoesntHappen_ShouldRaisePackage)
     ASSERT_EQ( *raisedPackage, *package );
 }
 
+TEST(byteSplittingModifierTest, Modify_ByteSplitDoesntHappen_WithVectorIterator_ShouldRaisePackage) 
+{
+    // Arrange
+    ByteArray bytes = ByteArray::initRandom(500);
+
+    TransportContext transportContext;
+    transportContext["Test"] = "123";
+
+    auto package = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes, transportContext)
+                    );
+
+    MyMockSplitter splitter(50);
+
+    std::vector<std::shared_ptr<ByteArrayPackage>> ret;
+    ret.push_back(package);
+
+
+    //
+    ON_CALL( splitter, begin(_) )
+        .WillByDefault(
+            Return(
+                IByteSplitter::Iterator(
+                    ret.begin()
+                )
+            )
+        );
+    ON_CALL( splitter, end(_) )
+        .WillByDefault(
+            Return(
+                IByteSplitter::Iterator(
+                    ret.begin(),
+                    ret.size()
+                )
+            )
+        );
+
+
+
+    ByteSplittingModifier modifier(&splitter);
+
+    std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
+    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+        nonGeneric.push_back(package);
+    };
+
+
+    EXPECT_CALL(splitter, begin(package));
+    EXPECT_CALL(splitter, end(package));
+
+
+    modifier.send(package);
+
+    ASSERT_EQ( nonGeneric.size(), 1 );
+    auto& raisedPackage = nonGeneric[0];
+    ASSERT_EQ( *raisedPackage, *package );
+}
+
 
 TEST(byteSplittingModifierTest, Modify_ByteSplitDoesHappen_ShouldRaisePackagesAndCompletedTask) 
 {
