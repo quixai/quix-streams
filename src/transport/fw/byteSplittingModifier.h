@@ -37,7 +37,7 @@ public:
      * 
      * @param package The package to split
      */
-    void send(std::shared_ptr<IPackage> package) const;
+    void send(std::shared_ptr<IPackage> package);
 };
 
 } }

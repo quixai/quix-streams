@@ -1,5 +1,7 @@
 #pragma once
 
+#include <climits>
+
 #include <functional>
 #include <map>
 #include <unordered_map>
@@ -14,10 +16,11 @@
 namespace Quix { namespace Transport {
 
 
+
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class ByteMerger{
+class IByteMerger{
 
 public:
 
@@ -40,12 +43,9 @@ public:
             }
         };
 
-        inline ByteMergerBufferKey()
-        {
+        inline ByteMergerBufferKey(const ByteMergerBufferKey& other) = default;
 
-        }
-
-        inline ByteMergerBufferKey(const std::string& msgGroupKey, int msgId)
+        inline ByteMergerBufferKey(const std::string& msgGroupKey = "", int msgId = INT_MIN)
          :
          msgId_(msgId),
          msgGroupKey_(msgGroupKey)
@@ -74,6 +74,7 @@ public:
         inline const std::string& msgGroupKey() const {
             return msgGroupKey_;
         }
+
     };
 
     class ByteMergerBufferItem{
@@ -95,6 +96,54 @@ public:
         void addPackage(const std::shared_ptr<ByteArrayPackage>& package);
     };
 
+    /// <summary>
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    /// </summary>
+    std::function<void(const ByteMergerBufferKey&)> onMessageSegmentsPurged = nullptr;
+
+
+    /// <summary>
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    /// </summary>
+    virtual bool exists(ByteMergerBufferKey key) = 0;
+
+    /// <summary>
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    /// </summary>
+    virtual bool exists(ByteMergerBufferKey key, int msgId) = 0;
+
+    /// <summary>
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    /// </summary>
+    virtual void purge(const ByteMergerBufferKey& key) = 0;
+
+    bool tryMerge(
+        std::shared_ptr<ByteArrayPackage>   originalPackage, 
+        ByteMergerBufferKey&                bufferId,
+        std::shared_ptr<ByteArrayPackage>&  outPackage
+    );
+
+    virtual bool tryMerge(
+        std::shared_ptr<ByteArrayPackage>   originalPackage, 
+        const std::string&                  msgGroupKey,
+        std::shared_ptr<ByteArrayPackage>&  outPackage
+    ) = 0;
+
+    virtual bool tryMerge(
+        std::shared_ptr<ByteArrayPackage>   originalPackage, 
+        const std::string&                  msgGroupKey,
+        std::shared_ptr<ByteArrayPackage>&  outPackage,
+        ByteMergerBufferKey&                bufferKey
+    ) = 0;
+
+};
+
+
+/**
+ * Component for splitting a single array of bytes into multiple according to implementation
+*/
+class ByteMerger : public IByteMerger{
+
 private:
     /// all temporary received packages
     std::unordered_map<ByteMergerBufferKey, std::shared_ptr<ByteMergerBufferItem>, ByteMergerBufferKey::Hasher> buffer_;
@@ -114,11 +163,6 @@ private:
 
 public:
 
-
-    /// <summary>
-    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
-    /// </summary>
-    std::function<void(ByteMergerBufferKey)> onMessageSegmentsPurged = nullptr;
 
     /// <summary>
     /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.

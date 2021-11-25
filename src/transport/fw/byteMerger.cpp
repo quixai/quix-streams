@@ -17,7 +17,7 @@ namespace Quix { namespace Transport {
         
     )
     {
-        ByteMergerBufferKey bufferKey;
+        IByteMerger::ByteMergerBufferKey bufferKey;
         return tryMerge(
             originalPackage, 
             msgGroupKey,
@@ -28,10 +28,10 @@ namespace Quix { namespace Transport {
 
     bool ByteMerger::tryMerge
     (
-        shared_ptr<ByteArrayPackage>    originalPackage, 
-        const std::string&              msgGroupKey,
-        shared_ptr<ByteArrayPackage>&   outPackage,
-        ByteMergerBufferKey&            bufferKey
+        shared_ptr<ByteArrayPackage>                originalPackage, 
+        const std::string&                          msgGroupKey,
+        shared_ptr<ByteArrayPackage>&               outPackage,
+        IByteMerger::ByteMergerBufferKey&           bufferKey
     )
     {
         ByteSplitProtocolHeader header;
@@ -45,7 +45,7 @@ namespace Quix { namespace Transport {
 
         ///TODO: add lock
         //add into buffer
-        bufferKey = ByteMergerBufferKey( msgGroupKey, header.msgId() );
+        bufferKey = IByteMerger::ByteMergerBufferKey( msgGroupKey, header.msgId() );
         if( buffer_.find(bufferKey) == buffer_.end() ){
             buffer_.emplace(
                 bufferKey, 
@@ -71,6 +71,19 @@ namespace Quix { namespace Transport {
         );
     };
 
+    bool IByteMerger::tryMerge(
+        std::shared_ptr<ByteArrayPackage>   originalPackage, 
+        ByteMergerBufferKey&                bufferId,
+        std::shared_ptr<ByteArrayPackage>&  outPackage
+    )
+    {
+        auto& packageBytes = originalPackage->value();
+        std::string key;
+        originalPackage->transportContext().tryGetValue(KnownTransportContextKeys::MessageGroupKey, key);
+        return this->tryMerge(originalPackage, key, outPackage, bufferId);
+    }
+
+
     bool ByteMerger::tryGetHeader
     (
         const shared_ptr<ByteArrayPackage>&    originalPackage, 
@@ -89,7 +102,7 @@ namespace Quix { namespace Transport {
     };
 
     bool ByteMerger::tryAssemblePackage(
-        const ByteMergerBufferKey&          key, 
+        const IByteMerger::ByteMergerBufferKey&          key, 
         ByteSplitProtocolHeader&            header,
         std::shared_ptr<ByteArrayPackage>&  outPackage
     ) {
@@ -147,7 +160,7 @@ namespace Quix { namespace Transport {
         return true;
     }
 
-    void ByteMerger::purge(const ByteMergerBufferKey& key)//const std::string& msgGroupKey)
+    void ByteMerger::purge(const IByteMerger::ByteMergerBufferKey& key)//const std::string& msgGroupKey)
     {
         ///TODO: add lock
         const auto it = buffer_.find(key);
@@ -179,14 +192,14 @@ namespace Quix { namespace Transport {
         // ///TODO: add lock END
     }
 
-    bool ByteMerger::exists(ByteMergerBufferKey key)
+    bool ByteMerger::exists(IByteMerger::ByteMergerBufferKey key)
     {
         ///TODO: add lock
         return buffer_.find(key) != buffer_.end();
         ///TODO: add lock END
     }
 
-    bool ByteMerger::exists(ByteMergerBufferKey key, int msgId)
+    bool ByteMerger::exists(IByteMerger::ByteMergerBufferKey key, int msgId)
     {
         ///TODO: add lock
         const auto it = buffer_.find(key);

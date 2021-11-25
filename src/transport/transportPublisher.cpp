@@ -27,7 +27,7 @@ namespace Quix { namespace Transport {
 
     }
 
-    void TransportPublisher::send(std::shared_ptr<IPackage> package) const
+    void TransportPublisher::send(std::shared_ptr<IPackage> package)
     {
         //TODO: cancellationToken
         return serializingModifier_.send(package);

@@ -18,7 +18,7 @@ public:
      * 
      * @param package The package to send
      */
-    virtual void send(std::shared_ptr<IPackage> package) const = 0;
+    virtual void send(std::shared_ptr<IPackage> package) = 0;
 };
 
 } }

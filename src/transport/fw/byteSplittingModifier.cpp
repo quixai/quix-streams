@@ -18,7 +18,7 @@ namespace Quix { namespace Transport {
 
     }
 
-    void ByteSplittingModifier::send(std::shared_ptr<IPackage> package) const
+    void ByteSplittingModifier::send(std::shared_ptr<IPackage> package)
     {
         const auto bytePackage = dynamic_pointer_cast<ByteArrayPackage>(package);
         //TODO: add cancellationToken

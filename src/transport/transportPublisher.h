@@ -33,7 +33,7 @@ public:
   /**
    * Send a package, which the TransportPublisher serializes and optionally splits then passes to the provided IPublisher
    */
-  void send(std::shared_ptr<IPackage> package) const;
+  void send(std::shared_ptr<IPackage> package);
 };
 
 } }

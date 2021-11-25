@@ -26,7 +26,7 @@ public:
         
     };
 
-    void send(std::shared_ptr<Quix::Transport::IPackage> package) const
+    void send(std::shared_ptr<Quix::Transport::IPackage> package)
     {
         if(callback_ != nullptr)
         {

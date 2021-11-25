@@ -45,7 +45,7 @@ public:
      * 
      * @throws SerializationException are raised for unsuccessful serialization when package's lazy value is evaluated.
      */
-    void send(std::shared_ptr<IPackage> package) const;
+    void send(std::shared_ptr<IPackage> package);
 };
 
 } }
