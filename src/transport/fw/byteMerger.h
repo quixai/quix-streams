@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "../io/package.h"
 #include "../io/IPublisher.h"
@@ -24,6 +25,9 @@ class IByteMerger{
 
 public:
 
+    /***
+     * Composite key used as lookup into the buffer cache
+     */
     class ByteMergerBufferKey{
         
     private:
@@ -96,45 +100,81 @@ public:
         void addPackage(const std::shared_ptr<ByteArrayPackage>& package);
     };
 
-    /// <summary>
-    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
-    /// </summary>
-    std::function<void(const ByteMergerBufferKey&)> onMessageSegmentsPurged = nullptr;
+private:
 
-
-    /// <summary>
-    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
-    /// </summary>
-    virtual bool exists(ByteMergerBufferKey key) = 0;
-
-    /// <summary>
-    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
-    /// </summary>
-    virtual bool exists(ByteMergerBufferKey key, int msgId) = 0;
-
-    /// <summary>
-    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
-    /// </summary>
-    virtual void purge(const ByteMergerBufferKey& key) = 0;
-
-    bool tryMerge(
-        std::shared_ptr<ByteArrayPackage>   originalPackage, 
-        ByteMergerBufferKey&                bufferId,
-        std::shared_ptr<ByteArrayPackage>&  outPackage
-    );
-
+    /**
+     * @brief Attempt to merge using string key msgGroupKey
+     * 
+     * @param originalPackage package to be merged
+     * @param msgGroupKey message group key
+     * @param outPackage output merged package
+     * @return true if the merge returned any package in outPackage
+     */
     virtual bool tryMerge(
         std::shared_ptr<ByteArrayPackage>   originalPackage, 
         const std::string&                  msgGroupKey,
         std::shared_ptr<ByteArrayPackage>&  outPackage
     ) = 0;
 
+    /**
+     * @brief Attempt to merge using string key msgGroupKey and returning also bufferKey
+     * 
+     * @param originalPackage package to be merged
+     * @param msgGroupKey message group key
+     * @param outPackage output merged package
+     * @param bufferKey output buffer key
+     * @return true if the merge returned any package in outPackage
+     */
     virtual bool tryMerge(
         std::shared_ptr<ByteArrayPackage>   originalPackage, 
         const std::string&                  msgGroupKey,
         std::shared_ptr<ByteArrayPackage>&  outPackage,
         ByteMergerBufferKey&                bufferKey
     ) = 0;
+
+public:
+
+    /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
+    std::function<void(const ByteMergerBufferKey&)> onMessageSegmentsPurged = nullptr;
+
+
+    /**
+     * @brief Checks whether the buffer contains at least one message ( package ) with specific buffer key
+     * 
+     * @param key ByteMergerBufferKey lookup key for the package
+     * @return true if the buffer contains key, otherwise false
+     */
+    virtual bool exists(ByteMergerBufferKey key) = 0;
+
+    /**
+     * @brief Checks whether the buffer contains at specific message ( package ) under buffer key
+     * 
+     * @param key ByteMergerBufferKey lookup key for the package
+     * @param msgId messageId
+     * @return true if the buffer contains messageId under key, otherwise false
+     */
+    virtual bool exists(ByteMergerBufferKey key, int msgId) = 0;
+
+    /**
+     * @brief Removes all buffered data for the specified buffer key
+     * 
+     * @param key buffer key
+     */
+    virtual void purge(const ByteMergerBufferKey& key) = 0;
+
+    /**
+     * @brief Attempt to merge using ByteMergerBufferKey
+     * 
+     * @param originalPackage package to be merged
+     * @param bufferId buffer key
+     * @param outPackage output merged package
+     * @return true if the merge returned any package in outPackage
+     */
+    bool tryMerge(
+        std::shared_ptr<ByteArrayPackage>   originalPackage, 
+        ByteMergerBufferKey&                bufferId,
+        std::shared_ptr<ByteArrayPackage>&  outPackage
+    );
 
 };
 
@@ -145,9 +185,12 @@ public:
 class ByteMerger : public IByteMerger{
 
 private:
+
+    /// buffer mutex lock
+    std::mutex bufferLock_;
+
     /// all temporary received packages
     std::unordered_map<ByteMergerBufferKey, std::shared_ptr<ByteMergerBufferItem>, ByteMergerBufferKey::Hasher> buffer_;
-
 
 
     bool tryGetHeader(

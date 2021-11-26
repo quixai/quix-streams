@@ -27,37 +27,21 @@ private:
     int bufferOrder_;
     int bufferCounter_;
 
+    /// Packages that are queued up. If they have package value, there is no more fragment to merge
     std::unordered_map< IByteMerger::ByteMergerBufferKey, std::shared_ptr<ByteArrayPackage>, IByteMerger::ByteMergerBufferKey::Hasher > pendingPackages_;
+    /// the order the packages should be raised
     std::unordered_map< IByteMerger::ByteMergerBufferKey, long, IByteMerger::ByteMergerBufferKey::Hasher > packageOrder_;
 
     std::mutex lock_;
     
-
-
     IByteMerger* byteMerger_;
+
+
 
 
     void raiseNextPackageIfReady();
 
     void onMessageSegmentsPurgedInternal(const IByteMerger::ByteMergerBufferKey& bufferId);
-
-
-public:
-
-    ByteMergingModifier(IByteMerger* byteMerger_);
-
-    /**
-     * 
-     * The callback that is used when the split package is available
-     */
-    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
-
-    /**
-     * Send a package, which the modifier splits if necessary. Split results are raised via onNewPackage
-     * 
-     * @param package The package to split
-     */
-    void send(std::shared_ptr<IPackage> package);
 
     bool tryAddToBuffer(
         IByteMerger::ByteMergerBufferKey& bufferId, 
@@ -69,6 +53,21 @@ public:
         const IByteMerger::ByteMergerBufferKey& bufferId
     );
 
+public:
+
+    ByteMergingModifier(IByteMerger* byteMerger_);
+
+    /**
+     * The callback that is used when the split package is available
+     */
+    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
+
+    /**
+     * Send a package, which the modifier merged if necessary. Merged results are raised via onNewPackage
+     * 
+     * @param package The package to split
+     */
+    void send(std::shared_ptr<IPackage> package);
 };
 
 } }

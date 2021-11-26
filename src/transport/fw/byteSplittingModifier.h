@@ -20,14 +20,11 @@ private:
 
 public:
     /**
-     * Initializes a new instance of ByteSplitter
-     * 
-     * @param maxMessageSize The maximum message size
+     * Initializes a new instance of ByteSplittingModifier
      */
     ByteSplittingModifier(IByteSplitter* byteSplitter);
 
     /**
-     * 
      * The callback that is used when the split package is available
      */
     std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;

@@ -20,7 +20,8 @@ namespace Quix { namespace Transport {
         byteMerger->onMessageSegmentsPurged = std::bind( &ByteMergingModifier::onMessageSegmentsPurgedInternal, this, std::placeholders::_1 );
     }
 
-    void ByteMergingModifier::onMessageSegmentsPurgedInternal(const IByteMerger::ByteMergerBufferKey& bufferKey){
+    void ByteMergingModifier::onMessageSegmentsPurgedInternal( const IByteMerger::ByteMergerBufferKey& bufferKey )
+    {
         if ( this->removeFromBuffer(bufferKey) )
         {
             this->raiseNextPackageIfReady();
@@ -69,20 +70,12 @@ namespace Quix { namespace Transport {
         {
             // buffer id means that this is a merged package
 
-            // first
-
-            //
-
-            // this.firstPackageContext.TryGetValue(buffer, out var transportContext);
-            // packageToRaise = shared_ptr<ByteArrayPackage>(new ByteArrayPackage());
-            // new Package<byte[]>(new Lazy<byte[]>(() => mergedPackageBytes), bytePackage.MetaData, transportContext);            
+            // TODO: handle transport context
             packageToRaise = outPackage;
         }
         
         // check if empty. We're not worried about threading here, because this method is designed to be invoked via single thread
         // and any external thread will only ever reduce it, not increment. (see OnMessageSegmentsPurged)
-
-
 
         int cnt;
         {
@@ -228,7 +221,6 @@ namespace Quix { namespace Transport {
     {
 
         {
-
             std::lock_guard<std::mutex> guard(lock_);
 
             const auto& pendingPackageIterator = pendingPackages_.find(bufferId);
@@ -248,7 +240,6 @@ namespace Quix { namespace Transport {
                 // this is not a split package. It is a queued package that is already whole and and isn't buffer
                 return false;
             }
-
         }
 
         byteMerger_->purge(bufferId);
