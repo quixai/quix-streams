@@ -16,6 +16,12 @@ ENDIF()
 # GTest
 ################################
 
+
+### Googletest 1.8.0 has deprecation warning in Windows - see https://github.com/google/googletest/issues/1111
+IF (WIN32) 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE} /D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
+ENDIF()
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
