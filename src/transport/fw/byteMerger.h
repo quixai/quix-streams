@@ -9,6 +9,8 @@
 #include <memory>
 #include <mutex>
 
+#include "../../utils/eventHandler.h"
+
 #include "../io/package.h"
 #include "../io/IPublisher.h"
 #include "./byteSplitter.h"
@@ -135,7 +137,7 @@ private:
 public:
 
     /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.
-    std::function<void(const ByteMergerBufferKey&)> onMessageSegmentsPurged = nullptr;
+    EventHandler<const ByteMergerBufferKey&> onMessageSegmentsPurged;
 
 
     /**

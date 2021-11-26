@@ -16,8 +16,7 @@ namespace Quix { namespace Transport {
     bufferOrder_(0),
     bufferCounter_(0)
     {
-        ////TODO: remake onMessageSegmentsPurged for multi-callback solution 
-        byteMerger->onMessageSegmentsPurged = std::bind( &ByteMergingModifier::onMessageSegmentsPurgedInternal, this, std::placeholders::_1 );
+        byteMerger->onMessageSegmentsPurged += std::bind( &ByteMergingModifier::onMessageSegmentsPurgedInternal, this, std::placeholders::_1 );
     }
 
     void ByteMergingModifier::onMessageSegmentsPurgedInternal( const IByteMerger::ByteMergerBufferKey& bufferKey )
