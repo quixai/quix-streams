@@ -108,6 +108,11 @@ public:
     static inline ByteArray initRandom(size_t len)
     {
         auto ret = ByteArray::initEmpty(len);
+        auto rawArray = ret.data();
+        for( int i = 0; i < len; ++i )
+        {
+            rawArray[i] = rand() % ( UINT8_MAX + 1 );
+        }
         return ret;
     };
 

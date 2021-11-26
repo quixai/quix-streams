@@ -49,11 +49,8 @@ public:
 
 class KnownTransportContextKeys
 {
-    /// <summary>
-    ///     The unique identifier, which groups together messages.
-    ///     Type is <see cref="string" />
-    /// </summary>
     public:
+        /// The unique identifier, which groups together messages.
         static const std::string MessageGroupKey;
 };
 
