@@ -11,6 +11,8 @@
 #include "../io/IPublisher.h"
 #include "../io/ISubscriber.h"
 
+#include "../../utils/eventHandler.h"
+
 namespace Quix { namespace Transport {
 
 /**
@@ -33,7 +35,7 @@ public:
     /**
      * The callback that is used when deserialized package is available
      */
-    std::function<void(std::shared_ptr<IPackage>)> onNewPackage;
+    EventHandler<std::shared_ptr<IPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier attemptes to deserialize. Deserialization results is raised via onNewPackage

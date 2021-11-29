@@ -15,13 +15,11 @@ namespace Quix { namespace Transport {
  */
 class ICanCommit{
 
-public:
-
-    class OnCommittedEventArgs{
-    private:
+    class ReadonlyEventArgs{
+    protected:
         void* state_;
     public:
-        inline OnCommittedEventArgs(void* state = nullptr)
+        inline ReadonlyEventArgs(void* state = nullptr)
         :
         state_(state)
         {
@@ -32,45 +30,36 @@ public:
         {
             return state_; 
         }
+    };
 
+    class ReadWriteEventArgs : public ReadonlyEventArgs{
+    public:
         inline void* setState(void* state = nullptr)
         {
             return state_ = state; 
         }
-
     };
 
-    class OnCommittingEventArgs{
-    private:
-        void* state_;
-    public:
 
-        inline OnCommittingEventArgs(void* state = nullptr)
-        :
-        state_(state)
-        {
+public:
 
-        }
+    class OnCommittedEventArgs : public ReadWriteEventArgs { };
 
-        inline void* state()
-        {
-            return state_; 
-        }
-    };
+    class OnCommittingEventArgs : public ReadonlyEventArgs { };
 
     /**
      * Helper method wrapping ICommitter.Commit
      * 
      * @param transportContext The transport context to commit
      */
-    void commit(const TransportContext& transportContext);
+    void commitSingle(const std::shared_ptr<TransportContext>& transportContext);
 
     /**
      * Commits the transport context to the output.
      * 
      * @param transportContexts The transport context to commit
      */
-    virtual void commit(const std::vector<TransportContext>& transportContexts) = 0;
+    virtual void commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts) = 0;
 
     /**
      * Event is raised when the transport context finished committing

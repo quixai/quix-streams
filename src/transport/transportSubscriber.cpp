@@ -23,12 +23,12 @@ namespace Quix { namespace Transport {
         for (int index = 1; index < outputsAndInputs.size(); index++)
         {
             auto modifier = outputsAndInputs[index];
-            ((ISubscriber*)previous)->onNewPackage = std::bind( &IPublisher::send, (IPublisher*)modifier, std::placeholders::_1 );
+            ((ISubscriber*)previous)->onNewPackage += std::bind( &IPublisher::send, (IPublisher*)modifier, std::placeholders::_1 );
             previous = modifier;
         }
 
         // Connect last output to TransportSubscriber (this class)
-        ((ISubscriber*)previous)->onNewPackage = std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
+        ((ISubscriber*)previous)->onNewPackage += std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
 
     }
 

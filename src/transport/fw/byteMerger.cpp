@@ -80,7 +80,7 @@ namespace Quix { namespace Transport {
     {
         auto& packageBytes = originalPackage->value();
         std::string key;
-        originalPackage->transportContext().tryGetValue(KnownTransportContextKeys::MessageGroupKey, key);
+        originalPackage->transportContext()->tryGetValue(KnownTransportContextKeys::MessageGroupKey, key);
         return this->tryMerge(originalPackage, key, outPackage, bufferId);
     }
 

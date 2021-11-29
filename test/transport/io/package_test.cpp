@@ -22,7 +22,7 @@ TEST(transportPackageTest, GenericConstructor_ShouldSetEmptyTransportContext)
     Package<TestModel> package(model);
 
     // Act
-    EXPECT_TRUE( package.transportContext().empty() );
+    EXPECT_TRUE( package.transportContext()->empty() );
 }
 
 TEST(transportPackageTest, GenericConstructor_ShouldSetTypeToProvided)

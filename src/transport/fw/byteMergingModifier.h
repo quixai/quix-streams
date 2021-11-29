@@ -15,6 +15,8 @@
 #include "./byteSplitter.h"
 #include "./byteMerger.h"
 
+#include "../../utils/eventHandler.h"
+
 namespace Quix { namespace Transport {
 
 
@@ -46,7 +48,7 @@ private:
     bool tryAddToBuffer(
         IByteMerger::ByteMergerBufferKey& bufferId, 
         std::shared_ptr<ByteArrayPackage> package, 
-        const TransportContext& transportContext
+        const std::shared_ptr<TransportContext>& transportContext 
     );
 
     bool removeFromBuffer(
@@ -60,7 +62,7 @@ public:
     /**
      * The callback that is used when the split package is available
      */
-    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
+    EventHandler<std::shared_ptr<ByteArrayPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier merged if necessary. Merged results are raised via onNewPackage

@@ -25,7 +25,7 @@ class IRevocationPublisher{
 
         }
 
-        inline void* state()
+        inline void* state() const
         {
             return state_; 
         }
@@ -39,17 +39,15 @@ class IRevocationPublisher{
 
 public:
 
-    class OnRevokingEventArgs : public BaseRevocationArgs {
-    };
+    class OnRevokingEventArgs : public BaseRevocationArgs { };
 
-    class OnRevokedEventArgs : public BaseRevocationArgs {
-    };
+    class OnRevokedEventArgs : public BaseRevocationArgs { };
 
 
     /**
      * Raised when losing access to source depending on implementation
      * Argument is the state which describes what is being revoked, depending on implementation
-     */
+     */ 
     EventHandler<const OnRevokingEventArgs&> onRevoking;
 
     /**
@@ -66,7 +64,7 @@ public:
      * 
      * @return Contexts affected by the state
      */
-    virtual std::vector<TransportContext> filterRevokedContexts(void* state, std::vector<TransportContext> contexts) = 0;
+    virtual std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(void* state, std::vector<std::shared_ptr<TransportContext>> contexts) = 0;
 
 
 };

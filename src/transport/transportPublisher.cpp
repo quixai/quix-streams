@@ -16,13 +16,13 @@ namespace Quix { namespace Transport {
         if(byteSplitter != nullptr)
         {
             //pipe serializer into splitter and then to the input
-            serializingModifier_.onNewPackage = std::bind( &ByteSplittingModifier::send, &byteSplittingModifier_, std::placeholders::_1 );
-            byteSplittingModifier_.onNewPackage = std::bind( &IPublisher::send, input, std::placeholders::_1 );
+            serializingModifier_.onNewPackage += std::bind( &ByteSplittingModifier::send, &byteSplittingModifier_, std::placeholders::_1 );
+            byteSplittingModifier_.onNewPackage += std::bind( &IPublisher::send, input, std::placeholders::_1 );
         }
         else
         {
             //pipe the serializer directly to the input
-            serializingModifier_.onNewPackage = std::bind( &IPublisher::send, input, std::placeholders::_1 );
+            serializingModifier_.onNewPackage += std::bind( &IPublisher::send, input, std::placeholders::_1 );
         }
 
     }

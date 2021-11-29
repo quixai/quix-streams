@@ -10,6 +10,8 @@
 #include "./codecs/codecBundle.h"
 #include "../io/IPublisher.h"
 
+#include "../../utils/eventHandler.h"
+
 namespace Quix { namespace Transport {
 
 /**
@@ -36,7 +38,7 @@ public:
     /**
      * The callback that is used when serialized package is available
      */
-    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
+    EventHandler<std::shared_ptr<ByteArrayPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier attemptes to serialize. Serialization result is raised via <see cref="OnNewPackage"/>

@@ -35,7 +35,8 @@ public:
         return *this;
     } 
 
-    inline void operator()(_ArgTypes... __args) const{
+    inline void operator()(_ArgTypes... __args) const
+    {
         for( auto func: callbacks_ )
         {
             func( __args... );

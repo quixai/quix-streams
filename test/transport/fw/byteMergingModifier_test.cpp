@@ -81,7 +81,7 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsBytes_ShouldRaisePackageAndRetu
 
 
     std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         nonGeneric.push_back(package);
     };
 
@@ -183,7 +183,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
 
 
     std::shared_ptr<ByteArrayPackage> receivedPackage(nullptr);
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         receivedPackage = package;
     };
 
@@ -197,7 +197,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
     // Assert
     ASSERT_NE( receivedPackage.get(), nullptr );
     string ret("");
-    receivedPackage->transportContext().tryGetValue("Package", ret);
+    receivedPackage->transportContext()->tryGetValue("Package", ret);
     ASSERT_EQ( ret , "1" );
 }
 
@@ -377,7 +377,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherPackages_Sh
     expectedOrder.push_back(p3);
 
     vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         packagesReceived.push_back(package);
     };
     
@@ -486,7 +486,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
 
 
     vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         packagesReceived.push_back(package);
     };
 
@@ -553,7 +553,7 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsNull_ShouldNotRaisePackageAndRe
     std::shared_ptr<ByteArrayPackage> nongeneric( nullptr );
 
     ByteMergingModifier modifier(&merger);
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         nongeneric = package;
     };
 

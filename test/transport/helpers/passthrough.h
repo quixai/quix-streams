@@ -32,7 +32,7 @@ public:
         {
             callback_(package);
         }
-        else if(onNewPackage != nullptr)
+        else
         {
             onNewPackage(package);
         }

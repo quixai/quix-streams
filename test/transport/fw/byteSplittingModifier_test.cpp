@@ -75,7 +75,7 @@ TEST(byteSplittingModifierTest, Modify_ByteSplitDoesntHappen_ShouldRaisePackage)
     ByteSplittingModifier modifier(&splitter);
 
     std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         nonGeneric.push_back(package);
     };
 
@@ -133,7 +133,7 @@ TEST(byteSplittingModifierTest, Modify_ByteSplitDoesntHappen_WithVectorIterator_
     ByteSplittingModifier modifier(&splitter);
 
     std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         nonGeneric.push_back(package);
     };
 
@@ -200,7 +200,7 @@ TEST(byteSplittingModifierTest, Modify_ByteSplitDoesHappen_ShouldRaisePackagesAn
     ByteSplittingModifier modifier(&splitter);
 
     std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
+    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
         nonGeneric.push_back(package);
     };
 

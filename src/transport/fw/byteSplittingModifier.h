@@ -7,6 +7,8 @@
 #include "../io/IPublisher.h"
 #include "./byteSplitter.h"
 
+#include "../../utils/eventHandler.h"
+
 namespace Quix { namespace Transport {
 
 
@@ -27,7 +29,7 @@ public:
     /**
      * The callback that is used when the split package is available
      */
-    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
+    EventHandler<std::shared_ptr<ByteArrayPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier splits if necessary. Split results are raised via onNewPackage

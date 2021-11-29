@@ -163,7 +163,7 @@ namespace Quix { namespace Transport {
     bool ByteMergingModifier::tryAddToBuffer(
         IByteMerger::ByteMergerBufferKey& bufferId, 
         std::shared_ptr<ByteArrayPackage> value, 
-        const TransportContext& transportContext 
+        const std::shared_ptr<TransportContext>& transportContext 
     )
     {
 
