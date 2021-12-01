@@ -14,7 +14,7 @@
 #include <algorithm>
 
 
-namespace Quix { namespace Transport {
+namespace Quix { 
 
 
 /****
@@ -53,4 +53,4 @@ public:
 
 };
 
-} }
+}

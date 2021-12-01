@@ -69,7 +69,7 @@ public:
      : 
      len_(0), 
      start_(0), 
-     data_(std::shared_ptr<uint8_t>(new uint8_t[0], std::default_delete<uint8_t[]>()))  // TODO: this is maybe unneccessary allocation
+     data_(nullptr)
     {
         
     };
@@ -165,7 +165,7 @@ public:
         return 
             len_ == other.len() 
                 && 
-            memcmp(data(), other.data(), len_) == 0
+            (len_ <= 0 || memcmp(data(), other.data(), len_) == 0)
             ;
     }
 

@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-#include "./exceptions/invalidOperationException.h"
+#include "../../exceptions/invalidOperationException.h"
 
 #include "./commitModifier.h"
 

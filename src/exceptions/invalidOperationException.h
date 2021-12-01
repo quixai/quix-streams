@@ -3,7 +3,7 @@
 #include <string>
 #include <functional>
 
-namespace Quix { namespace Transport {
+namespace Quix {
 
 /**
  * Raised when an error has occured during deserialization
@@ -22,4 +22,4 @@ public:
     };
 };
 
-} }
+}

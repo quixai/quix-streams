@@ -1,6 +1,6 @@
 #include "./timer.h"
 
-namespace Quix { namespace Transport {
+namespace Quix { 
 
     void Timer::run()
     {
@@ -128,4 +128,4 @@ namespace Quix { namespace Transport {
 
 
 
-} }
+}

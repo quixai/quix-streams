@@ -5,7 +5,7 @@
 #include <mutex>
 
 using namespace std;
-using namespace Quix::Transport;
+using namespace Quix;
 
 
 class MyException : public std::exception { };
@@ -118,6 +118,12 @@ TEST(eventHandlerTest, TestRemove2)
 
     //increment only 2
     eventHandler -= fun1;
+    eventHandler();
+    EXPECT_EQ( cnt1, 2 );
+    EXPECT_EQ( cnt2, 2 );
+
+    //not increment anything
+    eventHandler -= fun2;
     eventHandler();
     EXPECT_EQ( cnt1, 2 );
     EXPECT_EQ( cnt2, 2 );

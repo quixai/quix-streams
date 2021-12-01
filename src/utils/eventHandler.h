@@ -1,12 +1,16 @@
 #pragma once
 
+#include <unordered_set>
+
 #include <vector>
 #include <functional>
+#include <string>
 
 #include <algorithm>
 
+#include "../exceptions/invalidOperationException.h"
 
-namespace Quix { namespace Transport {
+namespace Quix { 
 
 
 /****
@@ -33,6 +37,8 @@ private:
     /// array where all associated callbacks are stored
     std::vector<std::function<void(_ArgTypes...)>> callbacks_;
 
+    // /// array where all associated callbacks are stored
+    // std::unordered_set<size_t> callbacksSet_;
 
 
 
@@ -65,6 +71,15 @@ public:
 
     inline EventHandler<_ArgTypes...>& operator+=(const std::function<void(_ArgTypes...)>& func)
     {
+        // auto functionAddress = getAddress(func);
+
+        // auto it = callbacksSet_.find(functionAddress);
+        // if( it != callbacksSet_.end() )
+        // {
+        //     throw InvalidOperationException("cannot add callback twice");
+        // }
+
+        // callbacksSet_.insert(functionAddress);
         callbacks_.push_back(func);
         return *this;
     } 
@@ -77,12 +92,14 @@ public:
         auto it = callbacks_.cbegin();
         auto end = callbacks_.cend();
 
-        auto funcAddress = getAddress( func );
+        auto functionAddress = getAddress(func);
+
+        // callbacksSet_.erase(functionAddress);
 
         while( it != end )
         {
 
-            if( getAddress(*it), funcAddress )
+            if( getAddress(*it), functionAddress )
             {
                 callbacks_.erase(it);
                 break;
@@ -102,4 +119,4 @@ public:
 
 };
 
-} }
+}
