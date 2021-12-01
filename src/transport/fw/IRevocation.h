@@ -48,13 +48,13 @@ public:
      * Raised when losing access to source depending on implementation
      * Argument is the state which describes what is being revoked, depending on implementation
      */ 
-    EventHandler<const OnRevokingEventArgs&> onRevoking;
+    EventHandler<IRevocationPublisher*, const OnRevokingEventArgs&> onRevoking;
 
     /**
      * Raised when lost access to source depending on implementation
      * Argument is the state which describes what got revoked, depending on implementation
      */
-    EventHandler<const OnRevokedEventArgs&> onRevoked;
+    EventHandler<IRevocationPublisher*, const OnRevokedEventArgs&> onRevoked;
 
     /**
      * Filters contexts affected by the revocation.

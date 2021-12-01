@@ -4,6 +4,8 @@
 
 #include "../../utils/eventHandler.h"
 
+#include "./IRevocation.h"
+
 #include <memory>
 #include <vector>
 
@@ -64,12 +66,12 @@ public:
     /**
      * Event is raised when the transport context finished committing
      */
-    EventHandler<const OnCommittedEventArgs&> onCommitted;
+    EventHandler<IRevocationPublisher*, const OnCommittedEventArgs&> onCommitted;
         
     /**
      * Event is raised when the transport context starts committing. It is not guaranteed to be raised if underlying broker initiates commit on its own
      */
-    EventHandler<const OnCommittingEventArgs&> onCommitting;
+    EventHandler<IRevocationPublisher*, const OnCommittingEventArgs&> onCommitting;
 
 };
 

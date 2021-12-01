@@ -82,6 +82,15 @@ private:
 
     void onCloseInternal();
 
+    void subscribeOnCloseInternal();
+    std::function<void()> subscribeOnClose_ = nullptr;
+
+    void subscribeCommittedHandlerInternal(IRevocationPublisher*, const OnCommittedEventArgs&);
+    std::function<void(IRevocationPublisher*, const OnCommittedEventArgs&)> subscribeCommittedHandler_ = nullptr;
+
+    void subscribeCommittingHandlerInternal(IRevocationPublisher*, const OnCommittingEventArgs&);
+    std::function<void(IRevocationPublisher*, const OnCommittingEventArgs&)> subscribeCommittingHandler_ = nullptr;
+
 public:
 
     //TODO: remove
@@ -90,6 +99,10 @@ public:
     CommitModifier(const CommitOptions& commitOptions);
 
     void commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts);
+
+    void subscribe(ICanCommit* committer);
+    void subscribe(IRevocationPublisher* revocationPublisher);
+
 
     void close();
 

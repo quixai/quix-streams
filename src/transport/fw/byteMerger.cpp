@@ -9,6 +9,13 @@ namespace Quix { namespace Transport {
 
     using namespace std;
 
+    ByteMerger::ByteMerger()
+    :
+    buffer_()
+    {
+
+    }
+
     bool ByteMerger::tryMerge
     (
         shared_ptr<ByteArrayPackage>    originalPackage, 

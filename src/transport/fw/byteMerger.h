@@ -208,6 +208,8 @@ private:
 
 public:
 
+    ByteMerger();
+
 
     /// <summary>
     /// Raised when message segments of the specified buffer id have been purged. Reason could be timout or similar.

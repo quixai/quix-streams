@@ -9,6 +9,8 @@
 namespace Quix { namespace Transport {
 
 
+
+
 /**
  * Class representing the Array segment with its length and start
  * 
@@ -20,6 +22,8 @@ private:
     const size_t len_;
     const size_t start_;
     const std::shared_ptr<uint8_t> data_;
+
+    static uint8_t zerolenarr[1];
 
 public:
     /**
@@ -65,10 +69,10 @@ public:
      : 
      len_(0), 
      start_(0), 
-     data_(nullptr) 
-     {
-         
-     };
+     data_(std::shared_ptr<uint8_t>(new uint8_t[0], std::default_delete<uint8_t[]>()))  // TODO: this is maybe unneccessary allocation
+    {
+        
+    };
 
     /**
      *  Copy constructor

@@ -5,6 +5,8 @@
 
 #include <algorithm>
 
+#include "./exceptions/invalidOperationException.h"
+
 #include "./commitModifier.h"
 
 namespace Quix { namespace Transport {
@@ -50,8 +52,58 @@ namespace Quix { namespace Transport {
         {
             onSend_ = std::bind( &CommitModifier::onSendOnCommitEveryGt1, this, std::placeholders::_1 );
         }
-
     }
+
+    void CommitModifier::subscribe(ICanCommit* committer)
+    {
+        if (this->committer_ != nullptr)
+        {
+            throw InvalidOperationException("Already connected to a committer");
+        }
+        this->committer_ = committer;
+
+        this->subscribeCommittedHandler_    = std::bind( &CommitModifier::subscribeCommittedHandlerInternal, this, std::placeholders::_1, std::placeholders::_2 );
+        this->committer_->onCommitted       += this->subscribeCommittedHandler_;
+
+        this->subscribeCommittingHandler_   = std::bind( &CommitModifier::subscribeCommittingHandlerInternal, this, std::placeholders::_1, std::placeholders::_2 );
+        this->committer_->onCommitting      += this->subscribeCommittingHandler_;
+
+        this->subscribeOnClose_             = std::bind( &CommitModifier::subscribeOnCloseInternal, this );
+        this->onClose                       += this->subscribeOnClose_;
+    }
+
+    void CommitModifier::subscribeOnCloseInternal()
+    {
+        this->committer_->onCommitted -= this->subscribeCommittedHandler_;
+        this->committer_->onCommitting -= this->subscribeCommittingHandler_;
+    }
+
+    void CommitModifier::subscribeCommittedHandlerInternal( IRevocationPublisher* sender, const OnCommittedEventArgs& args )
+    {
+        this->onCommitted(sender, args);
+    }
+
+    void CommitModifier::subscribeCommittingHandlerInternal( IRevocationPublisher* sender, const OnCommittingEventArgs& args )
+    {
+        this->onCommitting(sender, args);
+    }
+
+    void CommitModifier::subscribe( IRevocationPublisher* revocationPublisher )
+    {
+        // if ( this->onRevoked_ != nullptr )
+        // {
+
+        //     //TODO: maybe 
+        //     revocationPublisher->onRevoked += onRevoked_;
+        //     this.onClose += () => revocationPublisher.OnRevoked -= this->onRevoked_;
+        // }
+
+        // if ( onRevoking_ != nullptr )
+        // {
+        //     revocationPublisher->onRevoking += onRevoking_;
+        //     this.onClose += () => revocationPublisher.OnRevoking -= this.onRevoking;
+        // }
+    }    
 
     void CommitModifier::onSendOnAutocommitDisabled(std::shared_ptr<IPackage> package) const
     {
