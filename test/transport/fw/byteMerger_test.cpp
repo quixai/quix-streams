@@ -25,11 +25,23 @@ void getSplitData(vector<shared_ptr<ByteArrayPackage>>& splitData, shared_ptr<By
     splitData = splitter.split(originalData);
 }
 
+void getSplitDataFullPackets(vector<shared_ptr<ByteArrayPackage>>& splitData, shared_ptr<ByteArrayPackage>& originalData, int packets)
+{
+    ByteSplitter splitter(50);
+    auto length = (50 - ByteSplitProtocolHeader::size()) * packets; // just a bit less than max;
+
+    originalData = shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(ByteArray::initRandom(length))
+                    );
+
+    splitData = splitter.split(originalData);
+}
+
 TEST(byteMergerTest, Merge_WithDataThatIsNotSplit_ShouldReturnSameBytes) 
 {
     // Arrange
     uint8_t rawdata[17]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-    ByteArray packet = ByteArray::initRandom(17);
+    ByteArray packet = ByteArray::initFromArray(rawdata, 17);
     shared_ptr<ByteArrayPackage> inpPackage(
             new ByteArrayPackage(packet)
         );
@@ -48,6 +60,33 @@ TEST(byteMergerTest, Merge_WithDataThatIsNotSplit_ShouldReturnSameBytes)
     // Assert
     EXPECT_NE( outPackage.get(), nullptr );
     EXPECT_EQ( outPackage->value(), inpPackage->value() );
+}
+
+TEST(byteMergerTest, Merge_WithSplitDataNotLastMessageFullPackets_ShouldReturnNull) 
+{
+    // Arrange
+    ByteMerger merger;  
+    vector<shared_ptr<ByteArrayPackage>> splitData;
+    shared_ptr<ByteArrayPackage> originalData( nullptr );
+
+    getSplitDataFullPackets(splitData, originalData, 2);
+
+    // Act & Assert
+    for( size_t index = 0; index < splitData.size() - 1; ++index )
+    {
+        if( index >= splitData.size() - 1 )
+        {
+            // last message is tested elsewhere
+            break;
+        }
+        auto& segment = splitData[index];
+
+        shared_ptr<ByteArrayPackage> outPackage(nullptr);
+        auto result = merger.tryMerge(segment, string(""), outPackage);
+        ASSERT_FALSE( result );
+        ASSERT_EQ( outPackage.get(), nullptr );
+    }
+
 }
 
 TEST(byteMergerTest, Merge_WithSplitDataNotLastMessage_ShouldReturnNull) 

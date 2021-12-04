@@ -2,6 +2,7 @@
 #include "../io/IPackage.h"
 #include "./byteSplitter.h"
 
+#include <cmath>        // ceil
 #include <cstring>
 #include <sstream>
 
@@ -14,6 +15,7 @@ namespace Quix { namespace Transport {
 
     ByteSplitter::ByteSplitter(const size_t maxMessageSize) : 
         maxMessageSize_(maxMessageSize), 
+        messageId(rand()),
         maxMessageSizeWithoutHeader_(maxMessageSize - ByteSplitProtocolHeader::size())
     {
         if( maxMessageSize <= ByteSplitProtocolHeader::size() ) 
@@ -77,14 +79,14 @@ namespace Quix { namespace Transport {
             );            
         }
 
-        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+        uint8_t maxIndex = ceil( originalLen / (float)maxMessageSizeWithoutHeader_ );
 
         //curIndex is maxIndex + 1
         return IByteSplitter::Iterator(
             originalPackage,                //originalPackage
             maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
             0,              //messageId does not matter
-            maxIndex+1
+            maxIndex
         );
     };
 
@@ -141,16 +143,16 @@ namespace Quix { namespace Transport {
     std::shared_ptr<ByteArrayPackage> IByteSplitter::Iterator::operator*() const
     {
         switch(type_){
-            case IteratorType::splitMessage:
-                goto rest;
             case IteratorType::singleMessage:
                 //not split message
                 return originalPackage_;
             case IteratorType::vectorIterator:
                 return *(iterator_ + curIndex_);
+//            case IteratorType::splitMessage:
+//                goto rest;
         }
 
-        rest:
+//        rest:
         const auto& originalValue = originalPackage_->value(); 
         const size_t originalLen = originalValue.len();
 
@@ -184,7 +186,7 @@ namespace Quix { namespace Transport {
 
         ByteArray packet = ByteArray::prependHeader(
             (uint8_t*)&packetHeader, //adds pointer into the packetHeader
-            sizeof(ByteSplitProtocolHeader),    //header length
+            ByteSplitProtocolHeader::size(),    //header length
             ByteArray(originalValue, toSendDataLength, startDataIndex) //rest of package is subset of original message
         );
 

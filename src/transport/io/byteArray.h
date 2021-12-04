@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <cstring>
 #include <memory>
 
@@ -56,7 +58,7 @@ public:
      len_(data.size()),
      start_(0),
      //initialize array of same size as std::string
-     data_(std::shared_ptr<uint8_t>(new uint8_t[len_], std::default_delete<uint8_t[]>())) 
+     data_(std::shared_ptr<uint8_t>(new uint8_t[data.size()], std::default_delete<uint8_t[]>())) 
     {
         //copy data from string to the array
         memcpy((void*)&(*data_), data.c_str(), len_);
@@ -100,10 +102,28 @@ public:
      */
     static inline ByteArray initEmpty(size_t len)
     {
-        return ByteArray(
+        auto ret = ByteArray(
             std::shared_ptr<uint8_t>(new uint8_t[len], std::default_delete<uint8_t[]>()),
             len
         );
+
+        auto rawArray = ret.data();
+        for( int i = 0; i < len; ++i )
+        {
+            rawArray[i] = 0;
+        }
+
+        return ret;
+    };
+
+    /**
+     *  Initialize the array filled in with random bytes of size len
+     */
+    static inline ByteArray initFromArray(uint8_t* inp, size_t len)
+    {
+        auto ret = ByteArray::initEmpty(len);
+        memcpy(ret.data(), inp, len * sizeof(uint8_t));
+        return ret;
     };
 
     /**

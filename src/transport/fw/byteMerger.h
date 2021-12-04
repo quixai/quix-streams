@@ -49,9 +49,7 @@ public:
             }
         };
 
-        inline ByteMergerBufferKey(const ByteMergerBufferKey& other) = default;
-
-        inline ByteMergerBufferKey(const std::string& msgGroupKey = "", int msgId = INT_MIN)
+        inline ByteMergerBufferKey(const std::string& msgGroupKey = std::string(""), int msgId = INT_MIN)
          :
          msgId_(msgId),
          msgGroupKey_(msgGroupKey)
@@ -61,10 +59,13 @@ public:
 
         inline bool operator==(const ByteMergerBufferKey& other) const 
         {
+            bool is1 = msgId_ == other.msgId_ ;
+            bool is2 = msgGroupKey_ == other.msgGroupKey_;
+
             return 
-                msgId_ == other.msgId_
+                is1
                     &&
-                msgGroupKey_ == other.msgGroupKey_
+                is2
                 ; 
         }
 
@@ -79,6 +80,10 @@ public:
 
         inline const std::string& msgGroupKey() const {
             return msgGroupKey_;
+        }
+
+        inline const int msgId() const {
+            return msgId_;
         }
 
     };

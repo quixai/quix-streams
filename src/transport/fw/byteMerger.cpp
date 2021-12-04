@@ -40,7 +40,7 @@ namespace Quix { namespace Transport {
         IByteMerger::ByteMergerBufferKey&           bufferKey
     )
     {
-        ByteSplitProtocolHeader header;
+        auto header = ByteSplitProtocolHeader();
 
         // is this even a split message ?
         if( !tryGetHeader(originalPackage, header) )
@@ -49,7 +49,6 @@ namespace Quix { namespace Transport {
             return true;
         }
 
-        //add into buffer
         bufferKey = IByteMerger::ByteMergerBufferKey( msgGroupKey, header.msgId() );
         {
             std::lock_guard<std::mutex> guard(bufferLock_);
@@ -58,7 +57,7 @@ namespace Quix { namespace Transport {
                 buffer_.emplace(
                     bufferKey, 
                     shared_ptr<ByteMergerBufferItem>(
-                        new ByteMergerBufferItem(header.maxIndex() + 1)
+                        new ByteMergerBufferItem(header.maxIndex())
                     )
                 );
             }

@@ -128,6 +128,13 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
 
     EXPECT_CALL( 
         merger, 
+        purge(
+            _
+        ) 
+    );
+    
+    EXPECT_CALL( 
+        merger, 
         tryMerge(
             EqByteArrayPackagePtr(p1s1), 
             _,
