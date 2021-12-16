@@ -135,10 +135,43 @@ TEST(timerTest, TimeoutViaChange)
 
     mytimer.change( 200 );
 
-    //wait for another 500ms
+    //wait for another 600ms
     std::this_thread::sleep_for (std::chrono::milliseconds(600));
 
     EXPECT_EQ( mytimer.counter(), 1 );
 }
 
 
+TEST(callbackTimerTest, simpleCallback)
+{
+    //in 200ms interval increment counter
+    int counter = 0;
+
+    CallbackTimer mytimer([&](){ counter++; }, 100);
+
+    EXPECT_EQ( counter, 0 );
+
+    //wait for 220ms
+    std::this_thread::sleep_for (std::chrono::milliseconds(220));
+
+    EXPECT_EQ( counter, 1 );
+}
+
+TEST(callbackTimerTest, changeCallback)
+{
+    //in 200ms interval increment counter
+    int counter1 = 0;
+    int counter2 = 0;
+
+    CallbackTimer mytimer([&](){ counter1++; }, 100);
+    mytimer.setAction([&](){ counter2++;});
+
+    EXPECT_EQ( counter1, 0 );
+    EXPECT_EQ( counter2, 0 );
+
+    //wait for 220ms
+    std::this_thread::sleep_for (std::chrono::milliseconds(220));
+
+    EXPECT_EQ( counter1, 0 );
+    EXPECT_EQ( counter2, 1 );
+}

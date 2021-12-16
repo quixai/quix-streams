@@ -36,20 +36,20 @@ class Timer {
     std::chrono::time_point<std::chrono::system_clock> lastRun_;
 
     std::mutex changePropsLock_;
-    int delay_ = INFINITY;
-    int interval_ = INFINITY;
+    int delay_ = INFINITE;
+    int interval_ = INFINITE;
 
     void run();
 
 public:
-    static const int INFINITY = INT_MAX;
+    static const int INFINITE = INT_MAX;
 
-    void change(int delay = INFINITY, int interval = INFINITY);
+    void change(int delay = INFINITE, int interval = INFINITE);
 
     void stop();
 
-    // Timer(std::function<void()> cbk, int delay = INFINITY, int interval = INFINITY);
-    Timer(int delay = INFINITY, int interval = INFINITY);
+    // Timer(std::function<void()> cbk, int delay = INFINITE, int interval = INFINITE);
+    Timer(int delay = INFINITE, int interval = INFINITE);
 
     virtual void callback() = 0;
 
@@ -61,7 +61,8 @@ public:
 class CallbackTimer : public Timer{
     std::function<void()> cbk_;
     public:
-        CallbackTimer(std::function<void()> cbk_, int delay = INFINITY, int interval = INFINITY);
+        CallbackTimer(std::function<void()> cbk_ = [](){}, int delay = INFINITE, int interval = INFINITE);
+        void setAction(std::function<void()> cbk);
         void callback();
 };
 

@@ -15,17 +15,17 @@ namespace Quix {
             int interval = interval_;
 
             int waitFor;
-            if( delay != INFINITY )
+            if( delay != INFINITE )
             {
                 waitFor = delay;
             }
-            else if( waitFor != INFINITY )
+            else if( waitFor != INFINITE )
             {
                 waitFor = interval;
             }
             else
             {
-                waitFor = INFINITY;
+                waitFor = INFINITE;
             }
 
             std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
@@ -48,17 +48,17 @@ namespace Quix {
             delay = delay_;
             interval = interval_;
 
-            if( delay != INFINITY )
+            if( delay != INFINITE )
             {
                 waitFor = delay;
             }
-            else if( waitFor != INFINITY )
+            else if( waitFor != INFINITE )
             {
                 waitFor = interval;
             }
             else
             {
-                waitFor = INFINITY;
+                waitFor = INFINITE;
             }
 
             //// check elapsed time
@@ -67,9 +67,9 @@ namespace Quix {
             if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
             {
                 // if it is only timeout then reset timer for timeout
-                if( delay != INFINITY )
+                if( delay != INFINITE )
                 {
-                    delay_ = INFINITY;
+                    delay_ = INFINITE;
                 }
 
                 //// execute time
@@ -111,8 +111,8 @@ namespace Quix {
 
         lastRun_ = std::chrono::system_clock::now();
 
-        delay_ = INFINITY;
-        interval_ = INFINITY;
+        delay_ = INFINITE;
+        interval_ = INFINITE;
 
         cond_.notify_all();
     }
@@ -149,6 +149,11 @@ namespace Quix {
     void CallbackTimer::callback()
     {
         cbk_();
+    }
+
+    void CallbackTimer::setAction(std::function<void()> cbk)
+    {
+        cbk_ = cbk;
     }
 
 }

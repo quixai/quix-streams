@@ -7,6 +7,9 @@
 
 #include "../../exceptions/invalidOperationException.h"
 
+#include "../../utils/extensions.h"
+
+
 #include "./commitModifier.h"
 
 namespace Quix { namespace Transport {
@@ -16,7 +19,7 @@ namespace Quix { namespace Transport {
 
     void CommitModifier::onCommitIntervalCallback()
     {
-        this->commitTimer_.change(CallbackTimer::INFINITY, CallbackTimer::INFINITY); // Disable flush timer
+        this->commitTimer_.change(CallbackTimer::INFINITE, CallbackTimer::INFINITE); // Disable flush timer
 
         {
             std::lock_guard<std::mutex> guard(commitCheckLock_);        
@@ -24,16 +27,8 @@ namespace Quix { namespace Transport {
             std::vector<std::shared_ptr<TransportContext>> toCommit;
 
             {
-                std::lock_guard<std::mutex> guard(contextsReadyToCommitLock_);        
-
-                const auto cnt = contextsReadyToCommit_.size();
-
-                toCommit.reserve( cnt );
-                auto it = contextsReadyToCommit_.begin( );
-                for( int i = 0; i < cnt ; ++i, ++it )
-                {
-                    toCommit.push_back( *it );
-                }
+                std::lock_guard<std::mutex> guard(contextsReadyToCommitLock_); 
+                toCommit = listToVec( this->contextsReadyToCommit_ );
             }
 
             if ( !toCommit.empty() )
@@ -82,6 +77,48 @@ namespace Quix { namespace Transport {
 
         if ( commitInterval > 0 )
         {
+            commitTimer_.setAction(
+                                [&](){
+                    this->commitTimer_.change(Timer::INFINITE, Timer::INFINITE);   //disable flush timer
+
+                    /// commitCheckLock
+                    {
+                        std::lock_guard<std::mutex> guard( this->commitCheckLock_ );
+
+                        std::vector<std::shared_ptr<TransportContext>> toCommit;
+                        {
+                            std::lock_guard<std::mutex> guard( this->contextsReadyToCommitLock_ );
+                            toCommit = listToVec( this->contextsReadyToCommit_ );
+                        }
+
+                        if( toCommit.size() > 0 )
+                        {
+                            // logger.LogTrace("Committing {0} contexts due to timer expiring", toCommit.Length);
+                            try
+                            {
+                                this->commit(toCommit);
+                                // logger.LogTrace("Committed {0} contexts due to timer expiring", toCommit.Length);
+                                acknowledgeTransportContext(toCommit);
+                            }
+                            // catch (Exception ex)
+                            catch(...)
+                            {
+                                // logger.LogError(ex, "Failed to commit contexts due to timer expiring.");
+                            }
+
+                        }
+
+                    }   /// commitCheckLock END
+
+
+                    if( this->closed_ ) { return; }
+
+                    this->commitTimer_.change(commitInterval, Timer::INFINITE);   //disable flush timer
+                }
+            );
+            commitTimer_.change(commitInterval);
+
+
             //TODO
         }
 
@@ -227,12 +264,7 @@ namespace Quix { namespace Transport {
             if ( contextsReadyToCommitCntNew < contextsReadyToCommitCnt ) { return; } // in case the condition changed after acquiring the lock
 
             std::vector<std::shared_ptr<TransportContext>> toCommit;
-            toCommit.reserve( contextsReadyToCommitCnt );
-            auto it = contextsReadyToCommit_.begin( );
-            for( int i = 0; i < contextsReadyToCommitCnt ; ++i, ++it )
-            {
-                toCommit.push_back( *it );
-            }
+            toCommit = listToVec( this->contextsReadyToCommit_ );
 
             // logger.LogTrace("Committing contexts due to reaching limit {0}", commitEvery);
             this->commit( toCommit );
@@ -388,6 +420,8 @@ namespace Quix { namespace Transport {
         if (closed_) return;
         closed_ = true;
         onClose();
+
+        commitTimer_.change(Timer::INFINITE, Timer::INFINITE);
     }
 
     void CommitModifier::acknowledgeTransportContext(const std::vector<std::shared_ptr<TransportContext>>& acknowledge)
