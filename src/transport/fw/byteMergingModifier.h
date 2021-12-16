@@ -15,6 +15,8 @@
 #include "./byteSplitter.h"
 #include "./byteMerger.h"
 
+#include "./IModifier.h"
+
 #include "../../utils/eventHandler.h"
 
 namespace Quix { namespace Transport {
@@ -23,7 +25,7 @@ namespace Quix { namespace Transport {
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class ByteMergingModifier: public IPublisher{
+class ByteMergingModifier: public IPublisher, public IModifier{
 private:
 
     int bufferOrder_;

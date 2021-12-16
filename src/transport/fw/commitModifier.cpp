@@ -13,7 +13,56 @@ namespace Quix { namespace Transport {
 
     using namespace std;
 
+
+    void CommitModifier::onCommitIntervalCallback()
+    {
+        this->commitTimer_.change(CallbackTimer::INFINITY, CallbackTimer::INFINITY); // Disable flush timer
+
+        {
+            std::lock_guard<std::mutex> guard(commitCheckLock_);        
+
+            std::vector<std::shared_ptr<TransportContext>> toCommit;
+
+            {
+                std::lock_guard<std::mutex> guard(contextsReadyToCommitLock_);        
+
+                const auto cnt = contextsReadyToCommit_.size();
+
+                toCommit.reserve( cnt );
+                auto it = contextsReadyToCommit_.begin( );
+                for( int i = 0; i < cnt ; ++i, ++it )
+                {
+                    toCommit.push_back( *it );
+                }
+            }
+
+            if ( !toCommit.empty() )
+            {
+
+                try
+                {
+                    commit( toCommit );
+                    // logger.LogTrace("Committed {0} contexts due to timer expiring", toCommit.Length);
+                    acknowledgeTransportContext( toCommit );
+                }
+                catch(...)
+                {
+                    // TODO
+                    
+                    // logger.LogError(ex, "Failed to commit contexts due to timer expiring.");
+                }
+
+            }
+        }
+
+        // if (closed) return;
+        this->commitTimer_.change( commitOptions_.commitInterval ); // Disable flush timer
+    }
+
     CommitModifier::CommitModifier( const CommitOptions& commitOptions )
+    :
+    commitOptions_(commitOptions),
+    commitTimer_( std::bind(&CommitModifier::onCommitIntervalCallback, this) )
     {
         auto commitEvery = commitEvery_ = commitOptions.commitEvery;
         auto autoCommit = commitOptions.autoCommitEnabled;
@@ -88,21 +137,35 @@ namespace Quix { namespace Transport {
         this->onCommitting(sender, args);
     }
 
+    void CommitModifier::onUnsubscribePublisher(IRevocationPublisher* revocationPublisher)
+    {
+        if( this->onRevoked_ != nullptr )
+        {
+            revocationPublisher->onRevoked -= this->onRevoked_;
+        }
+        if( this->onRevoking_ != nullptr )
+        {
+            revocationPublisher->onRevoking -= this->onRevoking_;
+        }
+    }
+
     void CommitModifier::subscribe( IRevocationPublisher* revocationPublisher )
     {
-        // if ( this->onRevoked_ != nullptr )
-        // {
+        if ( this->onRevoked_ != nullptr )
+        {
+            revocationPublisher->onRevoked += this->onRevoked_;
+        }
 
-        //     //TODO: maybe 
-        //     revocationPublisher->onRevoked += onRevoked_;
-        //     this.onClose += () => revocationPublisher.OnRevoked -= this->onRevoked_;
-        // }
+        if ( this->onRevoking_ != nullptr )
+        {
+            revocationPublisher->onRevoking += this->onRevoking_;
+        }
 
-        // if ( onRevoking_ != nullptr )
-        // {
-        //     revocationPublisher->onRevoking += onRevoking_;
-        //     this.onClose += () => revocationPublisher.OnRevoking -= this.onRevoking;
-        // }
+        if ( this->onRevoked_ != nullptr || this->onRevoking_ != nullptr )
+        {
+            this->onClose += std::bind(&CommitModifier::onUnsubscribePublisher, this, revocationPublisher);
+        }
+
     }    
 
     void CommitModifier::onSendOnAutocommitDisabled(std::shared_ptr<IPackage> package) const

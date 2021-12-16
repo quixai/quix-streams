@@ -5,6 +5,7 @@
 #include "../../utils/eventHandler.h"
 
 #include "./IRevocation.h"
+#include "./IModifier.h"
 
 #include <memory>
 #include <vector>
@@ -73,12 +74,22 @@ public:
      */
     EventHandler<IRevocationPublisher*, const OnCommittingEventArgs&> onCommitting;
 
+    /**
+     * @brief Filters contexts that were affected by the commit.
+     * @param state State raised by onCommitted
+     * @param contextsToFilter The contexts to filter
+     * @return Contexts affected by the commit
+     * 
+     */
+    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
+
 };
 
 /**
  * Describes an interface for subscribing to an ICanCommit
  */
-class ICanCommitSubscriber{
+class ICanCommitSubscriber : public IModifier{
+public:
     virtual void subscribe(ICanCommit* committer) = 0; 
 };
 

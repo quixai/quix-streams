@@ -1,5 +1,7 @@
 #include "./timer.h"
 
+#include <iostream>
+
 namespace Quix { 
 
     void Timer::run()
@@ -64,8 +66,16 @@ namespace Quix {
             elapsed = now - lastRun_;
             if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
             {
+                // if it is only timeout then reset timer for timeout
+                if( delay != INFINITY )
+                {
+                    delay_ = INFINITY;
+                }
+
                 //// execute time
-                cbk_();
+                callback();
+
+
 
                 lastRun_ = std::chrono::system_clock::now();
             }
@@ -92,6 +102,7 @@ namespace Quix {
             thread_ = std::thread(&Timer::run, this);
 
         }
+        cond_.notify_all();
     }
 
     void Timer::stop()
@@ -102,13 +113,14 @@ namespace Quix {
 
         delay_ = INFINITY;
         interval_ = INFINITY;
+
+        cond_.notify_all();
     }
 
 
-    Timer::Timer(std::function<void()> cbk, int delay, int interval)
+    Timer::Timer(int delay, int interval)
     :
-    threadShouldBeRunning_(false),
-    cbk_(cbk)
+    threadShouldBeRunning_(false)
     {
         change(delay, interval);
     }
@@ -126,6 +138,17 @@ namespace Quix {
     }
 
 
+    CallbackTimer::CallbackTimer(std::function<void()> cbk, int delay, int interval)
+    :
+    cbk_(cbk),
+    Timer(delay, interval)
+    {
 
+    }
+
+    void CallbackTimer::callback()
+    {
+        cbk_();
+    }
 
 }

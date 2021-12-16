@@ -9,13 +9,16 @@
 
 #include "../../utils/eventHandler.h"
 
+#include "./IModifier.h"
+
+
 namespace Quix { namespace Transport {
 
 
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class ByteSplittingModifier: public IPublisher{
+class ByteSplittingModifier: public IPublisher, IModifier{
 
 private:
     IByteSplitter* byteSplitter_;

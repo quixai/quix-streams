@@ -1,6 +1,10 @@
 #pragma once
 
 #include "./fw/deserializingModifier.h"
+#include "./fw/byteMergingModifier.h"
+#include "./fw/byteMerger.h"
+#include "./fw/commitModifier.h"
+#include "./fw/ICanCommit.h"
 #include "./io/IPackage.h"
 #include "./io/ISubscriber.h"
 #include "./fw/byteSplitter.h"
@@ -11,11 +15,22 @@ namespace Quix { namespace Transport {
 /**
  * A prebuilt pipeline, which deserializes and merges the package's output by the specified ISubscriber
  */
-class TransportSubscriber : public ISubscriber
+class TransportSubscriber : public ISubscriber, public ICanCommit, public IRevocationPublisher
 {
 
 private:
   DeserializingModifier deserializingModifier_;
+  ByteMerger            byteMerger_;
+  ByteMergingModifier   byteMergingModifier_;
+  CommitModifier*       commitModifier_;
+
+  std::function<void(const std::vector<std::shared_ptr<TransportContext>>& acknowledge)> onCommit_;
+
+  void onCommitClass(ICanCommit* previousCanCommitModifier, std::vector<std::shared_ptr<TransportContext>>& acknowledge);
+
+
+  std::function<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>(void *state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter)> onFilterCommittedContexts;
+  std::function<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>(void *state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter)> contextFilterByState;
 
   /**
    * Internal function to handle the package from end of pipeline
@@ -30,6 +45,18 @@ public:
    */
   TransportSubscriber(ISubscriber* subscriber);
 
+  void close();
+
+  void commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts);
+
+  ~TransportSubscriber();
+
+};
+
+class TransportSubscriberOptions
+{
+  public:
+    CommitOptions commitOptions;
 };
 
 } }

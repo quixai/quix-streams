@@ -73,6 +73,7 @@ public:
  * Subscribes to a IRevocationPublisher
  */
 class IRevocationSubscriber{
+public:
     virtual void subscribe(IRevocationPublisher* revocationPublisher) = 0; 
 };
 

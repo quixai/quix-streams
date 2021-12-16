@@ -11,6 +11,8 @@
 #include "../io/IPublisher.h"
 #include "../io/ISubscriber.h"
 
+#include "./IModifier.h"
+
 #include "../../utils/eventHandler.h"
 
 namespace Quix { namespace Transport {
@@ -18,7 +20,7 @@ namespace Quix { namespace Transport {
 /**
  * Modifier, which deserializes the package into the model described in the package.
  */
-class DeserializingModifier : public IPublisher, ISubscriber{
+class DeserializingModifier : public IPublisher, ISubscriber, public IModifier{
 
 private:
     /**

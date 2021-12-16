@@ -109,9 +109,9 @@ namespace Quix { namespace Transport {
     };
 
     bool ByteMerger::tryAssemblePackage(
-        const IByteMerger::ByteMergerBufferKey&          key, 
-        ByteSplitProtocolHeader&            header,
-        std::shared_ptr<ByteArrayPackage>&  outPackage
+        const IByteMerger::ByteMergerBufferKey&             key, 
+        ByteSplitProtocolHeader&                            header,
+        std::shared_ptr<ByteArrayPackage>&                  outPackage
     ) {
 
         std::shared_ptr<ByteMergerBufferItem> bufferItem(nullptr);

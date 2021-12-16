@@ -11,12 +11,15 @@
 
 #include <mutex>
 
+#include "../../utils/timer.h"
 
 #include "../io/package.h"
 #include "../io/IPublisher.h"
 #include "../io/ISubscriber.h"
 #include "./IRevocation.h"
 #include "./ICanCommit.h"
+
+#include "./IModifier.h"
 
 namespace Quix { namespace Transport {
 
@@ -41,9 +44,10 @@ public:
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class CommitModifier : public ICanCommit, IPublisher /*: public ISubscriber, ICanCommit, ICanCommitSubscriber, IRevocationSubscriber */
+class CommitModifier : public ICanCommit, IPublisher, public IModifier /*: public ISubscriber, ICanCommit, ICanCommitSubscriber, IRevocationSubscriber */
 {
 private:
+
     bool closed_ = false;
 
     /**
@@ -66,6 +70,10 @@ private:
     // if they happened out of order
     std::mutex commitCheckLock_;
 
+    CallbackTimer commitTimer_;
+
+    const CommitOptions commitOptions_;
+
 
     void acknowledgeTransportContext(const std::vector<std::shared_ptr<TransportContext>>& acknowledge);
 
@@ -80,6 +88,8 @@ private:
     void onRevokedInternal(IRevocationPublisher*, const IRevocationPublisher::OnRevokedEventArgs&);
     void onRevokingInternal(IRevocationPublisher*, const IRevocationPublisher::OnRevokingEventArgs&);
 
+    void onCommitIntervalCallback();
+
     void onCloseInternal();
 
     void subscribeOnCloseInternal();
@@ -90,6 +100,8 @@ private:
 
     void subscribeCommittingHandlerInternal(IRevocationPublisher*, const OnCommittingEventArgs&);
     std::function<void(IRevocationPublisher*, const OnCommittingEventArgs&)> subscribeCommittingHandler_ = nullptr;
+
+    void onUnsubscribePublisher(IRevocationPublisher* revocationPublisher);
 
 public:
 
@@ -107,6 +119,9 @@ public:
     void close();
 
     void send(std::shared_ptr<IPackage> package);
+
+    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
+
 
 };
 
