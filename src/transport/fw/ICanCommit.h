@@ -37,6 +37,7 @@ class ICanCommit{
 
     class ReadWriteEventArgs : public ReadonlyEventArgs{
     public:
+        inline ReadWriteEventArgs(void* state = nullptr) : ReadonlyEventArgs(state) {}
         inline void* setState(void* state = nullptr)
         {
             return state_ = state; 
@@ -46,9 +47,15 @@ class ICanCommit{
 
 public:
 
-    class OnCommittedEventArgs : public ReadWriteEventArgs { };
+    class OnCommittedEventArgs : public ReadWriteEventArgs {
+    public:
+        inline OnCommittedEventArgs(void* state = nullptr) : ReadWriteEventArgs(state) {}
+    };
 
-    class OnCommittingEventArgs : public ReadonlyEventArgs { };
+    class OnCommittingEventArgs : public ReadonlyEventArgs {
+    public:
+        inline OnCommittingEventArgs(void* state = nullptr) : ReadonlyEventArgs(state) {}
+    };
 
     /**
      * Helper method wrapping ICommitter.Commit
@@ -67,12 +74,12 @@ public:
     /**
      * Event is raised when the transport context finished committing
      */
-    EventHandler<IRevocationPublisher*, const OnCommittedEventArgs&> onCommitted;
+    EventHandler<ICanCommit*, const OnCommittedEventArgs&> onCommitted;
         
     /**
      * Event is raised when the transport context starts committing. It is not guaranteed to be raised if underlying broker initiates commit on its own
      */
-    EventHandler<IRevocationPublisher*, const OnCommittingEventArgs&> onCommitting;
+    EventHandler<ICanCommit*, const OnCommittingEventArgs&> onCommitting;
 
     /**
      * @brief Filters contexts that were affected by the commit.
@@ -81,7 +88,7 @@ public:
      * @return Contexts affected by the commit
      * 
      */
-    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
+    virtual std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter) = 0;
 
 };
 

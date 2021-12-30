@@ -164,17 +164,17 @@ namespace Quix { namespace Transport {
         this->committer_->onCommitting -= this->subscribeCommittingHandler_;
     }
 
-    void CommitModifier::subscribeCommittedHandlerInternal( IRevocationPublisher* sender, const OnCommittedEventArgs& args )
+    void CommitModifier::subscribeCommittedHandlerInternal( ICanCommit* sender, const OnCommittedEventArgs& args )
     {
         this->onCommitted(sender, args);
     }
 
-    void CommitModifier::subscribeCommittingHandlerInternal( IRevocationPublisher* sender, const OnCommittingEventArgs& args )
+    void CommitModifier::subscribeCommittingHandlerInternal( ICanCommit* sender, const OnCommittingEventArgs& args )
     {
         this->onCommitting(sender, args);
     }
 
-    void CommitModifier::onUnsubscribePublisher(IRevocationPublisher* revocationPublisher)
+    void CommitModifier::onUnsubscribePublisher( IRevocationPublisher* revocationPublisher )
     {
         if( this->onRevoked_ != nullptr )
         {
@@ -405,6 +405,14 @@ namespace Quix { namespace Transport {
     }
 
 
+    std::vector<std::shared_ptr<TransportContext>> CommitModifier::filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
+    {
+        return this->committer_ != nullptr
+                 ? 
+                this->committer_->filterCommittedContexts(state, contextsToFilter)
+                 :
+                std::vector<std::shared_ptr<TransportContext>>(); 
+    }
     
 
     void CommitModifier::commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts)

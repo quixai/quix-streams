@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <iostream>
+#include <vector>
 
 
 namespace Quix { namespace Transport {
@@ -17,12 +18,18 @@ namespace Quix { namespace Transport {
     {
 
         // default variables initialization
-        onFilterCommittedContexts = [](void *state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter){
-            return std::vector<std::shared_ptr<Quix::Transport::TransportContext>>();
-        };
-        contextFilterByState = [](void *state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter){
-            return contextsToFilter;
-        };
+        onFilterCommittedContexts_ = [](
+                void *state, 
+                const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter
+            ){
+                return std::vector<std::shared_ptr<Quix::Transport::TransportContext>>();
+            };
+        contextFilterByState_ = [](
+                void *state, 
+                const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter
+            ){
+                return contextsToFilter;
+            };
 
 
 
@@ -50,16 +57,30 @@ namespace Quix { namespace Transport {
         auto previous = firstOutputAndInput;
         for (int index = 0; index < outputsAndInputs.size(); index++)
         {
-            auto modifier = (ISubscriber*)outputsAndInputs[index];
-            ((ISubscriber*)previous)->onNewPackage += std::bind( &IPublisher::send, (IPublisher*)modifier, std::placeholders::_1 );
-            previous = modifier;
+            auto modifierPublisher = dynamic_cast<IPublisher*>(outputsAndInputs[index]);
+
+            auto prevSubscriber = dynamic_cast<ISubscriber*>(previous);
+            prevSubscriber->onNewPackage += std::bind( &IPublisher::send, modifierPublisher, std::placeholders::_1 );
+
+            previous = prevSubscriber;
         }
 
         // Connect last output to TransportSubscriber (this class)
         ((ISubscriber*)previous)->onNewPackage += std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
 
+
+
         // Hook up committing modifiers from front (output) to back (this)
         ICanCommit* previousCanCommitModifier = nullptr;
+
+        //hook up firstOutputAndInput ( subscriber )
+        ICanCommit* committingModifier = dynamic_cast<ICanCommit*>(firstOutputAndInput);
+        if ( committingModifier != nullptr )
+        {
+            previousCanCommitModifier = committingModifier;
+        }
+
+
         for (int index = 0; index < outputsAndInputs.size(); index++)
         {
             auto modifier = outputsAndInputs[index];
@@ -85,19 +106,21 @@ namespace Quix { namespace Transport {
             this->onCommit_ = std::bind(&ICanCommit::commit, previousCanCommitModifier, std::placeholders::_1);
 
             //TODO: onFilterCommittedContexts
-            this->onFilterCommittedContexts = std::bind(&ICanCommit::filterCommittedContexts, previousCanCommitModifier, std::placeholders::_1, std::placeholders::_2);
+            this->onFilterCommittedContexts_ = std::bind(&ICanCommit::filterCommittedContexts, previousCanCommitModifier, std::placeholders::_1, std::placeholders::_2);
             
 
             // bound previousCanCommitModifier->onCommitted += this->onCommited(_1, _2)
             previousCanCommitModifier->onCommitted += std::bind(
-                                                            &EventHandler<Quix::Transport::IRevocationPublisher *, const Quix::Transport::ICanCommit::OnCommittedEventArgs &>::operator(),
+//                                                            &EventHandler<Quix::Transport::IRevocationPublisher *, const Quix::Transport::ICanCommit::OnCommittedEventArgs &>::operator(),
+                                                            &EventHandler<Quix::Transport::ICanCommit *, const Quix::Transport::ICanCommit::OnCommittedEventArgs &>::operator(),
                                                             this->onCommitted, 
                                                             std::placeholders::_1, 
                                                             std::placeholders::_2
                                                         );
             // bound previousCanCommitModifier->onCommitting += this->onCommiting(_1, _2)
             previousCanCommitModifier->onCommitting += std::bind(
-                                                            &EventHandler<Quix::Transport::IRevocationPublisher *, const Quix::Transport::ICanCommit::OnCommittingEventArgs &>::operator(),
+                                                            // &EventHandler<Quix::Transport::IRevocationPublisher *, const Quix::Transport::ICanCommit::OnCommittingEventArgs &>::operator(),
+                                                            &EventHandler<Quix::Transport::ICanCommit *, const Quix::Transport::ICanCommit::OnCommittingEventArgs &>::operator(),
                                                             this->onCommitting, 
                                                             std::placeholders::_1, 
                                                             std::placeholders::_2
@@ -134,7 +157,7 @@ namespace Quix { namespace Transport {
         if ( previousRevocationPublisher != nullptr )
         {
             //TODO
-            this->contextFilterByState = std::bind( &TransportSubscriber::filterCommittedContexts, this, std::placeholders::_1, std::placeholders::_2 );
+            this->contextFilterByState_ = std::bind( &TransportSubscriber::filterCommittedContexts, this, std::placeholders::_1, std::placeholders::_2 );
 
             // propagate this->onRevoked into the previousRevocationPublisher->onRevoked
             previousRevocationPublisher->onRevoked += std::bind(
@@ -156,6 +179,17 @@ namespace Quix { namespace Transport {
 
     }
 
+    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
+    {
+        return 
+            this->onFilterCommittedContexts_ != nullptr 
+                ? 
+            this->onFilterCommittedContexts_(state, contextsToFilter)
+                :
+            std::vector<std::shared_ptr<TransportContext>>()
+            ;
+    }
+
     void TransportSubscriber::commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts)
     {
         this->onCommit_(transportContexts);
@@ -169,6 +203,13 @@ namespace Quix { namespace Transport {
             commitModifier_->close();
         }
     }
+
+
+    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterRevokedContexts(void* state, std::vector<std::shared_ptr<TransportContext>> contexts)
+    {
+        return contextFilterByState_(state, contexts);
+    }
+
 
 
     TransportSubscriber::~TransportSubscriber()

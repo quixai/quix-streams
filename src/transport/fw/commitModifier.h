@@ -44,7 +44,7 @@ public:
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class CommitModifier : public ICanCommit, IPublisher, public IModifier /*: public ISubscriber, ICanCommit, ICanCommitSubscriber, IRevocationSubscriber */
+class CommitModifier : public ICanCommit, IPublisher, public ICanCommitSubscriber, public IRevocationSubscriber /*: public ISubscriber, ICanCommit, ICanCommitSubscriber, IRevocationSubscriber */
 {
 private:
 
@@ -95,11 +95,11 @@ private:
     void subscribeOnCloseInternal();
     std::function<void()> subscribeOnClose_ = nullptr;
 
-    void subscribeCommittedHandlerInternal(IRevocationPublisher*, const OnCommittedEventArgs&);
-    std::function<void(IRevocationPublisher*, const OnCommittedEventArgs&)> subscribeCommittedHandler_ = nullptr;
+    void subscribeCommittedHandlerInternal(ICanCommit*, const OnCommittedEventArgs&);
+    std::function<void(ICanCommit*, const OnCommittedEventArgs&)> subscribeCommittedHandler_ = nullptr;
 
-    void subscribeCommittingHandlerInternal(IRevocationPublisher*, const OnCommittingEventArgs&);
-    std::function<void(IRevocationPublisher*, const OnCommittingEventArgs&)> subscribeCommittingHandler_ = nullptr;
+    void subscribeCommittingHandlerInternal(ICanCommit*, const OnCommittingEventArgs&);
+    std::function<void(ICanCommit*, const OnCommittingEventArgs&)> subscribeCommittingHandler_ = nullptr;
 
     void onUnsubscribePublisher(IRevocationPublisher* revocationPublisher);
 

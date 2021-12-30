@@ -2,6 +2,8 @@
 
 #include "../../utils/eventHandler.h"
 
+#include "../fw/IModifier.h"
+
 #include "./IPackage.h"
 
 namespace Quix { namespace Transport {
@@ -9,7 +11,7 @@ namespace Quix { namespace Transport {
 /**
  * Interface for providing a class a way to push Package to listener
  */
-class ISubscriber{
+class ISubscriber : public IModifier{
 
 public:
     /**

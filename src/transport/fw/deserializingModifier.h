@@ -20,7 +20,7 @@ namespace Quix { namespace Transport {
 /**
  * Modifier, which deserializes the package into the model described in the package.
  */
-class DeserializingModifier : public IPublisher, ISubscriber, public IModifier{
+class DeserializingModifier : public IPublisher, public ISubscriber{
 
 private:
     /**
