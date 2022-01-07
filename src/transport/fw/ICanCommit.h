@@ -29,9 +29,14 @@ class ICanCommit{
 
         }
 
-        inline void* state()
+        inline void* state() const
         {
             return state_; 
+        }
+
+        bool operator==(const ReadonlyEventArgs& other) const
+        {
+            return state() == other.state();
         }
     };
 

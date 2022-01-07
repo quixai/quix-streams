@@ -23,6 +23,7 @@ using namespace Quix::Transport;
 
 
 using ::testing::_;
+using ::testing::Return;
 
 ///TODO: Commiting & Revoking tests
 
@@ -158,3 +159,125 @@ TEST(transportSubscriber, Setup_OutputRaisesRevokingEvent_ShouldAlsoRaiseRevokin
     ASSERT_EQ( revokingInvokes.size(), 1 );
     ASSERT_EQ( revokingInvokes[0], expectedArgs );
 }
+
+
+TEST(transportSubscriber, Setup_OutputRaisesRevokedEvent_ShouldAlsoRaiseRevokedEvent)
+{
+    // Arrange
+    MyMockRevocationOutput output;
+    TransportSubscriber transportSubscriber(&output);
+    std::vector<IRevocationPublisher::OnRevokedEventArgs> revokedInvokes;
+
+    transportSubscriber.onRevoked += [&](IRevocationPublisher* sender, const IRevocationPublisher::OnRevokedEventArgs& args)
+            {
+                revokedInvokes.push_back(args);
+            };
+
+    // Act
+    IRevocationPublisher::OnRevokedEventArgs expectedArgs;
+
+    // .Net equivalent of output.OnRevoking += Raise.eventWith
+    output.onRevoked(&output, expectedArgs);
+
+    // Assert
+    ASSERT_EQ( revokedInvokes.size(), 1 );
+    ASSERT_EQ( revokedInvokes[0], expectedArgs );
+}
+
+TEST(transportSubscriber, Setup_OutputSupportsRevocationPublisher_FilterRevokedContextsShouldBeSameAsOutputs)
+{
+    // As of writing this test, No other modifier within TransportOutput supports IRevocationFilter,
+    // meaning if in future this changes, this test will have to be updated to whatever the new logic is.
+    // For now it is assumed that the provided output might implement IRevocationPublisher
+    // Arrange
+
+    // Arrange
+    MyMockRevocationOutput output;
+    TransportSubscriber transportSubscriber(&output);
+    
+    std::vector<std::shared_ptr<TransportContext>> expectedResult;
+
+    auto tc = new TransportContext();
+    (*tc)["abcde"] = "1";
+    expectedResult.push_back( std::shared_ptr<TransportContext>( tc ) );
+
+    EXPECT_CALL( output, filterRevokedContexts(_, _) )
+        .Times(1).WillRepeatedly(
+            Return(expectedResult)
+        );
+
+    // Act
+    auto result = transportSubscriber.filterRevokedContexts( nullptr, std::vector<std::shared_ptr<TransportContext>>() );
+
+    // Assert
+    ASSERT_EQ( result.size(), expectedResult.size() );
+    for( size_t i = 0; i < result.size(); ++i ) 
+    { 
+        ASSERT_EQ( result[i], expectedResult[i] );
+    }
+    
+}
+
+class MyMockCanCommitOutput : public ISubscriber, public ICanCommit {
+
+ public:
+    MOCK_METHOD1( commit ,    void(const std::vector<std::shared_ptr<TransportContext>>& transportContexts) );
+    MOCK_METHOD2( filterCommittedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter) );
+
+};
+
+
+TEST(transportSubscriber, Setup_OutputRaisesCommitted_ShouldAlsoRaiseCommitted)
+{
+    // Arrange
+    MyMockCanCommitOutput output;
+    std::vector<ICanCommit::OnCommittedEventArgs> committed;
+
+    TransportSubscriber transportSubscriber(&output, []( TransportSubscriberOptions& o ){ o.commitOptions.commitEvery = 1; });
+    transportSubscriber.onCommitted += [&](ICanCommit* sender, const ICanCommit::OnCommittedEventArgs& args) {
+        committed.push_back(args);
+    };
+
+    // Act
+    ICanCommit::OnCommittedEventArgs eArgs;
+    output.onCommitted(&output, eArgs);
+
+    // Assert
+    std::vector<ICanCommit::OnCommittedEventArgs> expectedResult;
+    expectedResult.push_back(eArgs);
+
+    // Assert
+    ASSERT_EQ( committed.size(), expectedResult.size() );
+    for( size_t i = 0; i < committed.size(); ++i ) 
+    { 
+        ASSERT_EQ( committed[i], expectedResult[i] );
+    }
+};
+
+TEST(transportSubscriber, Setup_OutputRaisesCommitting_ShouldAlsoRaiseCommitting)
+{
+    // Arrange
+    MyMockCanCommitOutput output;
+    std::vector<ICanCommit::OnCommittingEventArgs> committing;
+
+    TransportSubscriber transportSubscriber(&output, []( TransportSubscriberOptions& o ){ o.commitOptions.commitEvery = 1; });
+    transportSubscriber.onCommitting += [&](ICanCommit* sender, const ICanCommit::OnCommittingEventArgs& args) {
+        committing.push_back(args);
+    };
+
+    // Act
+    ICanCommit::OnCommittingEventArgs eArgs;
+    output.onCommitting(&output, eArgs);
+
+    // Assert
+    std::vector<ICanCommit::OnCommittingEventArgs> expectedResult;
+    expectedResult.push_back(eArgs);
+
+    // Assert
+    ASSERT_EQ( committing.size(), expectedResult.size() );
+    for( size_t i = 0; i < committing.size(); ++i ) 
+    { 
+        ASSERT_EQ( committing[i], expectedResult[i] );
+    }
+};
+

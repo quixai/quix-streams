@@ -52,16 +52,16 @@ public:
    * @param subscriber The subscriber to listen to
    */
   TransportSubscriber(ISubscriber* subscriber);
-
   TransportSubscriber(ISubscriber* subscriber, std::function<void(TransportSubscriberOptions&)> configureOptions);
 
   std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(void* state, std::vector<std::shared_ptr<TransportContext>> contexts);  
-
   std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
 
   void onRevokingInternal(Quix::Transport::IRevocationPublisher *,  const Quix::Transport::IRevocationPublisher::OnRevokingEventArgs &);
-
   void onRevokedInternal(Quix::Transport::IRevocationPublisher *,   const Quix::Transport::IRevocationPublisher::OnRevokedEventArgs & );
+
+  void onCommittingInternal(Quix::Transport::ICanCommit *, const Quix::Transport::ICanCommit::OnCommittingEventArgs & );
+  void onCommittedInternal( Quix::Transport::ICanCommit *, const Quix::Transport::ICanCommit::OnCommittedEventArgs &  );
 
   void close();
 
