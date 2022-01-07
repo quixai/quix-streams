@@ -35,7 +35,7 @@ public:
 
     const Quix::Transport::ModelKey modelKey() const
     {
-        return Quix::Transport::ModelKey("TestModel");
+        return Quix::Transport::ModelKey::forType<TestModel>();
     };
 
     bool operator==(const TestModel& other) const;
@@ -46,7 +46,7 @@ public:
         _init()
         {
             Quix::Transport::CodecRegistry::instance()->registerCodec(
-                Quix::Transport::ModelKey("TestModel"), 
+                Quix::Transport::ModelKey::forType<TestModel>(), 
                 &defaultCodec
             );
         }

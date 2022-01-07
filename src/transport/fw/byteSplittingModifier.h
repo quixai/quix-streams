@@ -18,7 +18,7 @@ namespace Quix { namespace Transport {
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class ByteSplittingModifier: public IPublisher, IModifier{
+class ByteSplittingModifier: public IModifier{
 
 private:
     IByteSplitter* byteSplitter_;
@@ -28,11 +28,6 @@ public:
      * Initializes a new instance of ByteSplittingModifier
      */
     ByteSplittingModifier(IByteSplitter* byteSplitter);
-
-    /**
-     * The callback that is used when the split package is available
-     */
-    EventHandler<std::shared_ptr<ByteArrayPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier splits if necessary. Split results are raised via onNewPackage

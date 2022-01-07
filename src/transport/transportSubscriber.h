@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "./fw/deserializingModifier.h"
 #include "./fw/byteMergingModifier.h"
 #include "./fw/byteMerger.h"
@@ -11,6 +13,12 @@
 
 
 namespace Quix { namespace Transport {
+
+class TransportSubscriberOptions
+{
+  public:
+    CommitOptions commitOptions;
+};
 
 /**
  * A prebuilt pipeline, which deserializes and merges the package's output by the specified ISubscriber
@@ -45,6 +53,8 @@ public:
    */
   TransportSubscriber(ISubscriber* subscriber);
 
+  TransportSubscriber(ISubscriber* subscriber, std::function<void(TransportSubscriberOptions&)> configureOptions);
+
   std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(void* state, std::vector<std::shared_ptr<TransportContext>> contexts);  
 
   std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
@@ -55,12 +65,6 @@ public:
 
   ~TransportSubscriber();
 
-};
-
-class TransportSubscriberOptions
-{
-  public:
-    CommitOptions commitOptions;
 };
 
 } }

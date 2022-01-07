@@ -14,9 +14,16 @@ namespace Quix { namespace Transport {
 
     TransportSubscriber::TransportSubscriber(ISubscriber* subscriber)
     :
-    byteMergingModifier_(&this->byteMerger_)
+    TransportSubscriber( subscriber, [](TransportSubscriberOptions& options){} )
     {
 
+    };
+
+    TransportSubscriber::TransportSubscriber(ISubscriber* subscriber, std::function<void(TransportSubscriberOptions&)> configureOptions)
+    :
+    byteMergingModifier_(&this->byteMerger_)
+    {
+ 
         // default variables initialization
         onFilterCommittedContexts_ = [](
                 void *state, 
@@ -34,18 +41,18 @@ namespace Quix { namespace Transport {
 
 
         TransportSubscriberOptions options;
-        //TODO: implement configureOptions
+        configureOptions(options);
 
         const auto& commitOptions = options.commitOptions;
 
         std::vector<IModifier*> outputsAndInputs;
 
-        auto& firstOutputAndInput = subscriber;
+        auto firstOutputAndInput = subscriber;
 
         // output -> merger -> deserializer -> commitModifier -> raise
 //        outputsAndInputs.push_back(subscriber);
-        outputsAndInputs.push_back(&byteMergingModifier_);
-        outputsAndInputs.push_back(&deserializingModifier_);
+        outputsAndInputs.push_back(dynamic_cast<IModifier*>(&byteMergingModifier_));
+        outputsAndInputs.push_back(dynamic_cast<IModifier*>(&deserializingModifier_));
         if( commitOptions.autoCommitEnabled )
         {
             commitModifier_ = new CommitModifier(commitOptions);            
@@ -62,11 +69,11 @@ namespace Quix { namespace Transport {
             auto prevSubscriber = dynamic_cast<ISubscriber*>(previous);
             prevSubscriber->onNewPackage += std::bind( &IPublisher::send, modifierPublisher, std::placeholders::_1 );
 
-            previous = prevSubscriber;
+            previous = dynamic_cast<ISubscriber*>(outputsAndInputs[index]);
         }
 
         // Connect last output to TransportSubscriber (this class)
-        ((ISubscriber*)previous)->onNewPackage += std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
+        dynamic_cast<ISubscriber*>(previous)->onNewPackage += std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
 
 
 
@@ -74,7 +81,7 @@ namespace Quix { namespace Transport {
         ICanCommit* previousCanCommitModifier = nullptr;
 
         //hook up firstOutputAndInput ( subscriber )
-        ICanCommit* committingModifier = dynamic_cast<ICanCommit*>(firstOutputAndInput);
+        ICanCommit* committingModifier = dynamic_cast<ICanCommit*>( firstOutputAndInput );
         if ( committingModifier != nullptr )
         {
             previousCanCommitModifier = committingModifier;

@@ -12,6 +12,7 @@
 #include <mutex>
 
 #include "../../utils/timer.h"
+#include "../../utils/eventHandler.h"
 
 #include "../io/package.h"
 #include "../io/IPublisher.h"
@@ -44,7 +45,7 @@ public:
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class CommitModifier : public ICanCommit, IPublisher, public ICanCommitSubscriber, public IRevocationSubscriber /*: public ISubscriber, ICanCommit, ICanCommitSubscriber, IRevocationSubscriber */
+class CommitModifier : public IModifier, public ICanCommit, public ICanCommitSubscriber, public IRevocationSubscriber /*: public ISubscriber, ICanCommit, ICanCommitSubscriber, IRevocationSubscriber */
 {
 private:
 
@@ -105,16 +106,12 @@ private:
 
 public:
 
-    //TODO: remove
-    std::function<void(std::shared_ptr<IPackage>)> onNewPackage = nullptr;
-
     CommitModifier(const CommitOptions& commitOptions);
 
     void commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts);
 
     void subscribe(ICanCommit* committer);
     void subscribe(IRevocationPublisher* revocationPublisher);
-
 
     void close();
 

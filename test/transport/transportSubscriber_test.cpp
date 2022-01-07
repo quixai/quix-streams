@@ -9,10 +9,12 @@
 #include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"
 #include "transport/io/package.h"
+#include "transport/io/IModel.h"
 #include "transport/transportSubscriber.h"
 #include "transport/transportPublisher.h"
 
 #include "./helpers/passthrough.h"
+#include "./helpers/packageFactory.h"
 
 #include <algorithm>
 
@@ -26,7 +28,7 @@ using ::testing::_;
 
 
 
-class MyMockOutput : public ISubscriber, public ICanCommit {
+class MyMockCommitOutput : public ISubscriber, public ICanCommit {
 
  public:
     MOCK_METHOD1( commit ,    void(const std::vector<std::shared_ptr<TransportContext>>& transportContexts) );
@@ -38,7 +40,7 @@ class MyMockOutput : public ISubscriber, public ICanCommit {
 TEST(transportSubscriber, Commit_WithTransport_ShouldAckOutput)
 {
     // Arrange
-    MyMockOutput output;
+    MyMockCommitOutput output;
     bool received_commited = false;
     std::vector<std::shared_ptr<TransportContext>> commited;
 
@@ -49,6 +51,7 @@ TEST(transportSubscriber, Commit_WithTransport_ShouldAckOutput)
             commited = transportContexts;
         })
     );
+    EXPECT_CALL(output, commit(_));
 
     TransportSubscriber transportSubscriber(&output);
     
@@ -65,6 +68,8 @@ TEST(transportSubscriber, Commit_WithTransport_ShouldAckOutput)
 
     transportSubscriber.commit(toCommit);
 
+
+
     // Assert
     EXPECT_TRUE( received_commited );
 
@@ -77,27 +82,80 @@ TEST(transportSubscriber, Commit_WithTransport_ShouldAckOutput)
 }
 
 
+class TestMessage : public IModel{
+    static const size_t MSG_SIZE = 100;
+public:
+    char msg[MSG_SIZE];
+
+    TestMessage( const char* msg = "" ) { 
+        strncpy(this->msg, msg, MSG_SIZE - 1); 
+        this->msg[MSG_SIZE - 1] = '\0';
+    }
+
+    const ModelKey modelKey() const {
+        return Quix::Transport::ModelKey::forType<TestMessage>();
+    };
+
+};
+
 TEST(transportSubscriber, Setup_OutputRaisesEnoughForAutoCommitToKickIn_ShouldCommitIntoOutput)
 {
     // Arrange
     Passthrough output;
 
-    bool received = false;
+    bool received_commited = false;
     ICanCommit::OnCommittedEventArgs committed;
-    output.onCommitted += [&](ICanCommit* sender, const ICanCommit::OnCommittedEventArgs& args){ received = true; committed = args; };
+    output.onCommitted += [&](ICanCommit* sender, const ICanCommit::OnCommittedEventArgs& args){ received_commited = true; committed = args; };
 
-    // TransportOutput transportOutput(&output, o=> o.CommitOptions.CommitEvery = 1);
+    TransportSubscriber transportOutput(&output, []( TransportSubscriberOptions& o ){ o.commitOptions.commitEvery = 1; } );
     
     std::shared_ptr<TransportContext> transportContext( new TransportContext() );
     (*transportContext)["abcde"] = "1";
 
-    // var package = PackageFactory.CreatePackage(new {TestMessage = "YAY"}, transportContext);
+    auto package = createPackage<TestMessage>( TestMessage("MESSAGE") , transportContext );
     
-    // // Act
-    // output.OnNewPackage.Invoke(package);
+    /// Act
+    output.onNewPackage(package);
 
-    // // Assert
-    // committed.Should().NotBeNull();
+    ASSERT_TRUE( received_commited );
+
+    // TODO: Here would be some weird casting via transportContext
+
+    // ASSERT_EQ( commited.state() );
     // committed.State.Should().BeEquivalentTo(new[] {transportContext}); // PassThrough sends back the transport context as state
    
+}
+
+
+class MyMockRevocationOutput : public ISubscriber, public IRevocationPublisher {
+
+ public:
+    MOCK_METHOD1( commit ,    void(const std::vector<std::shared_ptr<TransportContext>>& transportContexts) );
+    MOCK_METHOD2( filterRevokedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, std::vector<std::shared_ptr<TransportContext>> contexts) );
+
+};
+
+
+TEST(transportSubscriber, Setup_OutputRaisesRevokingEvent_ShouldAlsoRaiseRevokingEvent)
+{
+    // Arrange
+    MyMockRevocationOutput output;
+    TransportSubscriber transportSubscriber(&output);
+    std::vector<IRevocationPublisher::OnRevokingEventArgs> revokingInvokes;
+
+    transportSubscriber.onRevoking += [&](IRevocationPublisher* sender, const IRevocationPublisher::OnRevokingEventArgs& args)
+            {
+                revokingInvokes.push_back(args);
+            };
+    EXPECT_CALL(output, commit(_));
+
+    // Act
+    IRevocationPublisher::OnRevokingEventArgs expectedArgs;
+
+    // .Net equivalent of output.OnRevoking += Raise.eventWith
+    output.onRevoking(&output, expectedArgs);
+
+    // Assert
+    ASSERT_EQ( revokingInvokes.size(), 1 );
+    ASSERT_EQ( revokingInvokes[0], expectedArgs );
 }

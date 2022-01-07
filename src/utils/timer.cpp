@@ -19,7 +19,7 @@ namespace Quix {
             {
                 waitFor = delay;
             }
-            else if( waitFor != INFINITE )
+            else if( interval != INFINITE )
             {
                 waitFor = interval;
             }
@@ -35,7 +35,15 @@ namespace Quix {
             //// initialize wait
 
             //// TODO: can be waiting for negative time
-            cond_.wait_for(lk, std::chrono::duration<double, std::milli>(waitFor) - elapsed);
+
+            /// TODO: implement proper thread wake up
+            auto toWait = std::chrono::duration<double, std::milli>(waitFor) - elapsed;
+            if( toWait > std::chrono::duration<double, std::milli>(200) ) 
+            {
+                toWait = std::chrono::duration<double, std::milli>(200);
+            }
+
+            cond_.wait_for(lk, toWait);
 
             //// thread could have been stopped
             if(!threadShouldBeRunning_)

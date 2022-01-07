@@ -207,10 +207,7 @@ namespace Quix { namespace Transport {
 
     void CommitModifier::onSendOnAutocommitDisabled(std::shared_ptr<IPackage> package) const
     {
-        if(this->onNewPackage != nullptr)
-        {
-            this->onNewPackage(package);
-        }
+        this->onNewPackage(package);
     }
 
     void CommitModifier::onSendOnCommitEvery1(std::shared_ptr<IPackage> package)

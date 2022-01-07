@@ -20,7 +20,7 @@ namespace Quix { namespace Transport {
 /**
  * Modifier, which deserializes the package into the model described in the package.
  */
-class DeserializingModifier : public IPublisher, public ISubscriber{
+class DeserializingModifier : public IModifier {
 
 private:
     /**
@@ -33,11 +33,6 @@ private:
     AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
 
 public:
-
-    /**
-     * The callback that is used when deserialized package is available
-     */
-    EventHandler<std::shared_ptr<IPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier attemptes to deserialize. Deserialization results is raised via onNewPackage

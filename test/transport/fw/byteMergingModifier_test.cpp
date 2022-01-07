@@ -81,8 +81,8 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsBytes_ShouldRaisePackageAndRetu
 
 
     std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
-    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
-        nonGeneric.push_back(package);
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        nonGeneric.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
     };
 
 
@@ -190,8 +190,8 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
 
 
     std::shared_ptr<ByteArrayPackage> receivedPackage(nullptr);
-    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
-        receivedPackage = package;
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        receivedPackage =  dynamic_pointer_cast<ByteArrayPackage>( package ) ;
     };
 
 
@@ -384,8 +384,8 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherPackages_Sh
     expectedOrder.push_back(p3);
 
     vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
-    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
-        packagesReceived.push_back(package);
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        packagesReceived.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
     };
     
 
@@ -505,7 +505,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
     modifier.send(p2);
 
     // Assert
-    //TODO: wait till completion of once async / await is implemented
+    // TODO: wait till completion of once async / await is implemented
     // tasks.All(x=> x.IsCompleted).Should().BeTrue();
 
     ASSERT_EQ( packagesReceived.size(), 1 );
@@ -560,8 +560,8 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsNull_ShouldNotRaisePackageAndRe
     std::shared_ptr<ByteArrayPackage> nongeneric( nullptr );
 
     ByteMergingModifier modifier(&merger);
-    modifier.onNewPackage += [&](std::shared_ptr<ByteArrayPackage> package){
-        nongeneric = package;
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        nongeneric = dynamic_pointer_cast<ByteArrayPackage>( package );
     };
 
 

@@ -95,7 +95,7 @@ public:
 /**
  * Describes an interface for subscribing to an ICanCommit
  */
-class ICanCommitSubscriber : public IModifier{
+class ICanCommitSubscriber{
 public:
     virtual void subscribe(ICanCommit* committer) = 0; 
 };

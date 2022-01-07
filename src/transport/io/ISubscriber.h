@@ -2,8 +2,6 @@
 
 #include "../../utils/eventHandler.h"
 
-#include "../fw/IModifier.h"
-
 #include "./IPackage.h"
 
 namespace Quix { namespace Transport {
@@ -11,9 +9,13 @@ namespace Quix { namespace Transport {
 /**
  * Interface for providing a class a way to push Package to listener
  */
-class ISubscriber : public IModifier{
+class ISubscriber{
 
 public:
+
+    /// NOTE: hack to satisfy polymorfism condition for dynamic_cast
+    virtual void dummy() const {};
+
     /**
      * The callback that is used when the ISubscriber has new package for the listener
      */

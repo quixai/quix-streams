@@ -8,7 +8,7 @@
 #include "../io/IPackage.h"
 #include "../codec/abstractCodec.h"
 #include "./codecs/codecBundle.h"
-#include "../io/IPublisher.h"
+#include "./IModifier.h"
 
 #include "../../utils/eventHandler.h"
 
@@ -17,7 +17,7 @@ namespace Quix { namespace Transport {
 /**
  * Modifier, which serializes the package into bytes
  */
-class SerializingModifier : public IPublisher{
+class SerializingModifier : public IModifier{
 
 private:
     /**
@@ -34,11 +34,6 @@ private:
     ) const;
 
 public:
-
-    /**
-     * The callback that is used when serialized package is available
-     */
-    EventHandler<std::shared_ptr<ByteArrayPackage>> onNewPackage;
 
     /**
      * Send a package, which the modifier attemptes to serialize. Serialization result is raised via <see cref="OnNewPackage"/>

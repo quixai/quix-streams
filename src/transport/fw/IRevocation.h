@@ -34,6 +34,10 @@ class IRevocationPublisher{
         {
             return state_ = state; 
         }
+
+        bool operator==( const BaseRevocationArgs& other ) const {
+            return state() == other.state();
+        }
         
     };
 

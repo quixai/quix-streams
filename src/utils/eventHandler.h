@@ -36,6 +36,7 @@ private:
 
     /// array where all associated callbacks are stored
     std::vector<std::function<void(_ArgTypes...)>> callbacks_;
+    int cnt_ = 0;
 
     // /// array where all associated callbacks are stored
     // std::unordered_set<size_t> callbacksSet_;
@@ -81,6 +82,7 @@ public:
 
         // callbacksSet_.insert(functionAddress);
         callbacks_.push_back(func);
+        cnt_++;
         return *this;
     } 
 
@@ -102,6 +104,7 @@ public:
             if( getAddress(*it), functionAddress )
             {
                 callbacks_.erase(it);
+                cnt_--;
                 break;
             }
             ++it;

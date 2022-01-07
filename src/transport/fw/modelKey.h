@@ -66,6 +66,18 @@ public:
         return *this;
     }
 
+    /**
+     * @brief get default model key associated with the class name
+     * 
+     * @tparam T 
+     * @return ModelKey 
+     */
+    template<class T>
+    ModelKey static forType( )
+    {
+        return ModelKey( typeid(T).name() );
+    }
+
 };
 
 } }
