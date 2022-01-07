@@ -11,6 +11,8 @@ int main(int argc, char **argv)
     srand (time(NULL));
 
     ::testing::InitGoogleTest(&argc, argv);
+//    ::testing::GTEST_FLAG(filter) = "transportSubscriber*";
+
     int ret = RUN_ALL_TESTS();
     google::protobuf::ShutdownProtobufLibrary();
     return ret;

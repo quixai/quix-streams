@@ -59,6 +59,10 @@ public:
 
   std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
 
+  void onRevokingInternal(Quix::Transport::IRevocationPublisher *,  const Quix::Transport::IRevocationPublisher::OnRevokingEventArgs &);
+
+  void onRevokedInternal(Quix::Transport::IRevocationPublisher *,   const Quix::Transport::IRevocationPublisher::OnRevokedEventArgs & );
+
   void close();
 
   void commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts);

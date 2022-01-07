@@ -147,7 +147,6 @@ TEST(transportSubscriber, Setup_OutputRaisesRevokingEvent_ShouldAlsoRaiseRevokin
             {
                 revokingInvokes.push_back(args);
             };
-    EXPECT_CALL(output, commit(_));
 
     // Act
     IRevocationPublisher::OnRevokingEventArgs expectedArgs;

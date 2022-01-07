@@ -137,7 +137,7 @@ namespace Quix { namespace Transport {
 
 
         // Hook up modifiers implementing IRevocation.... from front (output) to back (this)
-        IRevocationPublisher* previousRevocationPublisher = nullptr;
+        IRevocationPublisher* previousRevocationPublisher = dynamic_cast<IRevocationPublisher*>(firstOutputAndInput);
         for ( int index = 0; index < outputsAndInputs.size() ; index++ )
         {
             auto modifier = outputsAndInputs[index];
@@ -168,22 +168,33 @@ namespace Quix { namespace Transport {
 
             // propagate this->onRevoked into the previousRevocationPublisher->onRevoked
             previousRevocationPublisher->onRevoked += std::bind(
-                                                            &Quix::EventHandler<Quix::Transport::IRevocationPublisher *, const Quix::Transport::IRevocationPublisher::OnRevokedEventArgs &>::operator(),
-                                                            this->onRevoked, 
+                                                            &TransportSubscriber::onRevokedInternal,
+                                                            this, 
                                                             std::placeholders::_1, 
                                                             std::placeholders::_2
                                                         );
             
             // propagate this->onRevoking into the previousRevocationPublisher->onRevoking
             previousRevocationPublisher->onRevoking += std::bind(
-                                                            &Quix::EventHandler<Quix::Transport::IRevocationPublisher *, const Quix::Transport::IRevocationPublisher::OnRevokingEventArgs &>::operator(),
-                                                            this->onRevoking, 
+                                                            &TransportSubscriber::onRevokingInternal,
+                                                            this, 
                                                             std::placeholders::_1, 
                                                             std::placeholders::_2
                                                         );
+
         }
         // Done hooking up modifiers implementing IRevocation
 
+    }
+
+    void TransportSubscriber::onRevokedInternal(Quix::Transport::IRevocationPublisher * sender, const Quix::Transport::IRevocationPublisher::OnRevokedEventArgs & args)
+    {
+        this->onRevoked(sender, args);
+    }
+
+    void TransportSubscriber::onRevokingInternal(Quix::Transport::IRevocationPublisher * sender, const Quix::Transport::IRevocationPublisher::OnRevokingEventArgs & args)
+    {
+        this->onRevoking(sender, args);
     }
 
     std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
