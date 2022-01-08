@@ -441,6 +441,13 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
 
     EXPECT_CALL( 
         merger, 
+        purge(
+            _
+        ) 
+    );
+
+    EXPECT_CALL( 
+        merger, 
         tryMerge(
             EqByteArrayPackagePtr(p1s1), 
             _,
@@ -523,29 +530,36 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
     // Arrange
     MyMockMerger merger;
 
-        // P1_s1
-        TransportContext transportContext;
-        transportContext["Package"] = "1";
-        auto bytes = ByteArray::initEmpty(1);
-        bytes.data()[0] = 1;
-        auto p1s1 = std::shared_ptr<ByteArrayPackage>(
-                            new ByteArrayPackage(bytes, transportContext)
-                        );
-        EXPECT_CALL( 
-            merger, 
-            tryMerge(
-                EqByteArrayPackagePtr(p1s1), 
-                _,
-                _,
-                _
-            ) 
-        ).Times(1).WillRepeatedly(
-            DoAll(
-                SetArgReferee<2>(p1s1), 
-                SetArgReferee<3>(IByteMerger::ByteMergerBufferKey("p1")),             
-                Return(false)
-            )
-        );
+    EXPECT_CALL( 
+        merger, 
+        purge(
+            _
+        ) 
+    ).Times(2);
+
+    // P1_s1
+    TransportContext transportContext;
+    transportContext["Package"] = "1";
+    auto bytes = ByteArray::initEmpty(1);
+    bytes.data()[0] = 1;
+    auto p1s1 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes, transportContext)
+                    );
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p1s1), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p1s1), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey("p1")),             
+            Return(false)
+        )
+    );
 
     // P2
     TransportContext transportContext2;
@@ -677,6 +691,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
     auto p1s1 = std::shared_ptr<ByteArrayPackage>(
                         new ByteArrayPackage(bytes, transportContext)
                     );
+
     EXPECT_CALL( 
         merger, 
         tryMerge(
