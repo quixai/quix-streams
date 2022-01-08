@@ -158,10 +158,7 @@ namespace Quix {
         threadShouldBeRunning_ = false;
         stop();
 
-        if ( threadIsRunning_ )
-        {
-            thread_.join();
-        }
+        thread_.join();
     }
 
 

@@ -85,7 +85,7 @@ TEST(timerTest, BasicInterval)
 {
     //after 200ms timeout increment counter
 
-    TimerCounter mytimer(200);
+    TimerCounter mytimer(300);
 
 
     //after 100ms should not be still incrementing nothing
