@@ -4,13 +4,8 @@
 
 namespace Quix { 
 
-    void Timer::run()
+    int Timer::calculateNextWaitTime() const
     {
-        do
-        {
-            std::unique_lock<std::mutex> lk(changePropsLock_);
-            
-            //// load configuration for the waiting
             int delay = delay_;
             int interval = interval_;
 
@@ -27,23 +22,44 @@ namespace Quix {
             {
                 waitFor = INFINITE;
             }
+            return waitFor;
+    }
 
+    std::chrono::duration<double, std::nano> Timer::calculateNextWait(int waitFor) const
+    {
+            //// load configuration for the waiting
             std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
             auto elapsed = now - lastRun_;  // in miliseconds
 
-
-            //// initialize wait
-
-            //// TODO: can be waiting for negative time
-
             /// TODO: implement proper thread wake up
-            auto toWait = std::chrono::duration<double, std::milli>(waitFor) - elapsed;
-            if( toWait > std::chrono::duration<double, std::milli>(200) ) 
-            {
-                toWait = std::chrono::duration<double, std::milli>(200);
-            }
+            auto toWait = std::chrono::duration<double, std::milli>(waitFor) - elapsed;        
 
-            cond_.wait_for(lk, toWait);
+            return toWait;
+    }
+
+
+    void Timer::run()
+    {
+        threadIsRunning_ = true;
+        do
+        {
+            std::unique_lock<std::mutex> lk(changePropsLock_);
+
+            int waitFor = calculateNextWaitTime();           
+            auto toWait = calculateNextWait(waitFor);
+
+            if( toWait > std::chrono::duration<double, std::milli>(0) )
+            {
+                cond_.wait_for(lk, toWait, [=](){ 
+                    int newWaitFor = calculateNextWaitTime();
+                    return 
+                        !this->threadShouldBeRunning_ 
+                            ||
+                        waitFor != newWaitFor
+                            || 
+                        this->calculateNextWait(newWaitFor) <= std::chrono::duration<double, std::milli>(0); 
+                    });
+            }
 
             //// thread could have been stopped
             if(!threadShouldBeRunning_)
@@ -53,8 +69,9 @@ namespace Quix {
 
 
             //// load again configuration for waiting becaue condition can expire due to other reasons than timeout
-            delay = delay_;
-            interval = interval_;
+            int delay = delay_;
+            int interval = interval_;
+            waitFor;
 
             if( delay != INFINITE )
             {
@@ -70,8 +87,8 @@ namespace Quix {
             }
 
             //// check elapsed time
-            now = std::chrono::system_clock::now();
-            elapsed = now - lastRun_;
+            std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+            auto elapsed = now - lastRun_;
             if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
             {
                 // if it is only timeout then reset timer for timeout
@@ -91,6 +108,8 @@ namespace Quix {
 
             /* code */
         } while ( threadShouldBeRunning_ );
+
+        threadIsRunning_ = false;
         
     }
 
@@ -128,18 +147,18 @@ namespace Quix {
 
     Timer::Timer(int delay, int interval)
     :
-    threadShouldBeRunning_(false)
+    threadShouldBeRunning_(false),
+    threadIsRunning_(false)
     {
         change(delay, interval);
     }
 
     Timer::~Timer()
     {
-        bool threadWasRunning = threadShouldBeRunning_;
         threadShouldBeRunning_ = false;
         stop();
 
-        if ( threadWasRunning )
+        if ( threadIsRunning_ )
         {
             thread_.join();
         }

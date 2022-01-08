@@ -30,6 +30,7 @@ class Timer {
     std::thread thread_;
     std::condition_variable cond_;
 
+    std::atomic<bool> threadIsRunning_;
     std::atomic<bool> threadShouldBeRunning_;
 
 
@@ -38,6 +39,9 @@ class Timer {
     std::mutex changePropsLock_;
     int delay_ = INFINITE;
     int interval_ = INFINITE;
+
+    std::chrono::duration<double, std::nano> calculateNextWait(int waitFor) const;
+    int calculateNextWaitTime() const;
 
     void run();
 
