@@ -16,6 +16,7 @@
 #include "./byteMerger.h"
 
 #include "./IModifier.h"
+#include "./IRevocation.h"
 
 #include "../../utils/eventHandler.h"
 
@@ -25,7 +26,7 @@ namespace Quix { namespace Transport {
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class ByteMergingModifier: public IModifier{
+class ByteMergingModifier: public IModifier, public IRevocationSubscriber{
 private:
 
     int bufferOrder_;
@@ -35,6 +36,9 @@ private:
     std::unordered_map< IByteMerger::ByteMergerBufferKey, std::shared_ptr<ByteArrayPackage>, IByteMerger::ByteMergerBufferKey::Hasher > pendingPackages_;
     /// the order the packages should be raised
     std::unordered_map< IByteMerger::ByteMergerBufferKey, long, IByteMerger::ByteMergerBufferKey::Hasher > packageOrder_;
+
+    /// In case of packages that need merging, this package is the one which contains the extra context.
+    std::unordered_map< IByteMerger::ByteMergerBufferKey, std::shared_ptr<TransportContext>, IByteMerger::ByteMergerBufferKey::Hasher > firstPackageContext_;
 
     std::mutex lock_;
     
@@ -67,6 +71,8 @@ public:
      * @param package The package to split
      */
     void send(std::shared_ptr<IPackage> package);
+
+    void subscribe(IRevocationPublisher* revocationPublisher); 
 };
 
 } }

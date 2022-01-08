@@ -70,7 +70,20 @@ namespace Quix { namespace Transport {
             // buffer id means that this is a merged package
 
             // TODO: handle transport context
-            packageToRaise = outPackage;
+            std::shared_ptr<TransportContext> transportContext; 
+            {
+                std::lock_guard<std::mutex> guard(lock_);
+                auto it = firstPackageContext_.find(bufferKey);
+                if( it != firstPackageContext_.end() )
+                {
+                    transportContext = it->second;
+                }
+                else
+                {
+                    transportContext = std::shared_ptr<TransportContext>( new TransportContext() );
+                }
+            }
+            packageToRaise = outPackage->duplicate(transportContext);
         }
         
         // check if empty. We're not worried about threading here, because this method is designed to be invoked via single thread
@@ -207,6 +220,10 @@ namespace Quix { namespace Transport {
             packageOrder_[bufferId] = order;
         }
 
+        if( *transportContext != TransportContext() )
+        {
+            firstPackageContext_[bufferId] = transportContext;
+        }
 
         ++bufferCounter_;
         return true;
@@ -234,12 +251,20 @@ namespace Quix { namespace Transport {
             {
                 packageOrder_.erase(packageOrderIterator);
             }
+
+            const auto& foundContextIterator = firstPackageContext_.find(bufferId);
+            if( foundContextIterator != firstPackageContext_.end() )
+            {
+                firstPackageContext_.erase( bufferId );
+            }
             else
             {
                 // this is not a split package. It is a queued package that is already whole and and isn't buffer
                 return false;
             }
         }
+
+
 
         byteMerger_->purge(bufferId);
 
@@ -256,6 +281,64 @@ namespace Quix { namespace Transport {
 
         return true;
     }
+
+    // template<typename T>
+    // void merge(std::vector<T> inner, std::vector<T> outer)
+
+    void ByteMergingModifier::subscribe(IRevocationPublisher* revocationPublisher)
+    {
+        revocationPublisher->onRevoked += [=](IRevocationPublisher * sender, const IRevocationPublisher::OnRevokedEventArgs & state)
+            {
+                std::vector<std::shared_ptr<TransportContext>> contexts;
+                {
+                    std::lock_guard<std::mutex> guard(this->lock_);
+                    if( this->firstPackageContext_.empty() ) { return; } // there is nothing to do
+
+                    for ( auto& el: this->firstPackageContext_ )
+                    {
+                        contexts.push_back( el.second );
+                    }
+
+                }
+
+                /// this createds join of the filtered and the this->firstPackageContext_
+                void* data = (void*)&state;
+                auto filtered = revocationPublisher->filterRevokedContexts(data, contexts);
+
+                std::vector<IByteMerger::ByteMergerBufferKey> affectedBufferIds;
+                {
+                    std::lock_guard<std::mutex> guard(this->lock_);
+
+                    std::unordered_set<std::shared_ptr<TransportContext>> filteredMap;
+                    for( auto& el: filtered )
+                    {
+                        filteredMap.insert(el);
+                    }
+
+                    for ( auto& el: this->firstPackageContext_ )
+                    {
+                        if( filteredMap.find(el.second) != filteredMap.end() )
+                        {
+                            affectedBufferIds.push_back( el.first );
+                        }
+                    }
+
+                }
+
+                if( affectedBufferIds.size() <= 0 )
+                {
+                    return;
+                }
+
+                for ( auto& el : affectedBufferIds )
+                {
+                    this->removeFromBuffer( el );
+                }
+                this->raiseNextPackageIfReady();
+
+            };
+    }
+
 
 
 

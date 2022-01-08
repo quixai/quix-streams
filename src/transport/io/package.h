@@ -64,6 +64,16 @@ public:
 
 
     /**
+     * Create duplicate of the package with modified transport context
+     * 
+     * @param transportContext updated transportContext
+     */
+    std::shared_ptr<Package<TContent>> duplicate(const std::shared_ptr<TransportContext>& transportContext)
+    {
+        return std::shared_ptr<Package<TContent>>( new Package<TContent>( this->value_, transportContext ) );
+    }
+
+    /**
      * Initialize meta information Package from previous parent
      * but override the value with new one
      * 
