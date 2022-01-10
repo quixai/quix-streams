@@ -42,7 +42,7 @@ public:
      * 
      * @throw When deserialization fails due to unknown codec or invalid data for codec
      */
-    void send(std::shared_ptr<IPackage> package) const;
+    void send(std::shared_ptr<IPackage> package);
 
 };
 

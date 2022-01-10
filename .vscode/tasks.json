@@ -5,7 +5,7 @@
         "type": "shell",
         "label": "g++ build active file",
         "command": "/usr/bin/make",
-        "args": ["all"],
+        "args": ["all", "-j14"],
         "options": {
           "cwd": "/mnt/c/Users/Ales-QUIX/quix/codebase/Quix.Sdk.New/build "
         },

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "./fw/byteSplittingModifier.h"
 #include "./fw/serializingModifier.h"
 #include "./io/IPackage.h"
 #include "./io/IPublisher.h"
@@ -17,7 +18,8 @@ class TransportPublisher : public IPublisher
 {
 
 private:
-  SerializingModifier serializer;
+  SerializingModifier serializingModifier_;
+  ByteSplittingModifier byteSplittingModifier_;
 
 public:
   /**
@@ -31,7 +33,7 @@ public:
   /**
    * Send a package, which the TransportPublisher serializes and optionally splits then passes to the provided IPublisher
    */
-  void send(std::shared_ptr<IPackage> package) const;
+  void send(std::shared_ptr<IPackage> package);
 };
 
 } }

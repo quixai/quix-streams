@@ -13,7 +13,7 @@
 
 namespace Quix { namespace Transport {
 
-    void SerializingModifier::send(std::shared_ptr<IPackage> package) const
+    void SerializingModifier::send(std::shared_ptr<IPackage> package)
     {
         //TODO: add cancellationToken
         const auto& modelKey = package->modelKey();

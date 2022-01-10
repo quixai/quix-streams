@@ -3,114 +3,108 @@
 #include <functional>
 #include <memory>
 
+#include <algorithm>
+
 #include "../io/package.h"
 #include "../io/IPublisher.h"
 
+#include "./byteSplitProtocolHeader.h"
+
 namespace Quix { namespace Transport {
 
-static const uint8_t ByteSplitStart = '<';
-static const uint8_t ByteSplitEnd = '>';
-static const uint8_t ByteSplitSeparator = '/';
-
 /**
- * Definition of the ByteSplitter header
- * 
- * Used to simplify definition of the protocol
-*/
-#pragma pack(push,1)
-class ByteSplitProtocolHeader{
-private:
-    /**
-     *  !!!!!!IMPORTANT!!!!!
-     * 
-     *  The order and size of these variables define the header
-     */
-
-    ///Start control character
-    uint8_t splitStart_;
-    /// message id
-    uint32_t msgId_;
-    ///Separate control character
-    uint8_t splitSeparator1_;
-    /// index
-    uint8_t index_;
-    ///Separate control character
-    uint8_t splitSeparator2_;
-    /// maximum index
-    uint8_t maxIndex_;
-    ///End control character
-    uint8_t splitEnd_;
+ * Component for splitting a single array of bytes into multiple according to implementation
+ */
+class IByteSplitter
+{
 
 public:
+
     /**
-     * Initialize header with unknown values
+     * Iterator implementation used for creating splitted package chunks efficantly on the fly
      * 
-     * Note: values can be random
+     * Iterator can be one of three types: Split, Vector, Single ( see type_ variable )
      */
-    ByteSplitProtocolHeader()
+    class Iterator : public std::iterator<
+                        // std::input_iterator_tag,   // iterator_category
+                        // long,                      // value_type
+                        // long,                      // difference_type
+                        // const long*,               // pointer
+                        // long                       // reference
+                        std::input_iterator_tag,   // iterator_category
+                        std::shared_ptr<ByteArrayPackage>,                      // value_type
+                        long,                      // difference_type
+                        std::shared_ptr<ByteArrayPackage>,               // pointer
+                        std::shared_ptr<ByteArrayPackage>                       // reference
+                                      >
     {
+    public:
+        // Iterator constructors here...
+        Iterator(
+            const std::shared_ptr<ByteArrayPackage>& originalPackage, 
+            size_t maxMessageSizeWithoutHeader, 
+            uint32_t messageId, 
+            uint8_t curIndex = 0,
+            bool splitMessage = true
+        );
+        Iterator(
+            const std::vector<std::shared_ptr<ByteArrayPackage>>::iterator iterator, 
+            uint8_t curIndex = 0
+        );
 
-    }
+        reference operator*() const;
 
-    /**
-     * Initialize header with parameters
-     * 
-     * @param msgId messageId
-     * @param index index
-     * @param maxIndex maxIndex
-     */
-    ByteSplitProtocolHeader(uint32_t msgId, uint8_t index, uint8_t maxIndex) :
-        msgId_(msgId),
-        index_(index),
-        maxIndex_(maxIndex),
-        splitStart_(ByteSplitStart),
-        splitEnd_(ByteSplitEnd),
-        splitSeparator1_(ByteSplitSeparator),
-        splitSeparator2_(ByteSplitSeparator)
-    {
-        
-    }
-    
-    /**
-     * Check if the protocol header is valid and has all the correct control characters
-     */
-    bool isValid()
-    {
-        return splitStart_ == ByteSplitStart
-            &&
-            splitSeparator1_ == ByteSplitSeparator
-            &&
-            splitSeparator2_ == ByteSplitSeparator
-            &&
-            splitEnd_ == ByteSplitEnd;
-    }
+        // Prefix increment
+        Iterator& operator++() { curIndex_++; return *this; }  
 
-    /// get index value of the header
-    uint8_t index()
-    { 
-        return index_;
-    }
+        // Postfix increment
+        Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
 
-    /// get max index value of the header
-    uint8_t maxIndex()
-    { 
-        return maxIndex_;
-    }
+        friend bool operator== (const Iterator& a, const Iterator& b) { return a.curIndex_ == b.curIndex_; };
+        friend bool operator!= (const Iterator& a, const Iterator& b) { return a.curIndex_ != b.curIndex_; };     
 
-    /// get message id value of the header
-    uint32_t msgId()
-    {
-        return msgId_;
-    }
+    private:
+
+        /***
+         * Iterator types:
+         * 
+         *    splitMessage - one single chunk is being parsed into multiple chunks
+         *    singleMessage - one single chunk is not being modified and returned back
+         *    vectorIterator - the return chunks are passed into iterator 
+         *                       and it only dispatches elements piece by piece ( mimicks vector::iterator )
+         */
+        enum IteratorType { splitMessage = 0, singleMessage = 1, vectorIterator = 2 };
+        IteratorType type_;
+
+        std::vector<std::shared_ptr<ByteArrayPackage>>::iterator iterator_;
+
+        /// original message to be splitted or returned ( used for splitMessage or singleMessage type )
+        std::shared_ptr<ByteArrayPackage> originalPackage_;
+        /// max length of message without header ( used for splitMessage type )
+        size_t maxMessageSizeWithoutHeader_; 
+        /// index where iterator is pointing in message ( used for splitMessage type )
+        uint8_t curIndex_;
+        /// messageId which parameter is being handled for creating of the split package ( used for splitMessage type )
+        uint32_t messageId_;
+    };
+
+
+
+    virtual ~IByteSplitter() = default;
+
+    virtual std::vector<std::shared_ptr<ByteArrayPackage>> split(const std::shared_ptr<ByteArrayPackage>& package) = 0;
+
+    virtual Iterator begin(const std::shared_ptr<ByteArrayPackage>& package) = 0;
+
+    virtual Iterator end(const std::shared_ptr<ByteArrayPackage>& package) const = 0;
+
 };
-#pragma pack()
 
 /**
  * Component for splitting a single array of bytes into multiple according to implementation
 */
-class ByteSplitter{
+class ByteSplitter : public IByteSplitter{
 
-private:
     uint32_t messageId;
     ///max length of message including header
     size_t maxMessageSize_;
@@ -121,15 +115,9 @@ public:
     /**
      * Initializes a new instance of ByteSplitter
      * 
-     * @param maxMessageSize The maximum message size
+     * @param maxMessageSize The maximum message size in bytes
      */
     ByteSplitter(const size_t maxMessageSize);
-
-    /**
-     * 
-     * The callback that is used when the split package is available
-     */
-    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
 
     /**
      * Get maximum message size of packet
@@ -137,11 +125,26 @@ public:
     const size_t absoluteMaxMessageSize() const;
 
     /**
-     * Send a package, which the modifier splits if necessary. Split results are raised via onNewPackage
-     * 
-     * @param package The package to split
+     * Creates begin iterator for splitting package into multiple pieces
+     *  mimics vector::begin()
      */
-    void send(std::shared_ptr<ByteArrayPackage> package);
+    Iterator begin(const std::shared_ptr<ByteArrayPackage>& package);
+
+    /**
+     * Creates end iterator for splitting package into multiple pieces
+     * mimics vector::end()
+     */
+    Iterator end(const std::shared_ptr<ByteArrayPackage>& package) const;
+
+    /**
+     * Split package into multiple pieces
+     * 
+     * @param package package to be splitted
+     * 
+     * @return vector of all message pieces
+     */
+    std::vector<std::shared_ptr<ByteArrayPackage>> split(const std::shared_ptr<ByteArrayPackage>& package);
+
 };
 
 } }

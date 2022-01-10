@@ -13,7 +13,7 @@
 
 namespace Quix { namespace Transport {
 
-    void DeserializingModifier::send(std::shared_ptr<IPackage> package) const
+    void DeserializingModifier::send(std::shared_ptr<IPackage> package)
     {
         //TODO: add cancellationToken
 

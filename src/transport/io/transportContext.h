@@ -30,6 +30,29 @@ public:
 
     };
 
+    inline bool tryGetValue(const std::string& key, std::string& out, const std::string& defaultValue = "") const
+    {
+        const auto& it = find(key);
+        if( it != end() )
+        {
+            out = it->second;
+            return true;
+        }
+        else
+        {
+            out = defaultValue;
+            return false;
+        }
+    };
+
 };
+
+class KnownTransportContextKeys
+{
+    public:
+        /// The unique identifier, which groups together messages.
+        static const std::string MessageGroupKey;
+};
+
 
 } }
