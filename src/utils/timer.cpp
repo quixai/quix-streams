@@ -45,7 +45,7 @@ namespace Quix {
         {
             std::unique_lock<std::mutex> lk(changePropsLock_);
 
-            int waitFor = calculateNextWaitTime();           
+            int waitFor = calculateNextWaitTime();
             auto toWait = calculateNextWait(waitFor);
 
             if( toWait > std::chrono::duration<double, std::milli>(0) )

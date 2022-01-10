@@ -51,8 +51,8 @@ namespace Quix { namespace Transport {
 
         // output -> merger -> deserializer -> commitModifier -> raise
 //        outputsAndInputs.push_back(subscriber);
-        outputsAndInputs.push_back(dynamic_cast<IModifier*>(&byteMergingModifier_));
-        outputsAndInputs.push_back(dynamic_cast<IModifier*>(&deserializingModifier_));
+        outputsAndInputs.push_back(static_cast<IModifier*>(&byteMergingModifier_));
+        outputsAndInputs.push_back(static_cast<IModifier*>(&deserializingModifier_));
         if( commitOptions.autoCommitEnabled )
         {
             commitModifier_ = new CommitModifier(commitOptions);            
@@ -64,16 +64,16 @@ namespace Quix { namespace Transport {
         auto previous = firstOutputAndInput;
         for (int index = 0; index < outputsAndInputs.size(); index++)
         {
-            auto modifierPublisher = dynamic_cast<IPublisher*>(outputsAndInputs[index]);
+            auto modifierPublisher = static_cast<IPublisher*>(outputsAndInputs[index]);
 
-            auto prevSubscriber = dynamic_cast<ISubscriber*>(previous);
+            auto prevSubscriber = static_cast<ISubscriber*>(previous);
             prevSubscriber->onNewPackage += std::bind( &IPublisher::send, modifierPublisher, std::placeholders::_1 );
 
-            previous = dynamic_cast<ISubscriber*>(outputsAndInputs[index]);
+            previous = static_cast<ISubscriber*>(outputsAndInputs[index]);
         }
 
         // Connect last output to TransportSubscriber (this class)
-        dynamic_cast<ISubscriber*>(previous)->onNewPackage += std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
+        static_cast<ISubscriber*>(previous)->onNewPackage += std::bind( &TransportSubscriber::sendInternal, this, std::placeholders::_1 );
 
 
 
