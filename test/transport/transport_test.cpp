@@ -56,8 +56,6 @@ TEST(transportWhole, TransportOutput_ShouldCorrespondToTransportInput)
     auto registry = Quix::Transport::CodecRegistry::instance();
     registry->registerCodec( Quix::Transport::ModelKey::forType<TestSingleMessage>() , &codec1 );
 
-    try{
-
     // Arrange
     Passthrough passthrough;
     ByteSplitter byteSplitter(15);  // this tiny to force some splitting
@@ -87,13 +85,6 @@ TEST(transportWhole, TransportOutput_ShouldCorrespondToTransportInput)
     std::shared_ptr<Package<TestSingleMessage>> received(nullptr);
     EXPECT_NE( (received = dynamic_pointer_cast<Package<TestSingleMessage>>(packagesReceived[0]) ).get(), nullptr );
     EXPECT_EQ( received->value(), sentValue );
-
-    }catch(...)
-    {
-        int i = 0;
-        i++;
-        throw;
-    }
 
 }
 
