@@ -840,4 +840,4 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
         EXPECT_EQ( *(packagesReceived[i]), *(expectedOrder[i]) );
     }
 
-}
+};

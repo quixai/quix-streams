@@ -30,7 +30,9 @@ class PackageFactoryCodec : public Quix::Transport::AbstractCodec
 
             //returns only the casted previous value since the obj variable should already be of byte array type
             Quix::Transport::ByteArray arr = Quix::Transport::ByteArray::initEmpty( sizeof(T) );
-            memcpy(arr.data(), (void*)casted.get(), sizeof(T) );
+
+            T value = casted->value();
+            memcpy(arr.data(), (void*)(&value), sizeof(T) );
 
             return arr;
         };

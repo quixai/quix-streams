@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
 
 #include <cstring>
 #include <memory>
@@ -223,6 +224,21 @@ public:
         return data_;
     }
 
+    friend auto operator<<(std::ostream& os, ByteArray const& m) -> std::ostream& { 
+        os << " ByteArray("<<m.len()<<")<<";
+
+        os << std::hex << std::setfill('0') << std::setw(2);
+
+        auto data = m.data();
+        for( auto i = 0; i < m.len(); i++ ){
+            if ( data[i] == '\0' ) { os << '0'; }
+            os << (int)(data[i]) << " ";
+        }
+
+        os << std::dec << std::setfill('0') << std::setw(0);
+
+        return os << ">>";
+    }
 };
 
 } }

@@ -148,11 +148,8 @@ namespace Quix { namespace Transport {
                 return originalPackage_;
             case IteratorType::vectorIterator:
                 return *(iterator_ + curIndex_);
-//            case IteratorType::splitMessage:
-//                goto rest;
         }
 
-//        rest:
         const auto& originalValue = originalPackage_->value(); 
         const size_t originalLen = originalValue.len();
 

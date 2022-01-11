@@ -34,6 +34,7 @@ public:
     bool autoCommitEnabled = true;
     /**
      * @brief The interval of automatic commit in ms
+     * negative means same as null in C#
      */
     int commitInterval = 5000;
     /**

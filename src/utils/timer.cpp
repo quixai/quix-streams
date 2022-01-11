@@ -43,66 +43,75 @@ namespace Quix {
         threadIsRunning_ = true;
         do
         {
-            std::unique_lock<std::mutex> lk(changePropsLock_);
-
-            int waitFor = calculateNextWaitTime();
-            auto toWait = calculateNextWait(waitFor);
-
-            if( toWait > std::chrono::duration<double, std::milli>(0) )
+            bool executeFunction = false;
             {
-                cond_.wait_for(lk, toWait, [=](){ 
-                    int newWaitFor = calculateNextWaitTime();
-                    return 
-                        !this->threadShouldBeRunning_ 
-                            ||
-                        waitFor != newWaitFor
-                            || 
-                        this->calculateNextWait(newWaitFor) <= std::chrono::duration<double, std::milli>(0); 
-                    });
-            }
+                std::unique_lock<std::mutex> lk(changePropsLock_);
 
-            //// thread could have been stopped
-            if(!threadShouldBeRunning_)
-            {
-                return;
-            }
+                int waitFor = calculateNextWaitTime();
+                auto toWait = calculateNextWait(waitFor);
 
-
-            //// load again configuration for waiting becaue condition can expire due to other reasons than timeout
-            int delay = delay_;
-            int interval = interval_;
-            waitFor;
-
-            if( delay != INFINITE )
-            {
-                waitFor = delay;
-            }
-            else if( waitFor != INFINITE )
-            {
-                waitFor = interval;
-            }
-            else
-            {
-                waitFor = INFINITE;
-            }
-
-            //// check elapsed time
-            std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-            auto elapsed = now - lastRun_;
-            if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
-            {
-                // if it is only timeout then reset timer for timeout
-                if( delay != INFINITE )
+                if( toWait > std::chrono::duration<double, std::milli>(0) )
                 {
-                    delay_ = INFINITE;
+                    cond_.wait_for(lk, toWait, [=](){ 
+                        int newWaitFor = calculateNextWaitTime();
+                        return 
+                            !this->threadShouldBeRunning_ 
+                                ||
+                            waitFor != newWaitFor
+                                || 
+                            this->calculateNextWait(newWaitFor) <= std::chrono::duration<double, std::milli>(0); 
+                        });
                 }
 
+                //// thread could have been stopped
+                if(!threadShouldBeRunning_)
+                {
+                    return;
+                }
+
+
+                //// load again configuration for waiting becaue condition can expire due to other reasons than timeout
+                int delay = delay_;
+                int interval = interval_;
+                waitFor;
+
+                if( delay != INFINITE )
+                {
+                    waitFor = delay;
+                }
+                else if( waitFor != INFINITE )
+                {
+                    waitFor = interval;
+                }
+                else
+                {
+                    waitFor = INFINITE;
+                }
+
+                //// check elapsed time
+                std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+                auto elapsed = now - lastRun_;
+                if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
+                {
+                    // if it is only timeout then reset timer for timeout
+                    if( delay != INFINITE )
+                    {
+                        delay_ = INFINITE;
+                    }
+
+                    executeFunction = true;
+                }
+            }
+
+            if( executeFunction )
+            {
                 //// execute time
                 callback();
 
-
-
-                lastRun_ = std::chrono::system_clock::now();
+                {
+                    std::unique_lock<std::mutex> lk(changePropsLock_);
+                    lastRun_ = std::chrono::system_clock::now();
+                }
             }
 
 

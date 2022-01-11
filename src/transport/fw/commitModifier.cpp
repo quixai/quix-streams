@@ -78,7 +78,7 @@ namespace Quix { namespace Transport {
         if ( commitInterval > 0 )
         {
             commitTimer_.setAction(
-                                [&](){
+                                [=](){
                     this->commitTimer_.change(Timer::INFINITE, Timer::INFINITE);   //disable flush timer
 
                     /// commitCheckLock

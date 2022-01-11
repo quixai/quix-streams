@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     srand (time(NULL));
 
     ::testing::InitGoogleTest(&argc, argv);
-//    ::testing::GTEST_FLAG(filter) = "byteMergingModifierTest*";
+    // ::testing::GTEST_FLAG(filter) = "commitModifierTeest*";
 
     int ret = RUN_ALL_TESTS();
     google::protobuf::ShutdownProtobufLibrary();
