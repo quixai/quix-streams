@@ -121,7 +121,6 @@ TEST(commitModifierTeest, Send_CommitInterval_ShouldCommitAfterTimeElapsed)
     EXPECT_CALL( committer, commit(_) );
     ON_CALL( committer, commit(_) ).WillByDefault(
         testing::Invoke([&]( const std::vector<std::shared_ptr<TransportContext>>& transportContexts ) {
-            std::cout << "COMMIT EXECUTED" << endl;
             commitTimes.push_back(std::chrono::system_clock::now());
             {
                 std::unique_lock<std::mutex> lk(cv_m);

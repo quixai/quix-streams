@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 
+#include "./exceptions/outOfRangeException.h"
 #include "./exceptions/serializingException.h"
 
 namespace Quix { namespace Transport {
@@ -23,7 +24,7 @@ namespace Quix { namespace Transport {
             std::stringstream ss;
             ss << "ByteSplitter maxMessageSize must be at least " << ByteSplitProtocolHeader::size();
             // todo: throw better exception type
-            throw SerializingException(ss.str());
+            throw OutOfRangeException(ss.str());
         }
     };
 
