@@ -95,13 +95,13 @@ private:
     void onCloseInternal();
 
     void subscribeOnCloseInternal();
-    std::function<void()> subscribeOnClose_ = nullptr;
+    EventHandlerFunction<> subscribeOnClose_;
 
     void subscribeCommittedHandlerInternal(ICanCommit*, const OnCommittedEventArgs&);
-    std::function<void(ICanCommit*, const OnCommittedEventArgs&)> subscribeCommittedHandler_ = nullptr;
+    EventHandlerFunction<ICanCommit*, const OnCommittedEventArgs&> subscribeCommittedHandler_;
 
     void subscribeCommittingHandlerInternal(ICanCommit*, const OnCommittingEventArgs&);
-    std::function<void(ICanCommit*, const OnCommittingEventArgs&)> subscribeCommittingHandler_ = nullptr;
+    EventHandlerFunction<ICanCommit*, const OnCommittingEventArgs&> subscribeCommittingHandler_;
 
     void onUnsubscribePublisher(IRevocationPublisher* revocationPublisher);
 

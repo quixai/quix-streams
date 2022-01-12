@@ -20,22 +20,60 @@ namespace Quix {
  * TODO: assigning += same function twice now adds twice to list
  */
 
+
+static size_t UNIQID = 1;
+
+template <typename ..._ArgTypes>
+class EventHandlerFunction
+{
+    size_t uid_;
+    std::function<void(_ArgTypes...)> callback_;
+public:
+
+    EventHandlerFunction( )
+     : 
+     uid_(0), 
+     callback_(nullptr)
+    {
+        
+    }
+
+    EventHandlerFunction( std::function<void(_ArgTypes...)> callback )
+     : 
+     uid_(++UNIQID), 
+     callback_(callback)
+    {
+    }
+
+    EventHandlerFunction( const EventHandlerFunction<_ArgTypes...>& other )
+     : 
+     uid_(other.uid_), 
+     callback_(other.callback_)
+    {
+
+    }
+
+    inline void operator()(_ArgTypes... __args) const
+    {
+        callback_( __args... );
+    }
+
+    size_t uid() const { return uid_; }
+};
+
 template <typename ..._ArgTypes>
 class EventHandler
 {
 private:
 
     /// To work around missing std::function == operator
-    template<typename T, typename... U>
-    size_t getAddress(std::function<T(U...)> f) {
-        typedef T(fnType)(U...);
-        fnType ** fnPointer = f.template target<fnType*>();
-        return (size_t) *fnPointer;
+    size_t getAddress(const EventHandlerFunction<_ArgTypes...>& f) {
+        return f.uid();
     };
 
 
     /// array where all associated callbacks are stored
-    std::vector<std::function<void(_ArgTypes...)>> callbacks_;
+    std::vector<EventHandlerFunction<_ArgTypes...>> callbacks_;
     int cnt_ = 0;
 
     // /// array where all associated callbacks are stored
@@ -70,7 +108,7 @@ public:
     //     return dispatcher_;
     // }
 
-    inline EventHandler<_ArgTypes...>& operator+=(const std::function<void(_ArgTypes...)>& func)
+    inline EventHandler<_ArgTypes...>& operator+=(const EventHandlerFunction<_ArgTypes...>& func)
     {
         // auto functionAddress = getAddress(func);
 
@@ -86,7 +124,12 @@ public:
         return *this;
     } 
 
-    inline EventHandler<_ArgTypes...>& operator-=(const std::function<void(_ArgTypes...)>& func)
+    inline EventHandler<_ArgTypes...>& operator+=(const std::function<void(_ArgTypes...)>& func)
+    {
+        return *this += EventHandlerFunction<_ArgTypes...>(func);
+    }
+
+    inline EventHandler<_ArgTypes...>& operator-=(const EventHandlerFunction<_ArgTypes...>& func)
     {
         // TODO: has O(n) complexity
         // TODO: if function has been assigned twice to list then this functionality does not work

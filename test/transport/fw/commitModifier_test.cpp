@@ -9,6 +9,8 @@
 #include "transport/io/transportContext.h"
 #include "transport/fw/exceptions/serializingException.h"
 
+#include "../helpers/packageFactory.h"
+
 #include <climits>
 
 #include <algorithm>
@@ -116,6 +118,7 @@ TEST(commitModifierTeest, Send_CommitInterval_ShouldCommitAfterTimeElapsed)
     std::mutex cv_m;
     bool finished = false;
 
+    EXPECT_CALL( committer, commit(_) );
     ON_CALL( committer, commit(_) ).WillByDefault(
         testing::Invoke([&]( const std::vector<std::shared_ptr<TransportContext>>& transportContexts ) {
             std::cout << "COMMIT EXECUTED" << endl;
@@ -202,6 +205,7 @@ TEST(commitModifier, Commit_WithTransport_ShouldRaiseEvent)
             commits.push_back(transportContexts);
         })
     );
+    EXPECT_CALL( committer, commit(_) );
 
     modifier.subscribe(&committer);
 
@@ -227,30 +231,97 @@ TEST(commitModifier, Commit_WithTransport_ShouldRaiseEvent)
 
 }
 
-TEST(commitModifier, OnNewPackage_ModifierCloses_ShouldCommitOnlyCompleted) 
+TEST(commitModifierWhole, OnNewPackage_ModifierCloses_ShouldCommitOnlyCompleted) 
 {
     // Arrange
 
-    // CommitOptions commitOptions;
-    // commitOptions.autoCommitEnabled = true;
-    // commitOptions.commitEvery       = -1;
-    // commitOptions.commitInterval    = -1;
+    CommitOptions commitOptions;
+    commitOptions.autoCommitEnabled = true;
+    commitOptions.commitEvery       = -1;
+    commitOptions.commitInterval    = 2000;
 
-    // CommitModifier modifier(commitOptions);
-    // std::vector<std::vector<std::shared_ptr<TransportContext>>> commits;
-    // MyMockCommit committer;
+    CommitModifier modifier(commitOptions);
+    std::vector<std::vector<std::shared_ptr<TransportContext>>> commits;
+    MyMockCommit committer;
 
-    // ON_CALL( committer, commit(_) ).WillByDefault(
-    //     testing::Invoke([&]( const std::vector<std::shared_ptr<TransportContext>>& transportContexts ) {
-    //         commits.push_back(transportContexts);
-    //     })
-    // );
+    EXPECT_CALL( committer, commit(_) ).Times(2);
+    ON_CALL( committer, commit(_) ).WillByDefault(
+        testing::Invoke([&]( const std::vector<std::shared_ptr<TransportContext>>& transportContexts ) {
+            commits.push_back(transportContexts);
+        })
+    );
 
-    // modifier.subscribe(&committer);
+    modifier.subscribe(&committer);
 
 
-    // modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
-    //     packagesReceived.push_back( package );
-    // };
+    TransportContext* transportContext = new TransportContext();
+    (*transportContext)["PackageId"] = "1";
+    auto package1 = createPackage<TestSingleMessageCommit>(TestSingleMessageCommit(), std::shared_ptr<TransportContext>(transportContext));
+    TransportContext* transportContext2 = new TransportContext();
+    (*transportContext2)["PackageId"] = "2";
+    auto package2 = createPackage<TestSingleMessageCommit>(TestSingleMessageCommit(), std::shared_ptr<TransportContext>(transportContext2));
+    TransportContext* transportContext3 = new TransportContext();
+    (*transportContext3)["PackageId"] = "3";
+    auto package3 = createPackage<TestSingleMessageCommit>(TestSingleMessageCommit(), std::shared_ptr<TransportContext>(transportContext3));
 
+    modifier.send(package1);
+    modifier.send(package2);
+    std::this_thread::sleep_for (std::chrono::seconds(3));
+    modifier.send(package3);
+
+    modifier.close();
+
+    EXPECT_EQ( commits.size(), 2 );
+    EXPECT_EQ( commits[0].size(), 2 );
+    string out;
+    EXPECT_TRUE( commits[0][0]->tryGetValue("PackageId", out) );
+    EXPECT_EQ( out, string("1") );
+    EXPECT_TRUE( commits[0][1]->tryGetValue("PackageId", out) );
+    EXPECT_EQ( out, string("2") );
+}
+
+TEST(commitModifierWhole, OnNewPackage_ModifierCloses_CommitElements) 
+{
+    // Arrange
+
+    CommitOptions commitOptions;
+    commitOptions.autoCommitEnabled = true;
+    commitOptions.commitEvery       = -1;
+    commitOptions.commitInterval    = 2000;
+
+    CommitModifier modifier(commitOptions);
+    std::vector<std::vector<std::shared_ptr<TransportContext>>> commits;
+    MyMockCommit committer;
+
+    EXPECT_CALL( committer, commit(_) );
+    ON_CALL( committer, commit(_) ).WillByDefault(
+        testing::Invoke([&]( const std::vector<std::shared_ptr<TransportContext>>& transportContexts ) {
+            commits.push_back(transportContexts);
+        })
+    );
+
+    modifier.subscribe(&committer);
+
+
+    TransportContext* transportContext = new TransportContext();
+    (*transportContext)["PackageId"] = "1";
+    auto package1 = createPackage<TestSingleMessageCommit>(TestSingleMessageCommit(), std::shared_ptr<TransportContext>(transportContext));
+    TransportContext* transportContext2 = new TransportContext();
+    (*transportContext2)["PackageId"] = "2";
+    auto package2 = createPackage<TestSingleMessageCommit>(TestSingleMessageCommit(), std::shared_ptr<TransportContext>(transportContext2));
+    TransportContext* transportContext3 = new TransportContext();
+    (*transportContext3)["PackageId"] = "3";
+    auto package3 = createPackage<TestSingleMessageCommit>(TestSingleMessageCommit(), std::shared_ptr<TransportContext>(transportContext3));
+
+
+    modifier.send(package1);
+    modifier.send(package2);
+    modifier.send(package3);
+
+    EXPECT_EQ( commits.size(), 0 );
+
+    modifier.close();
+
+    EXPECT_EQ( commits.size(), 1 );
+    EXPECT_EQ( commits[0].size(), 3 );
 }

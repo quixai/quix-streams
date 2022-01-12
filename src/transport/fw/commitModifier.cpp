@@ -148,20 +148,20 @@ namespace Quix { namespace Transport {
         }
         this->committer_ = committer;
 
-        this->subscribeCommittedHandler_    = std::bind( &CommitModifier::subscribeCommittedHandlerInternal, this, std::placeholders::_1, std::placeholders::_2 );
+        this->subscribeCommittedHandler_    = EventHandlerFunction<ICanCommit*, const OnCommittedEventArgs&>( std::bind( &CommitModifier::subscribeCommittedHandlerInternal, this, std::placeholders::_1, std::placeholders::_2 ) );
         this->committer_->onCommitted       += this->subscribeCommittedHandler_;
 
-        this->subscribeCommittingHandler_   = std::bind( &CommitModifier::subscribeCommittingHandlerInternal, this, std::placeholders::_1, std::placeholders::_2 );
+        this->subscribeCommittingHandler_   = EventHandlerFunction<ICanCommit*, const OnCommittingEventArgs&>( std::bind( &CommitModifier::subscribeCommittingHandlerInternal, this, std::placeholders::_1, std::placeholders::_2 ) );
         this->committer_->onCommitting      += this->subscribeCommittingHandler_;
 
-        this->subscribeOnClose_             = std::bind( &CommitModifier::subscribeOnCloseInternal, this );
+        this->subscribeOnClose_             = EventHandlerFunction<>( std::bind( &CommitModifier::subscribeOnCloseInternal, this ) );
         this->onClose                       += this->subscribeOnClose_;
     }
 
     void CommitModifier::subscribeOnCloseInternal()
     {
-        this->committer_->onCommitted -= this->subscribeCommittedHandler_;
-        this->committer_->onCommitting -= this->subscribeCommittingHandler_;
+        this->committer_->onCommitted       -= this->subscribeCommittedHandler_;
+        this->committer_->onCommitting      -= this->subscribeCommittingHandler_;
     }
 
     void CommitModifier::subscribeCommittedHandlerInternal( ICanCommit* sender, const OnCommittedEventArgs& args )

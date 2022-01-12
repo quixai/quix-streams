@@ -14,17 +14,21 @@ class MyException : public std::exception { };
 std::mutex execMutex;
 int cnt1;
 int cnt2;
-void fun()
+void funinternal()
 {
 }
-void fun1()
+void fun1internal()
 {
     cnt1++;
 }
-void fun2()
+void fun2internal()
 {
     cnt2++;
 }
+
+auto fun  = EventHandlerFunction<>(funinternal);
+auto fun1 = EventHandlerFunction<>(fun1internal);
+auto fun2 = EventHandlerFunction<>(fun2internal);
 
 
 TEST(eventHandlerTest, Basic)

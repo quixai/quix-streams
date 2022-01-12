@@ -14,6 +14,8 @@
 #include "transport/fw/modelKey.h"
 #include "transport/registry/codecRegistry.h"
 
+#include "./passthrough.h"
+
 template<class T>
 class PackageFactoryCodec : public Quix::Transport::AbstractCodec
 {

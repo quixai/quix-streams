@@ -45,7 +45,7 @@ namespace Quix { namespace Transport {
             throw SerializingException(ss.str());
         }
 
-        auto wrappedInPackage = TransportPackageValueCodec::serialize(
+        auto byteArr = TransportPackageValueCodec::serialize(
             std::shared_ptr<TransportPackageValue>(
                 new TransportPackageValue(
                     std::shared_ptr<ByteArrayPackage>(
@@ -57,7 +57,7 @@ namespace Quix { namespace Transport {
         );
 
         return std::shared_ptr<ByteArrayPackage>(
-            new ByteArrayPackage(wrappedInPackage)
+            new ByteArrayPackage(package, byteArr)
         );
     }
  
