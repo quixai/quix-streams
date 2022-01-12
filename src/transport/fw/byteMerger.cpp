@@ -122,7 +122,6 @@ namespace Quix { namespace Transport {
             const auto it = buffer_.find(key);
             if( it == buffer_.end() ) {
                 // message never was or no longer in buffer !
-    //          logger.LogDebug("Received last segment for {0}, but rest of the segments can no longer be found.", msgGroupId);
                 return false;
             }
             bufferItem = it->second;

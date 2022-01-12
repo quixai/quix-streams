@@ -14,10 +14,13 @@
 namespace Quix { namespace Transport {
 
 /**
- * Interface for providing a class a way to take Package
+ * Describes an interface for committing 
  */
 class ICanCommit{
 
+    /***
+     * @brief Event args which state is immutable / frozen
+     */
     class ReadonlyEventArgs{
     protected:
         void* state_;
@@ -40,6 +43,9 @@ class ICanCommit{
         }
     };
 
+    /***
+     * @brief Event args which state can be modifier
+     */
     class ReadWriteEventArgs : public ReadonlyEventArgs{
     public:
         inline ReadWriteEventArgs(void* state = nullptr) : ReadonlyEventArgs(state) {}
@@ -52,11 +58,17 @@ class ICanCommit{
 
 public:
 
+    /***
+     * @brief Event args for ICanCommit.onCommitted
+     */
     class OnCommittedEventArgs : public ReadWriteEventArgs {
     public:
         inline OnCommittedEventArgs(void* state = nullptr) : ReadWriteEventArgs(state) {}
     };
 
+    /***
+     * @brief Event args for ICanCommit.onCommitting
+     */
     class OnCommittingEventArgs : public ReadonlyEventArgs {
     public:
         inline OnCommittingEventArgs(void* state = nullptr) : ReadonlyEventArgs(state) {}

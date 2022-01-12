@@ -45,9 +45,7 @@ private:
 
 public:
     /**
-     * Initialize header with unknown values
-     * 
-     * Note: values can be random
+     * Initialize header with default ( zero ) values
      */
     inline ByteSplitProtocolHeader() :
         msgId_(0),

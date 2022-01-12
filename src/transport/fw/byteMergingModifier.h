@@ -24,7 +24,7 @@ namespace Quix { namespace Transport {
 
 
 /**
- * Component for splitting a single array of bytes into multiple according to implementation
+ * Modifier, which encapsulates an <see cref="IByteMerger"/> to merge previously split packages
 */
 class ByteMergingModifier: public IModifier, public IRevocationSubscriber{
 private:
@@ -40,7 +40,11 @@ private:
     /// In case of packages that need merging, this package is the one which contains the extra context.
     std::unordered_map< IByteMerger::ByteMergerBufferKey, std::shared_ptr<TransportContext>, IByteMerger::ByteMergerBufferKey::Hasher > firstPackageContext_;
 
+    /// Lock used for every internal structure ( can be in future splitted into multiple mutexes, but for now kept as single for simplicity )
     std::mutex lock_;
+
+    /// Lock used inside raiseNextPackageIfReady to replace SemaphoreSlim
+    std::mutex raiseNextPackageIfReadyLock_;
     
     IByteMerger* byteMerger_;
 

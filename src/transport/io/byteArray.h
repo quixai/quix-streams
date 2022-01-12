@@ -224,6 +224,9 @@ public:
         return data_;
     }
 
+    /***
+     * Implement << operator for printing into the std::ostream
+     */
     friend auto operator<<(std::ostream& os, ByteArray const& m) -> std::ostream& { 
         os << " ByteArray("<<m.len()<<")<<";
 

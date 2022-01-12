@@ -6,7 +6,7 @@
 namespace Quix {
 
 /**
- * Raised when an error has occured during deserialization
+ * Raised when program performs invalid operation
  */
 class InvalidOperationException : public std::exception
 {

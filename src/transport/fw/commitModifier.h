@@ -79,43 +79,96 @@ private:
 
     void acknowledgeTransportContext(const std::vector<std::shared_ptr<TransportContext>>& acknowledge);
 
-    /// In case there is no auto committing then all we have to do is pass the message up in the chain
+    /**
+     *  On send callback
+     *  In case there is no auto committing then all we have to do is pass the message up in the chain
+     */
     void onSendOnAutocommitDisabled(std::shared_ptr<IPackage> package) const;
-    /// if we're committing every single message, then any kind of timer based commit is irrelevant
+    /**
+     *  On send callback
+     *  if we're committing every single message, then any kind of timer based commit is irrelevant
+     */
     void onSendOnCommitEvery1(std::shared_ptr<IPackage> package);
 
+    /**
+     *  On send callback
+     *  commiting every n message is disabled and we queue everything and rely on timer to commit
+     */
     void onSendOnCommitEveryLessEq0(std::shared_ptr<IPackage> package);
+    /**
+     *  On send callback
+     *  commiting every n message is enabled
+     */
     void onSendOnCommitEveryGt1(std::shared_ptr<IPackage> package);
 
+    /// On revoking callback
     void onRevokedInternal(IRevocationPublisher*, const IRevocationPublisher::OnRevokedEventArgs&);
+    /// On revoked callback
     void onRevokingInternal(IRevocationPublisher*, const IRevocationPublisher::OnRevokingEventArgs&);
 
-    void onCommitIntervalCallback();
-
+    /// On close callback
     void onCloseInternal();
 
+    /**
+     *  Function handling committing by internval
+     */
+    void onCommitIntervalCallback();
+
+    /**
+     * Function handling the onClose for the ICanCommit* subscriber  
+     * @param  ICanCommit subscriber source of the event
+     */
     void subscribeOnCloseInternal();
+    /// stores subscribeOnCloseInternal function binded with this as first argument
     EventHandlerFunction<> subscribeOnClose_;
 
-    void subscribeCommittedHandlerInternal(ICanCommit*, const OnCommittedEventArgs&);
+    /**
+     * Function handling the onCommited for the ICanCommit* subscriber  
+     * @param subscriber source of the event
+     * @param args passed arguments
+     */
+    void subscribeCommittedHandlerInternal(ICanCommit* subscriber, const OnCommittedEventArgs& args);
+    /// stores subscribeCommittedHandlerInternal function binded with this as first argument
     EventHandlerFunction<ICanCommit*, const OnCommittedEventArgs&> subscribeCommittedHandler_;
 
-    void subscribeCommittingHandlerInternal(ICanCommit*, const OnCommittingEventArgs&);
+    /**
+     * Function handling the onCommitting for the ICanCommit* subscriber  
+     * @param  ICanCommit subscriber source of the event
+     * @param args passed arguments
+     */
+    void subscribeCommittingHandlerInternal(ICanCommit* subscriber, const OnCommittingEventArgs& args);
+    /// stores subscribeCommittingHandlerInternal function binded with this as first argument
     EventHandlerFunction<ICanCommit*, const OnCommittingEventArgs&> subscribeCommittingHandler_;
 
     void onUnsubscribePublisher(IRevocationPublisher* revocationPublisher);
 
 public:
 
+    /***
+     * @brief Commit modifier which enables committing packages in an automatic fashion
+     */
     CommitModifier(const CommitOptions& commitOptions);
 
     void commit(const std::vector<std::shared_ptr<TransportContext>>& transportContexts);
 
+    /**
+     * Subscriber to committer  
+     * @param commiter to be subscribed to
+     */
     void subscribe(ICanCommit* committer);
+    /**
+     * Subscriber to revocation publisher  
+     * @param revocationPublisher to be subscribed to
+     */
     void subscribe(IRevocationPublisher* revocationPublisher);
 
     void close();
 
+    /**
+     * Send a package, which the modifier queues untill committed. Commited results are raised via onNewPackage
+     * 
+     * @param package The package to be sent
+     */
     void send(std::shared_ptr<IPackage> package);
 
     std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);

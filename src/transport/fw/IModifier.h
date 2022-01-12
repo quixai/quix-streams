@@ -16,7 +16,7 @@
 namespace Quix { namespace Transport {
 
 /**
- * Interface for providing a class a way to take Package
+ * Interface which every Modifier must implements
  */
 class IModifier : public ISubscriber, public IPublisher{
 };

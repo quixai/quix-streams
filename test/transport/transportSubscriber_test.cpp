@@ -25,8 +25,6 @@ using namespace Quix::Transport;
 using ::testing::_;
 using ::testing::Return;
 
-///TODO: Commiting & Revoking tests
-
 
 
 class MyMockCommitOutput : public ISubscriber, public ICanCommit {

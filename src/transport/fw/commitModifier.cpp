@@ -42,8 +42,6 @@ namespace Quix { namespace Transport {
                 }
                 catch(...)
                 {
-                    // TODO
-                    
                     // logger.LogError(ex, "Failed to commit contexts due to timer expiring.");
                 }
 
@@ -280,11 +278,7 @@ namespace Quix { namespace Transport {
 
         {
             std::lock_guard<std::mutex> guard(this->contextsReadyToCommitLock_);
-            contexts.reserve(this->contextsReadyToCommit_.size());
-            for( auto& el: this->contextsReadyToCommit_ )
-            {
-                contexts.push_back(el);
-            }
+            contexts = listToVec(this->contextsReadyToCommit_);
         }
 
         if (contexts.empty() )
@@ -339,11 +333,7 @@ namespace Quix { namespace Transport {
 
         {
             std::lock_guard<std::mutex> guard(this->contextsReadyToCommitLock_);
-            contexts.reserve(this->contextsReadyToCommit_.size());
-            for( auto& el: this->contextsReadyToCommit_ )
-            {
-                contexts.push_back(el);
-            }
+            contexts = listToVec(this->contextsReadyToCommit_);
         }
 
         if (contexts.empty() )
@@ -378,7 +368,7 @@ namespace Quix { namespace Transport {
                 {
                     //TODO: this is O(n) so the whole loop is O(n*n), but maybe it does not matter because of common sizes
 
-                    //TODO: this is pointer and not content check
+                    //TODO: this is pointer and not content check which is much faster ( should be fine )
 
                     auto end = affectedContexts.end();
                     auto it = find_if( affectedContexts.begin(), affectedContexts.end() , [&](const std::shared_ptr<TransportContext>& element) {
@@ -441,7 +431,7 @@ namespace Quix { namespace Transport {
             }
             auto& queueContext = contextsReadyToCommit_.front();
 
-            //TODO: maybe equality check
+            //TODO: maybe equality check, but would cause slowdown ( should be fine though )
             if (queueContext.get() != transportContext.get())
             {
                 // this.logger.LogWarning("The next item in the transport queue is not what is expected. Avoiding acknowledging item.");
@@ -462,12 +452,7 @@ namespace Quix { namespace Transport {
         std::vector<std::shared_ptr<TransportContext>> toCommit;
         {
             std::lock_guard<std::mutex> guard(contextsReadyToCommitLock_);        
-
-            toCommit.reserve(contextsReadyToCommit_.size());
-            for(auto& el : contextsReadyToCommit_)
-            {
-                toCommit.push_back(el);
-            }
+            toCommit = listToVec(this->contextsReadyToCommit_);
         }
 
 

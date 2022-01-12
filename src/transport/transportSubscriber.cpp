@@ -112,7 +112,6 @@ namespace Quix { namespace Transport {
         {
             this->onCommit_ = std::bind(&ICanCommit::commit, previousCanCommitModifier, std::placeholders::_1);
 
-            //TODO: onFilterCommittedContexts
             this->onFilterCommittedContexts_ = std::bind(&ICanCommit::filterCommittedContexts, previousCanCommitModifier, std::placeholders::_1, std::placeholders::_2);
             
 

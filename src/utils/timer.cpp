@@ -31,7 +31,6 @@ namespace Quix {
             std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
             auto elapsed = now - lastRun_;  // in miliseconds
 
-            /// TODO: implement proper thread wake up
             auto toWait = std::chrono::duration<double, std::milli>(waitFor) - elapsed;        
 
             return toWait;

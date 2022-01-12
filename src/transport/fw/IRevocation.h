@@ -11,7 +11,7 @@
 namespace Quix { namespace Transport {
 
 /**
- * Interface for providing a class a way to take Package
+ * Describes interface for publishing information about revocation
  */
 class IRevocationPublisher{
     class BaseRevocationArgs{

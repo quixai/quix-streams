@@ -59,13 +59,10 @@ public:
 
         inline bool operator==(const ByteMergerBufferKey& other) const 
         {
-            bool is1 = msgId_ == other.msgId_ ;
-            bool is2 = msgGroupKey_ == other.msgGroupKey_;
-
             return 
-                is1
+                msgId_ == other.msgId_
                     &&
-                is2
+                msgGroupKey_ == other.msgGroupKey_
                 ; 
         }
 

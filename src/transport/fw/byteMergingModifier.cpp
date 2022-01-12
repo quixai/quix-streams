@@ -69,7 +69,6 @@ namespace Quix { namespace Transport {
         {
             // buffer id means that this is a merged package
 
-            // TODO: handle transport context
             std::shared_ptr<TransportContext> transportContext; 
             {
                 std::lock_guard<std::mutex> guard(lock_);
@@ -129,7 +128,8 @@ namespace Quix { namespace Transport {
 
     void ByteMergingModifier::raiseNextPackageIfReady( )
     {
-        //TODO: add concurrency ( semaphore )
+        // Csharp uses here semaphoreSlim because of Task locking
+        std::lock_guard<std::mutex> guard(raiseNextPackageIfReadyLock_);
 
         vector<pair<IByteMerger::ByteMergerBufferKey, long>> sortedPackageOrder;
 
