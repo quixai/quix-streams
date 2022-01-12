@@ -15,11 +15,9 @@ namespace Quix {
 
 /****
  * Wrapper over the std::function<void(_ArgTypes...)>
- *   allows handle event based 
- * 
- * TODO: assigning += same function twice now adds twice to list
+ *   holds unique id for the function for being able to map inside the unordered map
+ *   https://stackoverflow.com/questions/20692790/define-stdhashstdfunction 
  */
-
 
 static size_t UNIQID = 1;
 
