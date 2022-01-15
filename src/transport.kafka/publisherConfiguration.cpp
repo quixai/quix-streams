@@ -13,14 +13,12 @@ using namespace Quix::Transport::Kafka;
 
 PublisherConfiguration::PublisherConfiguration( 
     std::string brokerList, 
-    std::map<std::string, std::string> producerProperties = std::map<std::string, std::string>()
+    std::map<std::string, std::string> producerProperties
 )
 : 
     brokerList_(brokerList),
     producerProperties_(producerProperties)
 {
-
-
 
     /// NOTE: this is done in toProducerConfig in C#, but here must be in constructor to allow toProducerConfig be const function 
     if ( producerProperties_.find("log_level") == producerProperties_.end() )
@@ -36,6 +34,20 @@ PublisherConfiguration::PublisherConfiguration(
     if ( producerProperties_.find("socket.keepalive.enable") == producerProperties_.end() )
     {
         producerProperties_["socket.keepalive.enable"] = std::string("true"); // default to true
+    }
+
+    /*
+        https://github.com/edenhill/librdkafka/issues/3109 not yet implemented
+    if (!producerProperties.ContainsKey("connections.max.idle.ms"))
+    {
+        producerProperties["connections.max.idle.ms"] = "180000"; // Azure closes inbound TCP idle > 240,000 ms, which can result in sending on dead connections (shown as expired batches because of send timeout)
+        // see more at https://docs.microsoft.com/en-us/azure/event-hubs/apache-kafka-configurations
+    }*/
+    if ( producerProperties_.find("metadata.max.age.ms") == producerProperties_.end() )
+    {
+        producerProperties["metadata.max.age.ms"] = "180000"; // Azure closes inbound TCP idle > 240,000 ms, which can result in sending on dead connections (shown as expired batches because of send timeout)
+        // The hope here is that by refreshing metadata it is not considered idle
+        // see more at https://docs.microsoft.com/en-us/azure/event-hubs/apache-kafka-configurations
     }
 
 

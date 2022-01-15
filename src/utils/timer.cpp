@@ -121,6 +121,11 @@ namespace Quix {
         
     }
 
+    void Timer::start()
+    {
+        threadShouldBeRunning_ = true;
+        thread_ = std::thread(&Timer::run, this);
+    }
 
     void Timer::change(int delay, int interval)
     {
@@ -131,13 +136,15 @@ namespace Quix {
         delay_ = delay;
         interval_ = interval;
 
-        if( !threadShouldBeRunning_ )
+        if( !threadShouldBeRunning_ && autoStart_ )
         {
-            threadShouldBeRunning_ = true;
-            thread_ = std::thread(&Timer::run, this);
-
+            start();
         }
-        cond_.notify_all();
+
+        if( threadIsRunning_ )
+        {
+            cond_.notify_all();
+        }
     }
 
     void Timer::stop()
@@ -153,10 +160,11 @@ namespace Quix {
     }
 
 
-    Timer::Timer(int delay, int interval)
+    Timer::Timer(int delay, int interval, bool autoStart)
     :
     threadShouldBeRunning_(false),
-    threadIsRunning_(false)
+    threadIsRunning_(false),
+    autoStart_(autoStart)
     {
         change(delay, interval);
     }
@@ -170,10 +178,10 @@ namespace Quix {
     }
 
 
-    CallbackTimer::CallbackTimer(std::function<void()> cbk, int delay, int interval)
+    CallbackTimer::CallbackTimer(std::function<void()> cbk, int delay, int interval, bool autoStart)
     :
     cbk_(cbk),
-    Timer(delay, interval)
+    Timer(delay, interval, autoStart)
     {
 
     }

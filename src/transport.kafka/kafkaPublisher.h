@@ -1,10 +1,16 @@
 #pragma once
 
+#include <mutex>
+#include <chrono>
+#include <functional>
+#include <memory>
+
 #include <librdkafka/rdkafkacpp.h>
 
 #include "../utils/timer.h"
 
 #include "../transport/io/IPublisher.h"
+#include "../transport/io/IPackage.h"
 #include "../transport/io/byteArray.h"
 #include "./IKafkaPublisher.h"
 #include "./topicConfiguration.h"
@@ -17,17 +23,25 @@ namespace Quix { namespace Transport { namespace Kafka  {
  */
 class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublisher{
 
+    std::mutex openLock_;
+    std::mutex flushLock_;
+
     std::function<void()> hbAction_;
     std::function<void()> setupKeepAlive_;
     CallbackTimer timer_;
     std::function<void(const std::string& topicName, const Quix::Transport::ByteArray& data)> produce_;
 
+    std::chrono::time_point<std::chrono::system_clock> lastFlush_ = std::chrono::time_point<std::chrono::system_clock>{};
+
+
     std::vector<Partition> partitionsToKeepAliveWith_;    
 
-    RdKafka::Producer*  producer_;
+    RdKafka::Producer*  producer_ = nullptr;
     RdKafka::Conf*      conf_;
 
+    void errorHandler(RdKafka::ErrorCode errorCode) const;
     void sendKeepAlive();
+    void sendInternal(std::shared_ptr<Quix::Transport::IPackage>);
 
 public:
 
@@ -38,17 +52,17 @@ public:
     /**
      * @brief Close connection to Kafka
      */
-    virtual void close() = 0;
+    void close();
 
     /**
      * @brief Flush the queue to Kafka
      */
-    virtual void flush() = 0;
+    void flush();
 
     /**
      * @brief Open connection to Kafka
      */
-    virtual void open() = 0;
+    void open();
 
 };
 
