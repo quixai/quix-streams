@@ -13,7 +13,13 @@ class Partition{
 
 public:
 
-    int id = 0;
+    int32_t id = 0;
+
+    Partition(int32_t id_ = 0)
+    :
+    id(id_)
+    {
+    }
 
     bool operator==(const Partition& other) const 
     {

@@ -2,8 +2,10 @@
 #include "../exceptions/invalidOperationException.h"
 #include "./kafkaPublisher.h"
 #include "./constants.h"
+#include "./kafkaPackageExtensions.h"
 
 #include <functional>
+#include <unordered_map>
 #include <sstream>
 #include <regex>
 #include <string>
@@ -22,43 +24,76 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
 
     std::function<void()> hbAction(nullptr);
     auto partition = topicConfiguration.partition();
+    auto topic = topicConfiguration.topic();
     if ( partition == Partition::Any )
     {
         hbAction_ = [=](){
             // this.logger.LogTrace($"Creating admin client to retrieve metadata for keep alive details");
-            using (var adminClient = new AdminClientBuilder(this.config).Build())
+
+            std::string errstr;
+            auto adminClient = RdKafka::Producer::create(conf_, errstr);
+            if ( !producer_ ) {
+                std::stringstream ss;
+                ss << "Failed to create kafka producer (" << errstr << ")";
+                /// TODO: logger
+                return;
+                // throw InvalidOperationException(ss.str());
+            }
+
+            RdKafka::Metadata* metadata;
+            RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, conf_, errstr);
+            if ( !kafkaTopic ) {
+                std::stringstream ss;
+                ss << "Failed to create kafka topic (" << errstr << ")";
+                /// TODO: logger
+                return;
+                // throw InvalidOperationException(ss.str());
+            }
+
+            adminClient->metadata(false, kafkaTopic, &metadata, 10*1000);
+
+            bool found = false;
+            for( auto it = metadata->topics()->begin(); it != metadata->topics()->end(); ++it)
             {
-                var metadata = adminClient.GetMetadata(topicConfiguration.Topic, TimeSpan.FromSeconds(10));
-                if (metadata == null)
-                {
-                    logger.LogError("Keep alive could not be set up for topic {0} due to timeout.", topicConfiguration.Topic);
-                    return;
-                }
+                if( (*it)->topic() != topic ) { continue; }
 
-                this.logger.LogTrace("Retrieved metadata for Topic {0}", topicConfiguration.Topic);
-                var topicMetaData = metadata.Topics.FirstOrDefault(x => x.Topic == topicConfiguration.Topic);
-                if (topicMetaData == null)
-                {
-                    logger.LogError("Keep alive could not be set up for topic {0} due to missing topic metadata.", topicConfiguration.Topic);
-                    return;
-                }
 
-                partitionsToKeepAliveWith = topicMetaData.Partitions.GroupBy(y => y.Leader)
-                    .Select(y => y.First())
-                    .Select(y => new TopicPartition(topicConfiguration.Topic, y.PartitionId)).ToList();
+                this->partitionsToKeepAliveWith_.clear();
 
-                if (logger.IsEnabled(LogLevel.Debug))
+                /// Group by leader and select first leader
+                std::unordered_map<int32_t, const RdKafka::PartitionMetadata *> partitionLeaders;
+
+                for(auto partIt = (*it)->partitions()->begin(); partIt != (*it)->partitions()->end(); ++partIt)
                 {
-                    foreach (var topicPartition in partitionsToKeepAliveWith)
+                    auto el = (*partIt);
+                    auto leader = el->leader();
+                    if( partitionLeaders.find(leader) == partitionLeaders.end() )
                     {
-                        logger.LogDebug("Automatic keep alive enabled for '{0}'.", topicPartition);
+                        partitionLeaders[leader] = el;
+                        this->partitionsToKeepAliveWith_.push_back(Partition(el->id()));
+                        std::cout<< "Automatic keep alive enabled for '" << el->id() << "'" << std::endl;
+                        // logger.LogDebug("Automatic keep alive enabled for '{0}'.", topicPartition);
                     }
                 }
+                found = true;
+                break;
             }
-            // this.logger.LogTrace($"Finished retrieving metadata for keep alive details");
+
+            if( !found )
+            {                
+                // TODO: logger
+                std::cout<< "Keep alive could not be set up for topic " << topic << " due to missing topic metadata." << std::endl;
+            }
+
+            delete metadata;
+
+            if( found )
+            {
+                // this.logger.LogTrace($"Finished retrieving metadata for keep alive details");
+                std::cout << "Finished retrieving metadata for keep alive details" << std::endl;
+            }
             
-            
-            hbAction_ = ()[]{ }; // because no need to do ever again, really            
+            hbAction_ = [](){ }; // because no need to do ever again, really            
         };
     }
     else
@@ -185,9 +220,11 @@ void KafkaPublisher::open()
     this->timer_.start();
 }
 
-void KafkaPublisher::sendInternal(std::shared_ptr<IPackage>)
+void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDelegate produceDelegate)
 {
     /// TODO: CancellationToken
+
+    const auto originalPackage = dynamic_pointer_cast<ByteArrayPackage>(package);
 
     if( this->producer_ != nullptr ) { return; }
     {
@@ -198,7 +235,52 @@ void KafkaPublisher::sendInternal(std::shared_ptr<IPackage>)
         }
     }
 
+    KafkaPackageExtensions<ByteArrayPackage> kafkaPackage(originalPackage.get());
 
+    bool success = false;
+    int tryCount = 0;
+    int maxTry = 10;
+
+    {
+        std::lock_guard<std::mutex> guard(sendLock_);
+
+        do {
+
+            try {
+                tryCount++;
+
+                std::string key;
+                bool succ = KafkaPackageExtensions<ByteArrayPackage>( originalPackage.get() ).tryGetKey( key );
+                if( !succ ) { continue; }
+                auto& data = originalPackage->value();
+
+                produceDelegate(key, data);
+
+                success = true;
+            } catch(std::exception ex)
+            {
+                // TODO
+
+                        // if (tryCount == maxTry) throw;
+
+                        // if (e.Error.Code == ErrorCode.Local_QueueFull)
+                        // {
+                        //     this.Flush(cancellationToken);
+                        // }
+                        // else
+                        // {
+                        //     throw;
+                        // }
+
+            }
+
+        } while ( !success && tryCount < maxTry );
+
+    }
+    
+
+
+    // auto& key = originalPackage->
 
 }
 
@@ -235,7 +317,7 @@ void KafkaPublisher::flush( )
 void KafkaPublisher::sendKeepAlive()
 {
 
-    auto produceKeepAlive = [this](std::string key, ByteArray message/*, Action<DeliveryReport<string, byte[]>> deliveryHandler, object state*/)
+    ProduceDelegate produceKeepAlive = [this](const std::string& key, const ByteArray& message /*, Action<DeliveryReport<string, byte[]>> deliveryHandler, object state*/ )
             {
                 // TODO:
                 // var topicPartition = (TopicPartition) state;
@@ -248,7 +330,7 @@ void KafkaPublisher::sendKeepAlive()
         {
             // logger.LogTrace("Sending keep alive msg to {0}", topicPartition);
             //TODO:
-            sendInternal(Constants::keepAlivePackage);
+            sendInternal( Constants::keepAlivePackage, produceKeepAlive );
             // sendInternal(Constants::keepAlivePackage, produceKeepAlive, state: topicPartition).GetAwaiter().GetResult();
             // logger.LogTrace("Sent keep alive msg to {0}", topicPartition);
         }
@@ -256,7 +338,7 @@ void KafkaPublisher::sendKeepAlive()
     catch(const std::exception& e)
     {
         // logger.LogWarning("Failed to send keep alive msg");    
-        // std::cerr << e.what() << '\n';
+        std::cerr << "Failed to send keep alive msg " << e.what() << '\n';
     }
     
 }

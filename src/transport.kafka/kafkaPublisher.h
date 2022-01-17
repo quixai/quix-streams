@@ -18,6 +18,11 @@
 
 namespace Quix { namespace Transport { namespace Kafka  {
 
+
+// typedef std::function<void(const std::string&, std::shared_ptr<Quix::Transport::IPackage>)> ProduceDelegate;
+typedef std::function<void(const std::string&, const ByteArray&)> ProduceDelegate;
+
+
 /**
  * Interface for providing a class a way to push Package to listener
  */
@@ -25,6 +30,7 @@ class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublishe
 
     std::mutex openLock_;
     std::mutex flushLock_;
+    std::mutex sendLock_;
 
     std::function<void()> hbAction_;
     std::function<void()> setupKeepAlive_;
@@ -41,7 +47,7 @@ class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublishe
 
     void errorHandler(RdKafka::ErrorCode errorCode) const;
     void sendKeepAlive();
-    void sendInternal(std::shared_ptr<Quix::Transport::IPackage>);
+    void sendInternal(std::shared_ptr<Quix::Transport::IPackage>, ProduceDelegate produceDelegate);
 
 public:
 
