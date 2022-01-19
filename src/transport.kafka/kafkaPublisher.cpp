@@ -2,6 +2,7 @@
 #include "../exceptions/invalidOperationException.h"
 #include "./kafkaPublisher.h"
 #include "./constants.h"
+#include "./exceptions/kafkaException.h"
 #include "./kafkaPackageExtensions.h"
 
 #include <functional>
@@ -70,7 +71,7 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
                     if( partitionLeaders.find(leader) == partitionLeaders.end() )
                     {
                         partitionLeaders[leader] = el;
-                        this->partitionsToKeepAliveWith_.push_back(Partition(el->id()));
+                        this->partitionsToKeepAliveWith_.push_back(Partition(topic, el->id()));
                         std::cout<< "Automatic keep alive enabled for '" << el->id() << "'" << std::endl;
                         // logger.LogDebug("Automatic keep alive enabled for '{0}'.", topicPartition);
                     }
@@ -106,15 +107,16 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
 
 
     // unlike in C# the sending with and without partition can be done via the same code
-    produce_ = [this, partition](const std::string& topicName, const Quix::Transport::ByteArray& data){ 
-            //TODO
+    produce_ = [ this, partition, topic ]( const std::string& key, const Quix::Transport::ByteArray& data ){ 
+        /// TODO: remove allocation using RK_MSG_FREE instead of RK_MSG_COPY for better performance
+        ///      - not sure yet howto handle memory
         RdKafka::ErrorCode resp = 
-            this->producer_->produce(topicName, partition.id,
+            this->producer_->produce(topic, partition.id,
                         RdKafka::Producer::RK_MSG_COPY /* Copy payload */,
                         /* Value */
                         reinterpret_cast<char *>(data.data()), data.len(),
                         /* Key */
-                        NULL, 0,
+                        key.c_str(), key.size(),
                         /* Timestamp (defaults to now) */
                         0,
                         /* Message headers, if any */
@@ -122,11 +124,14 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
                         /* Per-message opaque value passed to
                             * delivery report */
                         NULL);
-        if (resp != RdKafka::ERR_NO_ERROR)
+        if ( resp != RdKafka::ERR_NO_ERROR )
         {
-            this->errorHandler(resp);
+            this->errorHandler( resp );
+            throw KafkaException( resp );
             // TODO: delete headers
         }
+
+        return resp;
     };
 
     if (publisherConfiguration.keepConnectionAlive && publisherConfiguration.keepConnectionAliveInterval > 0)
@@ -187,11 +192,15 @@ KafkaPublisher::~KafkaPublisher()
 
 void KafkaPublisher::close()
 {
-    if( this->producer_ != nullptr ) { return; }
+    if( this->producer_ == nullptr ) { return; }
 
     std::lock_guard<std::mutex> guard(openLock_);
 
-    if( this->producer_ != nullptr ) { return; }
+    if( this->producer_ == nullptr ) { return; }
+
+    // Should flush prior destroying all the data
+    int flushTimeout = 1000; /// in ms 
+    this->producer_->flush( flushTimeout );
 
     delete producer_;
     producer_ = nullptr;
@@ -220,7 +229,7 @@ void KafkaPublisher::open()
     this->timer_.start();
 }
 
-void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDelegate produceDelegate)
+void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDelegate produceDelegate, void* state)
 {
     /// TODO: CancellationToken
 
@@ -254,33 +263,28 @@ void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDele
                 if( !succ ) { continue; }
                 auto& data = originalPackage->value();
 
-                produceDelegate(key, data);
+                produceDelegate(key, data, state);
 
                 success = true;
-            } catch(std::exception ex)
+            }
+            catch(KafkaException ex)
             {
-                // TODO
+                if (tryCount >= maxTry) throw;
 
-                        // if (tryCount == maxTry) throw;
-
-                        // if (e.Error.Code == ErrorCode.Local_QueueFull)
-                        // {
-                        //     this.Flush(cancellationToken);
-                        // }
-                        // else
-                        // {
-                        //     throw;
-                        // }
-
+                if (ex.error() == RdKafka::ErrorCode::ERR__QUEUE_FULL )
+                {
+                    this->flush();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
         } while ( !success && tryCount < maxTry );
 
     }
-    
 
-
-    // auto& key = originalPackage->
 
 }
 
@@ -317,11 +321,32 @@ void KafkaPublisher::flush( )
 void KafkaPublisher::sendKeepAlive()
 {
 
-    ProduceDelegate produceKeepAlive = [this](const std::string& key, const ByteArray& message /*, Action<DeliveryReport<string, byte[]>> deliveryHandler, object state*/ )
+    ProduceDelegate produceKeepAlive = [this](const std::string& key, const ByteArray& data, /*, Action<DeliveryReport<string, byte[]>> deliveryHandler,*/ void* state )
             {
                 // TODO:
+                // auto topicPartition = 
                 // var topicPartition = (TopicPartition) state;
-                // this->producer.produce_(topicPartition, new Message<string, byte[]> { Key = key, Value = message }, deliveryHandler);
+
+                auto& partition = *((Partition*) state);
+
+                auto resp = this->producer_->produce(partition.topic, partition.id,
+                            RdKafka::Producer::RK_MSG_COPY /* Copy payload */,
+                            /* Value */
+                            reinterpret_cast<char *>(data.data()), data.len(),
+                            /* Key */
+                            key.c_str(), key.size(),
+                            /* Timestamp (defaults to now) */
+                            0,
+                            /* Message headers, if any */
+                            NULL,
+                            /* Per-message opaque value passed to
+                                * delivery report */
+                            NULL);
+                // TODO: maybe not neccessary
+                if (resp != RdKafka::ERR_NO_ERROR)
+                {
+                    throw KafkaException( resp );
+                }
             };
 
     try
@@ -330,7 +355,7 @@ void KafkaPublisher::sendKeepAlive()
         {
             // logger.LogTrace("Sending keep alive msg to {0}", topicPartition);
             //TODO:
-            sendInternal( Constants::keepAlivePackage, produceKeepAlive );
+            sendInternal( Constants::keepAlivePackage, produceKeepAlive, &topicPartition );
             // sendInternal(Constants::keepAlivePackage, produceKeepAlive, state: topicPartition).GetAwaiter().GetResult();
             // logger.LogTrace("Sent keep alive msg to {0}", topicPartition);
         }

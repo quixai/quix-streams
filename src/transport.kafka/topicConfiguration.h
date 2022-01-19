@@ -13,17 +13,23 @@ class Partition{
 
 public:
 
-    int32_t id = 0;
+    int32_t id;
+    std::string topic;
 
-    Partition(int32_t id_ = 0)
+    Partition(std::string topic_, int32_t id_ = 0)
     :
-    id(id_)
+    id(id_),
+    topic(topic_)
     {
     }
 
     bool operator==(const Partition& other) const 
     {
-        return id == other.id;        
+        return 
+            id == other.id 
+            &&
+            topic == other.topic
+            ;        
     };
 
     static Partition Any;

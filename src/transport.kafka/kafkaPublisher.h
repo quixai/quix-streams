@@ -20,7 +20,7 @@ namespace Quix { namespace Transport { namespace Kafka  {
 
 
 // typedef std::function<void(const std::string&, std::shared_ptr<Quix::Transport::IPackage>)> ProduceDelegate;
-typedef std::function<void(const std::string&, const ByteArray&)> ProduceDelegate;
+typedef std::function<void(const std::string&, const ByteArray&, void* state)> ProduceDelegate;
 
 
 /**
@@ -35,7 +35,7 @@ class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublishe
     std::function<void()> hbAction_;
     std::function<void()> setupKeepAlive_;
     CallbackTimer timer_;
-    std::function<void(const std::string& topicName, const Quix::Transport::ByteArray& data)> produce_;
+    std::function<RdKafka::ErrorCode(const std::string& key, const Quix::Transport::ByteArray& data)> produce_;
 
     std::chrono::time_point<std::chrono::system_clock> lastFlush_ = std::chrono::time_point<std::chrono::system_clock>{};
 
@@ -47,7 +47,7 @@ class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublishe
 
     void errorHandler(RdKafka::ErrorCode errorCode) const;
     void sendKeepAlive();
-    void sendInternal(std::shared_ptr<Quix::Transport::IPackage>, ProduceDelegate produceDelegate);
+    void sendInternal(std::shared_ptr<Quix::Transport::IPackage>, ProduceDelegate produceDelegate, void* state = nullptr);
 
 public:
 
