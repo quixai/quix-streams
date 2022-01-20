@@ -5,230 +5,84 @@
 #include <map>
 
 #include <librdkafka/rdkafkacpp.h>
+
+#include "../utils/stringTools.h"
+
 #include "../transport/io/IPublisher.h"
 #include "../exceptions/argumentOutOfRangeException.h"
+#include "../exceptions/invalidOperationException.h"
 #include "./IKafkaPublisher.h"
 
 namespace Quix { namespace Transport { namespace Kafka  {
 
-class Offset {
-public:
-    static const Offset Unset;
-
-    bool operator==(const Offset& other )const
-    {
-        //TODO
-        return true;
-    };
-};
-
-class Partition {
-public:
-    static const Partition Any;
-
-    bool operator==(const Partition& other )const
-    {
-        //TODO
-        return true;
-    };
-};
-
-class PartitionOffset {
-public:
-    const Offset offset;
-    const Partition partition;
-
-    PartitionOffset( const Partition& partition, const Offset& offset )
-    :
-    partition(partition),
-    offset(offset)
-    {
-
-    }
-};
-
-class TopicPartitionOffset : public PartitionOffset {
-public:
-    const std::string topic;
-
-    TopicPartitionOffset( const std::string& topic, const PartitionOffset& partitionOffset )
-    :
-    PartitionOffset( partitionOffset ),
-    topic(topic)
-    {        
-    }
-
-
-    TopicPartitionOffset( const std::string& topic, const Partition& partition, const Offset& offset )
-    :
-    PartitionOffset( partition, offset ),
-    topic(topic)
-    {        
-    }
-};
-
-/**
- * Interface for providing a class a way to push Package to listener
- */
 class SubscriberConfiguration {
+    bool consumerGroupSet_;
+    std::string groupId_;
 
-    static std::vector<TopicPartitionOffset> addTopicToPartitionOffsets
-    ( 
-        const std::string& topic, 
-        const std::vector<PartitionOffset>& partitionOffsets 
-    ) {
-        std::vector<TopicPartitionOffset> inp;
-        for( auto& el : partitionOffsets )
-        {
-            inp.push_back( TopicPartitionOffset( topic, el ) );
-        }
-        return inp;
-    }
-
-    static std::vector<PartitionOffset> addOffsetToPartitions(
-        const std::vector<Partition>& partitions,
-        const Offset& offset
-    )
-    {
-        std::vector<PartitionOffset> inp;
-        for( auto& el : partitions )
-        {
-            inp.push_back( PartitionOffset( el, offset ) );
-        }
-        return inp;
-    }
+    std::map<std::string, std::string> consumerProperties_;
 
 public:
+    const std::string brokerList;
 
-    //TODO: make const
-    std::vector<std::string> topics;
-    std::vector<TopicPartitionOffset> partitions;
-
-    /**
-     *  @brief Initializes a new <see cref="OutputTopicConfiguration" /> with multiple topics where each topic has one or more configured partition offset
-     *  
-     *  @param topicPartitionOffsets The topics with partition offsets
-     **/
-
-    SubscriberConfiguration( const std::vector<TopicPartitionOffset>& topicPartitionOffsets )
+    SubscriberConfiguration( std::string brokerList, std::string groupId = "", std::map<std::string, std::string> consumerProperties = std::map<std::string, std::string>() )
+    :
+    consumerProperties_(consumerProperties),
+    brokerList(brokerList)
     {
-        if ( topicPartitionOffsets.size() <= 0 )
+        if( Quix::StringTools::isEmptyOrWhiteSpace( brokerList) )
         {
-            throw ArgumentOutOfRangeException("topicPartitionOffsets cannot be empty");
+            throw ArgumentOutOfRangeException("brokerList Cannot be null or empty");
+        }
+        if( Quix::StringTools::isEmptyOrWhiteSpace( groupId ) )
+        {
+            // means we're not using consumer group. In this case disallow use of commit
+            consumerGroupSet_ = false;
+            groupId = std::string("UNSET-") + Quix::StringTools::genUuid(); // technically any random static would do, but in case something does commit under that consumer id, it would possibly break things
+        } else
+        {
+            consumerGroupSet_ = true;
         }
 
-        std::map<std::string, std::vector<TopicPartitionOffset>> groupedTopicPartitions;
-        for( auto& tpo : topicPartitionOffsets )
-        {
-            auto& key = tpo.topic;
-            if( groupedTopicPartitions.find( key ) == groupedTopicPartitions.end() )
-            {
-                groupedTopicPartitions[key] = std::vector<TopicPartitionOffset>( );
-            }
-            groupedTopicPartitions[key].push_back(tpo);
-        }
 
-        for( auto& partitionOffsets : groupedTopicPartitions )
+
+        this->groupId_ = groupId;
+
+        /// NOTE: this is done in toProducerConfig in C#, but here must be in constructor to allow toProducerConfig be const function 
+        if ( consumerProperties_.find("log_level") == consumerProperties_.end() )
         {
-            if( 
-                partitionOffsets.second.size() != 1 
-                && 
-                // TODO: little different here from the Csharp
-                find_if( 
-                    partitionOffsets.second.begin(), 
-                    partitionOffsets.second.end(), 
-                    [](
-                        const TopicPartitionOffset& x
-                    ){ 
-                        return x.offset == Offset::Unset; 
-                    } 
-                )  != partitionOffsets.second.end()
-            )
+            consumerProperties_["log_level"] = std::string("0");
+        }
+        if ( consumerProperties_.find("socket.keepalive.enable") == consumerProperties_.end() )
+        {
+            consumerProperties_["socket.keepalive.enable"] = std::string("true");
+        }
+        if ( consumerProperties_.find("metadata.max.age.ms") == consumerProperties_.end() )
+        {
+            consumerProperties_["metadata.max.age.ms"] = std::string("180000");
+            // The hope here is that by refreshing metadata it is not considered idle
+            // see more at https://docs.microsoft.com/en-us/azure/event-hubs/apache-kafka-configurations
+        }
+    }
+
+    RdKafka::Conf* toConsumerConfig() const
+    {
+        RdKafka::Conf* conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
+
+        for( auto& it : consumerProperties_ )
+        {
+            std::string errstr;
+            if( conf->set( it.first.c_str() , it.second.c_str(), errstr ) != RdKafka::Conf::CONF_OK )
             {
                 std::stringstream ss;
-                ss << "";
-                throw new ArgumentOutOfRangeException("Provided multiple partition values for {partitionOffsets.Key} where at least one is Any. Should provide only Any or multiple without Any. ");
-            }   
-        }
-
-        // check if it is a simple subscription to topics
-        if ( 
-            find_if_not( 
-                topicPartitionOffsets.begin(), 
-                topicPartitionOffsets.end(), 
-            [](
-                const TopicPartitionOffset& p
-            ){
-                return p.partition == Partition::Any && p.offset == Offset::Unset;
-            } 
-            ) == topicPartitionOffsets.end() 
-        ) 
-        {
-            for( auto& el : topicPartitionOffsets )
-            {
-                this->topics.push_back( el.topic );
+                ss << "Failed assign kafka property (" << errstr << ")";
+                throw InvalidOperationException(ss.str());
             }
-            return;
         }
 
-        // no, it is not a simple topic subscription
-        for( auto& el : topicPartitionOffsets )
-        {
-            this->partitions.push_back( el );
-        }
+        return conf;
     }
-
-    /**
-     * @brief Initializes a new <see cref="OutputTopicConfiguration" /> with a single topic with the specified partition offsets.
-     * 
-     * @param topic The topic to set the partitions for
-     * @param partitionOffsets The partitions with offsets to listen to
-     **/
-    SubscriberConfiguration( const std::string& topic, const std::vector<PartitionOffset>& partitionOffsets )
-    :
-    SubscriberConfiguration( SubscriberConfiguration::addTopicToPartitionOffsets(topic, partitionOffsets) )
-    {
-
-    }
-
-    /**
-     *      Initializes a new <see cref="OutputTopicConfiguration" /> for one or more topics where partitions will be automatically 
-     *      selected and offset will be the last unread offset or first available
-     *      offset if no previous offset for consumer group is found.
-     * 
-     * @param topics The topics
-     */
-    SubscriberConfiguration( 
-        const std::string& topic,
-        const std::vector<Partition>& partitions = std::vector<Partition>{ Partition::Any },
-        const Offset& offset = Offset::Unset
-    )
-    :
-    SubscriberConfiguration( topic, SubscriberConfiguration::addOffsetToPartitions( partitions, offset ) )
-    {
-
-    };
-
-    /**
-     *      Initializes a new <see cref="OutputTopicConfiguration" /> for a single topic where partitions will be automatically 
-     *      selected and offset will be the last unread offset or first available offset if
-     *      no previous offset for consumer group is found.
-     * 
-     * @param topic The topic
-     */
-    SubscriberConfiguration( 
-        std::string topic,
-        const Partition& partition = Partition::Any,
-        const Offset& offset = Offset::Unset
-    )
-     :
-     SubscriberConfiguration( topic, std::vector<Partition>{ partition }, offset)
-    {
-
-    };
-
-
 
 };
+
 
 } } }

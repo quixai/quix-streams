@@ -668,7 +668,7 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsNull_ShouldNotRaisePackageAndRe
 class MyMockRevocation : public IRevocationPublisher {
 
  public:
-    MOCK_METHOD2( filterRevokedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, std::vector<std::shared_ptr<TransportContext>> contexts) );
+    MOCK_METHOD2( filterRevokedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts) );
 
 };
 

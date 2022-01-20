@@ -231,7 +231,7 @@ namespace Quix { namespace Transport {
     }
 
 
-    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterRevokedContexts(void* state, std::vector<std::shared_ptr<TransportContext>> contexts)
+    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterRevokedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts)
     {
         return contextFilterByState_(state, contexts);
     }

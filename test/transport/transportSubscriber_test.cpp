@@ -130,7 +130,7 @@ class MyMockRevocationOutput : public ISubscriber, public IRevocationPublisher {
 
  public:
     MOCK_METHOD1( commit ,    void(const std::vector<std::shared_ptr<TransportContext>>& transportContexts) );
-    MOCK_METHOD2( filterRevokedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, std::vector<std::shared_ptr<TransportContext>> contexts) );
+    MOCK_METHOD2( filterRevokedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts) );
 
 };
 

@@ -63,6 +63,9 @@
         "mutex": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp",
+        "shared_mutex": "cpp"
     }
 }

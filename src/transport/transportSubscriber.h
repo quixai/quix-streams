@@ -60,7 +60,7 @@ public:
    */
   TransportSubscriber( ISubscriber* subscriber, std::function<void(TransportSubscriberOptions&)> configureOptions );
 
-  std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts  ( void* state, std::vector<std::shared_ptr<TransportContext>> contexts );  
+  std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts  ( void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts );  
   std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts( void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter );
 
   void onRevokingInternal( Quix::Transport::IRevocationPublisher *,  const Quix::Transport::IRevocationPublisher::OnRevokingEventArgs & );

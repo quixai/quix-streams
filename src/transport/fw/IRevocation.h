@@ -68,7 +68,7 @@ public:
      * 
      * @return Contexts affected by the state
      */
-    virtual std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(void* state, std::vector<std::shared_ptr<TransportContext>> contexts) = 0;
+    virtual std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts) = 0;
 
 
 };
