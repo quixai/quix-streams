@@ -37,8 +37,8 @@ private:
   void onCommitClass( ICanCommit* previousCanCommitModifier, std::vector<std::shared_ptr<TransportContext>>& acknowledge );
 
 
-  std::function<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>( void *state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter )> onFilterCommittedContexts_;
-  std::function<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>( void *state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter )> contextFilterByState_;
+  std::function<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>( const Quix::Object* state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter )> onFilterCommittedContexts_;
+  std::function<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>( const Quix::Object* state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter )> contextFilterByState_;
 
   /**
    * Internal function to handle the package from end of pipeline
@@ -60,8 +60,8 @@ public:
    */
   TransportSubscriber( ISubscriber* subscriber, std::function<void(TransportSubscriberOptions&)> configureOptions );
 
-  std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts  ( void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts );  
-  std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts( void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter );
+  std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts  ( const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contexts );  
+  std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts( const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter );
 
   void onRevokingInternal( Quix::Transport::IRevocationPublisher *,  const Quix::Transport::IRevocationPublisher::OnRevokingEventArgs & );
   void onRevokedInternal ( Quix::Transport::IRevocationPublisher *,   const Quix::Transport::IRevocationPublisher::OnRevokedEventArgs & );

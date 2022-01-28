@@ -11,23 +11,24 @@ namespace Quix { namespace Transport {
  */
 class KafkaException : public std::exception
 {
-    RdKafka::ErrorCode errCode_;
 
 public:
+
+    const RdKafka::ErrorCode errCode;
+    const std::string message;
+
     /**
      * Initialize with message
      * 
      * @param message message
      */
-    KafkaException(const RdKafka::ErrorCode errCode)
+    KafkaException(const RdKafka::ErrorCode errCode, const std::string& message = "")
+    :
+    errCode(errCode),
+    message(message)
     {
 
     };
-
-    RdKafka::ErrorCode error() const
-    {
-        return errCode_;
-    }
 };
 
 } }

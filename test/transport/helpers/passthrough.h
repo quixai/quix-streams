@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "utils/object.h"
+#include "utils/state.h"
 #include "transport/fw/ICanCommit.h"
 #include "transport/io/IPackage.h"
 #include "transport/io/IPublisher.h"
@@ -29,7 +31,7 @@ public:
 
     std::vector<std::shared_ptr<Quix::Transport::TransportContext> > filterCommittedContexts
     (
-        void* sender, 
+        const Quix::Object* sender, 
         const std::vector<std::shared_ptr<Quix::Transport::TransportContext> >& contextsToFilter
     )
     {
@@ -51,8 +53,9 @@ public:
     void commit(const std::vector<std::shared_ptr<Quix::Transport::TransportContext>>& transportContexts)
     {
         /// TODO: maybe memory mess because of (void*) cast
-        this->onCommitting(this, Quix::Transport::ICanCommit::OnCommittingEventArgs((void*)&transportContexts));
-        this->onCommitted(this, Quix::Transport::ICanCommit::OnCommittedEventArgs((void*)&transportContexts));
+        Quix::State<std::vector<std::shared_ptr<Quix::Transport::TransportContext>>> state(transportContexts);
+        this->onCommitting( this, Quix::Transport::ICanCommit::OnCommittingEventArgs( &state ) );
+        this->onCommitted ( this, Quix::Transport::ICanCommit::OnCommittedEventArgs ( &state ) );
     }
 
 };

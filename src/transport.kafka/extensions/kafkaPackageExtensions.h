@@ -7,14 +7,14 @@
 
 #include <librdkafka/rdkafkacpp.h>
 
-#include "../utils/timer.h"
+#include "../../utils/timer.h"
 
-#include "../transport/io/IPublisher.h"
-#include "../transport/io/IPackage.h"
-#include "../transport/io/byteArray.h"
-#include "./IKafkaPublisher.h"
-#include "./topicConfiguration.h"
-#include "./knownKafkaTransportContextKeys.h"
+#include "../../transport/io/IPublisher.h"
+#include "../../transport/io/IPackage.h"
+#include "../../transport/io/byteArray.h"
+#include "../IKafkaPublisher.h"
+#include "../topicConfiguration.h"
+#include "../knownKafkaTransportContextKeys.h"
 
 namespace Quix { namespace Transport { namespace Kafka  {
 
@@ -65,5 +65,6 @@ public:
     }
 
 };
+
 
 } } }

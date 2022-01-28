@@ -26,13 +26,13 @@ namespace Quix { namespace Transport {
  
         // default variables initialization
         onFilterCommittedContexts_ = [](
-                void *state, 
+                const Quix::Object* state, 
                 const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter
             ){
                 return std::vector<std::shared_ptr<Quix::Transport::TransportContext>>();
             };
         contextFilterByState_ = [](
-                void *state, 
+                const Quix::Object* state, 
                 const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> &contextsToFilter
             ){
                 return contextsToFilter;
@@ -160,7 +160,7 @@ namespace Quix { namespace Transport {
         // Connect last IRevocation... to TransportOutput (this class)
         if ( previousRevocationPublisher != nullptr )
         {
-            this->contextFilterByState_ = [=]( void * state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> & contextsToFilter ){
+            this->contextFilterByState_ = [=]( const Quix::Object * state, const std::vector<std::shared_ptr<Quix::Transport::TransportContext>> & contextsToFilter ){
                 return previousRevocationPublisher->filterRevokedContexts(state, contextsToFilter);
             };
 
@@ -206,7 +206,7 @@ namespace Quix { namespace Transport {
     }
 
 
-    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
+    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
     {
         auto canCall = this->onFilterCommittedContexts_ != nullptr;
         if( canCall )
@@ -231,7 +231,7 @@ namespace Quix { namespace Transport {
     }
 
 
-    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterRevokedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts)
+    std::vector<std::shared_ptr<TransportContext>> TransportSubscriber::filterRevokedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contexts)
     {
         return contextFilterByState_(state, contexts);
     }

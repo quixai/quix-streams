@@ -14,6 +14,10 @@ namespace Quix { namespace Transport { namespace Kafka  {
  */
 class IKafkaSubscriber{
 
+    static std::vector<TopicPartitionOffset> getPartitionOffsets( 
+        const std::vector<std::shared_ptr<TransportContext>>& transportContexts
+    );
+
 public:
 
     /**
@@ -32,6 +36,9 @@ public:
      * @brief Commits all offsets for the current topic partition assignments
      */
     virtual void commitOffsets() = 0;
+
+    void commitOffset(const TopicPartitionOffset& transportContext);
+    void commitOffsetsInternal(const std::vector<std::shared_ptr<TransportContext>>& transportContexts);
 
     /**
      * @brief Commit a list of offsets limited by the topics this output had previously subscribed to

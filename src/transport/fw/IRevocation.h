@@ -3,6 +3,7 @@
 #include "../io/transportContext.h"
 
 #include "../../utils/eventHandler.h"
+#include "../../utils/object.h"
 
 #include <memory>
 #include <vector>
@@ -14,23 +15,23 @@ namespace Quix { namespace Transport {
  * Describes interface for publishing information about revocation
  */
 class IRevocationPublisher{
-    class BaseRevocationArgs{
+    class BaseRevocationArgs : public Object {
     private:
-        void* state_;
+        Object* state_;
     public:
-        inline BaseRevocationArgs(void* state = nullptr)
+        inline BaseRevocationArgs(Object* state = nullptr)
         :
         state_(state)
         {
 
         }
 
-        inline void* state() const
+        inline Object* state() const
         {
             return state_; 
         }
 
-        inline void* setState(void* state = nullptr)
+        inline Object* setState(Object* state = nullptr)
         {
             return state_ = state; 
         }
@@ -43,9 +44,15 @@ class IRevocationPublisher{
 
 public:
 
-    class OnRevokingEventArgs : public BaseRevocationArgs { };
+    class OnRevokingEventArgs : public BaseRevocationArgs {
+        public:
+            OnRevokingEventArgs( Object* state = nullptr ) : BaseRevocationArgs(state) {};
+    };
 
-    class OnRevokedEventArgs : public BaseRevocationArgs { };
+    class OnRevokedEventArgs : public BaseRevocationArgs {
+        public:
+            OnRevokedEventArgs( Object* state = nullptr ) : BaseRevocationArgs(state) {};
+    };
 
 
     /**
@@ -68,7 +75,7 @@ public:
      * 
      * @return Contexts affected by the state
      */
-    virtual std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contexts) = 0;
+    virtual std::vector<std::shared_ptr<TransportContext>> filterRevokedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contexts) = 0;
 
 
 };

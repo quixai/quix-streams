@@ -171,7 +171,7 @@ public:
      */
     void send(std::shared_ptr<IPackage> package);
 
-    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
+    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
 
 
 };

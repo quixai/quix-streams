@@ -14,13 +14,30 @@ namespace Quix { namespace Transport { namespace Kafka  {
 
 class Offset {
 public:
+    const int64_t offset;
     static const Offset Unset;
+
+    Offset(int64_t offset = -1)
+    :
+    offset(offset)
+    {
+
+    }
+
+    Offset( const Offset& other ) = default;
+    Offset& operator=( const Offset& other ) = default;
+
 
     bool operator==(const Offset& other )const
     {
-        //TODO
-        return true;
+        return offset == other.offset;
     };
+
+    bool operator<(const Offset& other) const
+    {
+        return offset < other.offset;
+    }
+
 };
 
 class Partition{
@@ -37,6 +54,9 @@ public:
     {
     }
 
+    Partition( const Partition& other ) = default;
+    Partition& operator=( const Partition& other ) = default;
+
     bool operator==(const Partition& other) const 
     {
         return 
@@ -45,6 +65,20 @@ public:
             topic == other.topic
             ;        
     };
+
+    bool operator<(const Partition& other) const
+    {
+        if( id < other.id )
+        {
+            return true;
+        }
+        if( topic < other.topic )
+        {
+            return true;
+        }
+        return false;
+    }
+
 
     static Partition Any;
 
@@ -62,6 +96,23 @@ public:
     {
 
     }
+
+    PartitionOffset( const PartitionOffset& other ) = default;
+    PartitionOffset& operator=( const PartitionOffset& other ) = default;
+
+    bool operator<(const PartitionOffset& other) const
+    {
+        if( partition < other.partition )
+        {
+            return true;
+        }
+        if( offset < other.offset )
+        {
+            return true;
+        }
+        return false;
+    }
+
 };
 
 class TopicPartitionOffset : public PartitionOffset {
@@ -76,12 +127,32 @@ public:
     }
 
 
-    TopicPartitionOffset( const std::string& topic, const Partition& partition, const Offset& offset )
+    TopicPartitionOffset( const std::string& topic, const Partition& partition, const Offset& offset = Offset::Unset )
     :
     PartitionOffset( partition, offset ),
     topic(topic)
     {        
     }
+
+    TopicPartitionOffset( const std::string& topic, const int32_t partition, const Offset& offset = Offset::Unset )
+    :
+    PartitionOffset( Partition(topic, partition), offset ),
+    topic(topic)
+    {        
+    }
+
+    TopicPartitionOffset( const TopicPartitionOffset& other ) = default;
+    TopicPartitionOffset& operator=( const TopicPartitionOffset& other ) = default;
+
+    bool operator<(const TopicPartitionOffset& other) const
+    {
+        if( topic < other.topic )
+        {
+            return true;
+        }
+        return PartitionOffset::operator<( other );
+    }
+
 };
 
 
@@ -138,7 +209,7 @@ public:
 /**
  * Interface for providing a class a way to push Package to listener
  */
-class TopicInputConfiguration {
+class OutputTopicConfiguration {
 
     static std::vector<TopicPartitionOffset> addTopicToPartitionOffsets
     ( 
@@ -178,7 +249,7 @@ public:
      *  @param topicPartitionOffsets The topics with partition offsets
      **/
 
-    TopicInputConfiguration( const std::vector<TopicPartitionOffset>& topicPartitionOffsets )
+    OutputTopicConfiguration( const std::vector<TopicPartitionOffset>& topicPartitionOffsets )
     {
         if ( topicPartitionOffsets.size() <= 0 )
         {
@@ -252,9 +323,9 @@ public:
      * @param topic The topic to set the partitions for
      * @param partitionOffsets The partitions with offsets to listen to
      **/
-    TopicInputConfiguration( const std::string& topic, const std::vector<PartitionOffset>& partitionOffsets )
+    OutputTopicConfiguration( const std::string& topic, const std::vector<PartitionOffset>& partitionOffsets )
     :
-    TopicInputConfiguration( TopicInputConfiguration::addTopicToPartitionOffsets(topic, partitionOffsets) )
+    OutputTopicConfiguration( OutputTopicConfiguration::addTopicToPartitionOffsets(topic, partitionOffsets) )
     {
 
     }
@@ -266,13 +337,13 @@ public:
      * 
      * @param topics The topics
      */
-    TopicInputConfiguration( 
+    OutputTopicConfiguration( 
         const std::string& topic,
         const std::vector<Partition>& partitions = std::vector<Partition>{ Partition::Any },
         const Offset& offset = Offset::Unset
     )
     :
-    TopicInputConfiguration( topic, TopicInputConfiguration::addOffsetToPartitions( partitions, offset ) )
+    OutputTopicConfiguration( topic, OutputTopicConfiguration::addOffsetToPartitions( partitions, offset ) )
     {
 
     };
@@ -284,13 +355,13 @@ public:
      * 
      * @param topic The topic
      */
-    TopicInputConfiguration( 
+    OutputTopicConfiguration( 
         std::string topic,
         const Partition& partition = Partition::Any,
         const Offset& offset = Offset::Unset
     )
      :
-     TopicInputConfiguration( topic, std::vector<Partition>{ partition }, offset)
+     OutputTopicConfiguration( topic, std::vector<Partition>{ partition }, offset)
     {
 
     };

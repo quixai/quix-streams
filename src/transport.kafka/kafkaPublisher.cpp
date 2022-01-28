@@ -3,7 +3,7 @@
 #include "./kafkaPublisher.h"
 #include "./constants.h"
 #include "./exceptions/kafkaException.h"
-#include "./kafkaPackageExtensions.h"
+#include "./extensions/kafkaPackageExtensions.h"
 
 #include <functional>
 #include <unordered_map>
@@ -271,7 +271,7 @@ void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDele
             {
                 if (tryCount >= maxTry) throw;
 
-                if (ex.error() == RdKafka::ErrorCode::ERR__QUEUE_FULL )
+                if (ex.errCode == RdKafka::ErrorCode::ERR__QUEUE_FULL )
                 {
                     this->flush();
                 }

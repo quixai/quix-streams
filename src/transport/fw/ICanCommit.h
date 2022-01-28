@@ -23,16 +23,16 @@ class ICanCommit{
      */
     class ReadonlyEventArgs{
     protected:
-        void* state_;
+        Object* state_;
     public:
-        inline ReadonlyEventArgs(void* state = nullptr)
+        inline ReadonlyEventArgs(Object* state = nullptr)
         :
         state_(state)
         {
 
         }
 
-        inline void* state() const
+        inline Object* state() const
         {
             return state_; 
         }
@@ -48,8 +48,8 @@ class ICanCommit{
      */
     class ReadWriteEventArgs : public ReadonlyEventArgs{
     public:
-        inline ReadWriteEventArgs(void* state = nullptr) : ReadonlyEventArgs(state) {}
-        inline void* setState(void* state = nullptr)
+        inline ReadWriteEventArgs(Object* state = nullptr) : ReadonlyEventArgs(state) {}
+        inline void* setState(Object* state = nullptr)
         {
             return state_ = state; 
         }
@@ -63,7 +63,7 @@ public:
      */
     class OnCommittedEventArgs : public ReadWriteEventArgs {
     public:
-        inline OnCommittedEventArgs(void* state = nullptr) : ReadWriteEventArgs(state) {}
+        inline OnCommittedEventArgs(Object* state = nullptr) : ReadWriteEventArgs(state) {}
     };
 
     /***
@@ -71,7 +71,7 @@ public:
      */
     class OnCommittingEventArgs : public ReadonlyEventArgs {
     public:
-        inline OnCommittingEventArgs(void* state = nullptr) : ReadonlyEventArgs(state) {}
+        inline OnCommittingEventArgs(Object* state = nullptr) : ReadonlyEventArgs(state) {}
     };
 
     /**
@@ -105,7 +105,7 @@ public:
      * @return Contexts affected by the commit
      * 
      */
-    virtual std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter) = 0;
+    virtual std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter) = 0;
 
 };
 

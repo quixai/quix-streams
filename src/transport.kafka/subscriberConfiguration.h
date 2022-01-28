@@ -16,36 +16,46 @@
 namespace Quix { namespace Transport { namespace Kafka  {
 
 class SubscriberConfiguration {
-    bool consumerGroupSet_;
-    std::string groupId_;
-
     std::map<std::string, std::string> consumerProperties_;
 
 public:
+    /// The list of brokers as a comma separated list of broker host or host:port.
     const std::string brokerList;
+    /// Whether the consumer group is set
+    const bool consumerGroupSet;
+    /// Client group id string. All clients sharing the same GroupId belong to the same group.
+    const std::string groupId;
+    /// Enable checking for alive messages for consumer
+    bool checkForKeepAlivePackets = true;
+
+    /// TODO: auto offset reset
+    /**
+     *      If consumer group is configured, The auto offset reset determines the start offset in the event
+     *      there are not yet any committed offsets for the consumer group for the topic/partitions of interest.
+     *      
+     *  
+     *      If no consumer group is configured, the consumption will start according to value set.
+     *      If no auto offset reset is set, in case of no consumer group it defaults to end, otherwise to earliest.
+    **/
+    // public AutoOffsetReset? AutoOffsetReset { get; set; } = null;
 
     SubscriberConfiguration( std::string brokerList, std::string groupId = "", std::map<std::string, std::string> consumerProperties = std::map<std::string, std::string>() )
     :
-    consumerProperties_(consumerProperties),
-    brokerList(brokerList)
+    consumerProperties_( consumerProperties ),
+    groupId( 
+        Quix::StringTools::isEmptyOrWhiteSpace( groupId ) 
+            ? 
+            ( std::string("UNSET-") + Quix::StringTools::genUuid() )
+            :
+            groupId
+    ),
+    consumerGroupSet( !Quix::StringTools::isEmptyOrWhiteSpace( groupId ) ),
+    brokerList( brokerList )
     {
         if( Quix::StringTools::isEmptyOrWhiteSpace( brokerList) )
         {
             throw ArgumentOutOfRangeException("brokerList Cannot be null or empty");
         }
-        if( Quix::StringTools::isEmptyOrWhiteSpace( groupId ) )
-        {
-            // means we're not using consumer group. In this case disallow use of commit
-            consumerGroupSet_ = false;
-            groupId = std::string("UNSET-") + Quix::StringTools::genUuid(); // technically any random static would do, but in case something does commit under that consumer id, it would possibly break things
-        } else
-        {
-            consumerGroupSet_ = true;
-        }
-
-
-
-        this->groupId_ = groupId;
 
         /// NOTE: this is done in toProducerConfig in C#, but here must be in constructor to allow toProducerConfig be const function 
         if ( consumerProperties_.find("log_level") == consumerProperties_.end() )

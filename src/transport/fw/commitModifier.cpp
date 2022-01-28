@@ -392,7 +392,7 @@ namespace Quix { namespace Transport {
     }
 
 
-    std::vector<std::shared_ptr<TransportContext>> CommitModifier::filterCommittedContexts(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
+    std::vector<std::shared_ptr<TransportContext>> CommitModifier::filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
     {
         return this->committer_ != nullptr
                  ? 

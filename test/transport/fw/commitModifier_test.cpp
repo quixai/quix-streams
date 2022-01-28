@@ -47,7 +47,7 @@ class MyMockCommit : public ICanCommit {
 
  public:
     MOCK_METHOD1( commit ,    void(const std::vector<std::shared_ptr<TransportContext>>& transportContexts) );
-    MOCK_METHOD2( filterCommittedContexts ,    std::vector<std::shared_ptr<TransportContext>>(void* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter) );
+    MOCK_METHOD2( filterCommittedContexts ,    std::vector<std::shared_ptr<TransportContext>>(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter) );
 
 };
 

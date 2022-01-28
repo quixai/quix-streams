@@ -302,8 +302,7 @@ namespace Quix { namespace Transport {
                 }
 
                 /// this createds join of the filtered and the this->firstPackageContext_
-                void* data = (void*)&state;
-                auto filtered = revocationPublisher->filterRevokedContexts(data, contexts);
+                auto filtered = revocationPublisher->filterRevokedContexts(&state, contexts);
 
                 std::vector<IByteMerger::ByteMergerBufferKey> affectedBufferIds;
                 {
