@@ -29,6 +29,10 @@ public:
     {
 
     };
+
+    std::string kafkaMessage() const{
+        return RdKafka::err2str( this->errCode );
+    }
 };
 
 } }

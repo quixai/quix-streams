@@ -153,6 +153,11 @@ public:
         return *this;
     } 
 
+    inline size_t size() const 
+    {
+        return callbacks_.size();
+    }
+
     inline void operator()(_ArgTypes... __args) const
     {
         for( auto func: callbacks_ )

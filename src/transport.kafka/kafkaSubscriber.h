@@ -21,9 +21,11 @@
 
 namespace Quix { namespace Transport { namespace Kafka  {
 
+class ConsumerResult { };
 
 // typedef std::function<void(const std::string&, std::shared_ptr<Quix::Transport::IPackage>)> ProduceDelegate;
 typedef std::function<void(const std::string&, const ByteArray&, void* state)> ProduceDelegate;
+typedef std::function<bool(const ConsumerResult&)> ShouldSkipConsumeResult;
 
 class TopicPartitionOffsetError
 {
@@ -69,6 +71,8 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
     bool canReconnect_ = true;
     bool closing_ = false;
     bool disconnected_ = false; // connection is deemed dead
+
+    ShouldSkipConsumeResult seekFunc = [](const ConsumerResult&){ return false; };
 
 
     std::chrono::time_point<std::chrono::system_clock> lastReconnect_;

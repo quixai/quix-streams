@@ -2,6 +2,8 @@
 #include "../utils/object.h"
 #include "../utils/state.h"
 
+#include <librdkafka/rdkafkacpp.h>
+
 #include "./kafkaSubscriber.h"
 #include "./exceptions/kafkaException.h"
 #include "./extensions/kafkaTransportContextExtensions.h"
@@ -10,7 +12,10 @@
 #include <algorithm>
 #include <unordered_map>
 #include <sstream>
+#include <iterator>
+#include <locale>
 #include <regex>
+#include <set>
 #include <string>
 
 
@@ -298,6 +303,88 @@ void KafkaSubscriber::KafkaRebalanceCb::rebalance_cb(RdKafka::KafkaConsumer *con
 
 void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
 {
+    const auto msg = exception.kafkaMessage();
+
+    std::string msgLowerCase;
+    msgLowerCase.resize(msg.size());
+
+    // Allocate the destination space
+    std::locale loc;
+
+    string test = "Hello World";
+    for(auto& c : test)
+    {
+        msgLowerCase.push_back(tolower(c));
+    }
+
+    if ( msgLowerCase.find("disconnect")  != std::string::npos )
+    {
+        //TODO:
+        // var match = Constants.ExceptionMsRegex.Match(exception.Message);
+        // if (match.Success)
+        // {
+        //     if (int.TryParse(match.Groups[1].Value, out var ms))
+        //     {
+        //         if (ms > 180000)
+        //         {
+        //             this.logger.LogDebug(exception, "Idle connection reaped.");
+        //             return;
+        //         }
+        //     }
+        // }
+        // this.logger.LogWarning(exception, "Disconnected from kafka. Ignore unless occurs frequently in short period of time as client automatically reconnects.");
+        return;
+    }
+    
+    if ( msg.find("Local: Maximum application poll interval (max.poll.interval.ms) exceeded")  != std::string::npos )
+    {
+        // this.logger.LogWarning(exception, "Processing of package took longer ({0}ms) than configured max.poll.interval.ms ({1}ms). Application was deemed dead/stuck and the consumer left the group so the assigned partitions could be assigned to a live application instance. Consider setting max.poll.interval.ms to a higher number if this a valid use case.", Math.Round(currentPackageProcessTime.Elapsed.TotalMilliseconds), this.config.MaxPollIntervalMs ?? 300000);
+        this->disconnected_ = true;
+        return;
+    }
+    
+    if ( msg.find("Broker: Static consumer fenced by other consumer with same group.instance.id")  != std::string::npos )
+    {
+        // this.logger.LogWarning(exception, "Static consumer fenced by other consumer with same group.instance.id '{0}' in group '{1}'.", this.config.GroupInstanceId, this.config.GroupId);
+        this->disconnected_ = true;
+        return;
+    }
+    
+    if ( msg.find("Broker: Invalid session timeout")  != std::string::npos )
+    {
+        // this.logger.LogError(exception, "Broker: Invalid session timeout {0}", this.config.SessionTimeoutMs);
+        this->disconnected_ = true;
+        this->canReconnect_ = false;
+        return;
+    }
+    
+    if ( msg.find("Receive failed: Connection timed out (after ")  != std::string::npos )
+    {
+        // var match = Constants.ExceptionMsRegex.Match(exception.Message);
+        // if (match.Success)
+        // {
+        //     if (int.TryParse(match.Groups[1].Value, out var ms))
+        //     {
+        //         if (ms > 7500000)
+        //         {
+        //             this.logger.LogInformation(exception, "Idle connection timed out, Kafka will reconnect.");
+        //             return;
+        //         }
+        //         this.logger.LogWarning(exception, $"Connection timed out (after {ms}ms in state UP). Kafka will reconnect.");
+        //         return;
+        //     }
+        // }
+    }
+    
+    if ( this->errorOccurred.size( ) <= 0 )
+    {
+        // this.logger.LogError(exception, "Exception receiving from Kafka");
+    }
+    else
+    {
+        this->errorOccurred(exception);
+    }
+
 
 }
 
@@ -392,7 +479,108 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
 
     if( !lrs.empty() )
     {
-        auto sameTopicPartitions = 
+        std::map<TopicPartitionOffset, TopicPartitionOffset> sameTopicPartitionsMapToOffset;
+        std::map<TopicPartitionOffset, RdKafka::TopicPartition* > sameTopicPartitionsMapToKafkaPartition;
+        std::set<TopicPartitionOffset> sameTopicPartitionsSet;
+        auto index = 0;
+        for( auto& el : topicPartitionOffsets )
+        {
+            auto tp = TopicPartitionOffset(el.topic, el.partition);
+            sameTopicPartitionsSet.insert(tp);
+            sameTopicPartitionsMapToOffset.emplace(tp, el);
+            sameTopicPartitionsMapToKafkaPartition.emplace(tp, partitions[index]);
+            index++;
+        }
+
+        std::set<TopicPartitionOffset> lrsset;
+        for( auto& el : this->lastRevokingState )
+        {
+            lrsset.insert(TopicPartitionOffset(el.topic, el.partition));
+        }
+
+        std::vector<TopicPartitionOffset> sameTopicPartitions;
+        std::set_intersection( sameTopicPartitionsSet.begin(), sameTopicPartitionsSet.end(), lrsset.begin(), lrsset.end(),  std::back_inserter(sameTopicPartitions) );
+
+
+        std::vector<TopicPartitionOffset> sameAsPreviously;
+        std::vector<ShouldSkipConsumeResult> seekFuncs;
+
+        for ( auto& topicPartitionOffset : sameTopicPartitions)
+        {
+            Offset currentPosition(sameTopicPartitionsMapToOffset[topicPartitionOffset].offset);
+
+            const auto kafkapartition = sameTopicPartitionsMapToKafkaPartition[topicPartitionOffset];
+
+            std::vector<RdKafka::TopicPartition*> kafkaarr;
+            consumer->position(kafkaarr);
+
+            if ( !(currentPosition.offset == kafkapartition->offset()) )
+            {
+                if( !currentPosition.isSpecial() )
+                {
+
+                    seekFuncs.push_back([](const ConsumerResult& cr){
+                        return false;
+                    });
+                    // .Add((cr) =>
+                    // {
+                    //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
+                    //     this.consumer.Seek(topicPartitionOffset);
+                    //     this.logger.LogDebug("Seeked partition: {0}", topicPartitionOffset.ToString());
+                    //     return cr.TopicPartition == topicPartitionOffset.TopicPartition && cr.Offset <= topicPartitionOffset.Offset;
+                    // });
+
+                }
+                else
+                {
+                    continue; // Do not add it to same as previous
+                }
+            }
+            sameAsPreviously.push_back(sameTopicPartitionsMapToOffset[topicPartitionOffset]);
+
+        }
+
+
+        if( seekFuncs.size() > 0 )
+        {
+            this->seekFunc = [=](const ConsumerResult& cr)
+            {
+                bool skip = false;
+                for ( auto& func : seekFuncs )
+                {
+                    skip = func(cr) || skip; // order is important
+                }
+
+                this->seekFunc = [=](const ConsumerResult& cr){ return true; };
+                return skip;
+            }; // reset after seeking
+        }
+
+        State<std::vector<TopicPartitionOffset>> revoked;
+        std::set_difference( lrs.begin(), lrs.end(), sameAsPreviously.begin(), sameAsPreviously.end(), std::back_inserter(revoked) );
+
+        if( revoked.size() > 0 )
+        {
+            // if (this.logger.IsEnabled(LogLevel.Debug))
+            // {
+            //     foreach (var partition in revoked)
+            //     {
+            //         this.logger.LogDebug("Partition revoked: {0}", partition.ToString());
+            //     }
+            // }
+            this->onRevoked(this, OnRevokedEventArgs(&revoked));
+        }
+
+        // if (this.logger.IsEnabled(LogLevel.Debug))
+        // {
+        //     foreach (var partition in sameAsPreviously)
+        //     {
+        //         assignedPartitions.Remove(partition.TopicPartition);
+        //         this.logger.LogDebug("Partition re-assigned: {0}", partition.ToString());
+        //     }
+        // }
+
+
     }
 
     // TODO
@@ -451,7 +639,6 @@ void KafkaSubscriber::partitionsRevokedHandler(RdKafka::KafkaConsumer *consumer,
 
     lastRevokeCompleteAction_ = [=](){
         if(!*shouldInvoke) { return; }
-
         this->lastRevokeCancelAction_();    //clean itself up
 
         // if (this.logger.IsEnabled(LogLevel.Debug))
@@ -472,6 +659,7 @@ void KafkaSubscriber::partitionsRevokedHandler(RdKafka::KafkaConsumer *consumer,
     }
     else
     {
+        this->lastRevokeCompleteAction_();
         // todo: 
         // Task.Delay(revokeTimeoutPeriodInMs, cts.Token).ContinueWith(t => lastRevokeCompleteAction(),
         //     TaskContinuationOptions.OnlyOnRanToCompletion);        

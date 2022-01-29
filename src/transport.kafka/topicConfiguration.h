@@ -6,6 +6,8 @@
 #include <cctype>   //std::isspace
 #include <algorithm>
 
+#include <librdkafka/rdkafkacpp.h>
+
 #include "../exceptions/argumentOutOfRangeException.h"
 #include "../utils/stringTools.h"
 
@@ -15,14 +17,18 @@ namespace Quix { namespace Transport { namespace Kafka  {
 class Offset {
 public:
     const int64_t offset;
-    static const Offset Unset;
 
-    Offset(int64_t offset = -1)
+    Offset(int64_t offset = RdKafka::Topic::OFFSET_STORED-1)
     :
     offset(offset)
     {
 
     }
+
+    static const Offset Beginning;
+    static const Offset End;
+    static const Offset Stored;
+    static const Offset Unset;
 
     Offset( const Offset& other ) = default;
     Offset& operator=( const Offset& other ) = default;
@@ -37,6 +43,8 @@ public:
     {
         return offset < other.offset;
     }
+
+    bool isSpecial() const;
 
 };
 
@@ -54,6 +62,7 @@ public:
     {
     }
 
+    Partition( ) = default;
     Partition( const Partition& other ) = default;
     Partition& operator=( const Partition& other ) = default;
 
@@ -89,6 +98,8 @@ public:
     const Offset offset;
     const Partition partition;
 
+    PartitionOffset( ) : offset(), partition() {};
+
     PartitionOffset( const Partition& partition, const Offset& offset )
     :
     partition(partition),
@@ -118,6 +129,8 @@ public:
 class TopicPartitionOffset : public PartitionOffset {
 public:
     const std::string topic;
+
+    TopicPartitionOffset(  ) { }
 
     TopicPartitionOffset( const std::string& topic, const PartitionOffset& partitionOffset )
     :
