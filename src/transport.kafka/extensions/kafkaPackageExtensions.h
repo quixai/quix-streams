@@ -41,7 +41,10 @@ public:
 
         auto it = transportContext->find( KnownKafkaTransportContextKeys::Key );
         if( it != transportContext->end() ) {
-            out = it->second;
+            if( it->second.tryGet(out) )
+            {
+                return true;
+            }
             return true;
         }
 
@@ -59,7 +62,7 @@ public:
         if ( !tryGetKey( key ) ) { return false; }
         
         std::string keepAliveKey;
-        if ( !KafkaPackageExtensions( Constants::keepAlivePackage.get() ).tryGetKey( keepAliveKey ) ) { return false; }
+        if ( !KafkaPackageExtensions<Quix::Transport::IPackage>( Constants::keepAlivePackage.get() ).tryGetKey( keepAliveKey ) ) { return false; }
 
         return key == keepAliveKey;
     }

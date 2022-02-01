@@ -20,7 +20,7 @@ TEST(transportContextTest, GenericConstructor_DefaultEmpty)
 TEST(transportContextTest, GenericConstructor_FromDict)
 {
     // Arrange
-    map<string, string> map;
+    map<string, Quix::BoxedValue> map;
     map["key"] = "value";
     TransportContext context(map);
 

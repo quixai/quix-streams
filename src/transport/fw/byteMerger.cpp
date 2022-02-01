@@ -4,6 +4,8 @@
 #include <sstream>
 #include <functional>
 
+#include "../../utils/boxedValue.h"
+
 #include "./byteMerger.h"
 
 namespace Quix { namespace Transport {
@@ -86,9 +88,9 @@ namespace Quix { namespace Transport {
     )
     {
         auto& packageBytes = originalPackage->value();
-        std::string key;
+        Quix::BoxedValue key;
         originalPackage->transportContext()->tryGetValue(KnownTransportContextKeys::MessageGroupKey, key);
-        return this->tryMerge(originalPackage, key, outPackage, bufferId);
+        return this->tryMerge(originalPackage, key.stringValue(), outPackage, bufferId);
     }
 
 
