@@ -66,6 +66,10 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
     RdKafka::KafkaConsumer*  consumer_ = nullptr;
     RdKafka::Conf*      config_;
 
+    std::thread readThread_;
+    std::mutex threadLock_;
+    bool threadShouldBeRunning_ = true;
+
     const OutputTopicConfiguration topicConfiguration_;
 
     bool canReconnect_ = true;
@@ -125,6 +129,10 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
 
     KafkaEventCb eventCallback_;
     KafkaRebalanceCb rebalanceCallback_;
+
+    void addMessage( RdKafka::Message *message  );
+    void kafkaPollingThread();
+    void startWorkerThread();
 
     void onErrorOccurred(const KafkaException& exception);
 

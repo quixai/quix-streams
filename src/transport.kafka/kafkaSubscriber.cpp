@@ -5,12 +5,16 @@
 #include <librdkafka/rdkafkacpp.h>
 
 #include "./kafkaSubscriber.h"
+#include "./kafkaHelper.h"
+#include "./constants.h"
 #include "./exceptions/kafkaException.h"
 #include "./extensions/kafkaTransportContextExtensions.h"
+#include "./extensions/kafkaPackageExtensions.h"
 
 #include <functional>
 #include <algorithm>
 #include <unordered_map>
+#include <regex>
 #include <sstream>
 #include <iterator>
 #include <locale>
@@ -319,19 +323,22 @@ void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
 
     if ( msgLowerCase.find("disconnect")  != std::string::npos )
     {
-        //TODO:
-        // var match = Constants.ExceptionMsRegex.Match(exception.Message);
-        // if (match.Success)
-        // {
-        //     if (int.TryParse(match.Groups[1].Value, out var ms))
-        //     {
-        //         if (ms > 180000)
-        //         {
-        //             this.logger.LogDebug(exception, "Idle connection reaped.");
-        //             return;
-        //         }
-        //     }
-        // }
+        //TODO: check if there is same error string in the librdkafka
+
+        std::smatch base_match;
+        if ( std::regex_match(msgLowerCase, base_match, Constants::exceptionMsRegex) )
+        {
+            if( base_match.size() >= 2 )
+            {
+                int ms = atoi(  base_match[1].str().c_str() );
+                if (ms > 180000)
+                {
+                    std::cerr << "% Idle connection reaped. >>" << msgLowerCase << "<<" << std::endl;
+                    return;
+                }
+            }
+        }
+
         // this.logger.LogWarning(exception, "Disconnected from kafka. Ignore unless occurs frequently in short period of time as client automatically reconnects.");
         return;
     }
@@ -360,20 +367,22 @@ void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
     
     if ( msg.find("Receive failed: Connection timed out (after ")  != std::string::npos )
     {
-        // var match = Constants.ExceptionMsRegex.Match(exception.Message);
-        // if (match.Success)
-        // {
-        //     if (int.TryParse(match.Groups[1].Value, out var ms))
-        //     {
-        //         if (ms > 7500000)
-        //         {
-        //             this.logger.LogInformation(exception, "Idle connection timed out, Kafka will reconnect.");
-        //             return;
-        //         }
+
+        std::smatch base_match;
+        if ( std::regex_match(msgLowerCase, base_match, Constants::exceptionMsRegex) )
+        {
+            if( base_match.size() >= 2 )
+            {
+                int ms = atoi(  base_match[1].str().c_str() );
+                if (ms > 7500000)
+                {
+                    std::cerr << "% Idle connection timed out, Kafka will reconnect." << std::endl;
+                    return;
+                }
         //         this.logger.LogWarning(exception, $"Connection timed out (after {ms}ms in state UP). Kafka will reconnect.");
-        //         return;
-        //     }
-        // }
+        //          return;
+            }
+        }        
     }
     
     if ( this->errorOccurred.size( ) <= 0 )
@@ -422,9 +431,14 @@ void KafkaSubscriber::commitOffsets()
 
         // TODO
         KafkaOffsetCommitCb receiver(this);
+
+        // TODO: treat return code as a exception
         this->consumer_->commitSync(&receiver);
 
         resp = this->consumer_->committed( partitions, 2000 );
+
+        // todo on committed offsets
+//        this->onCommitted(this, )
 
 
     //     // var positions = new List<TopicPartitionOffset>();
@@ -514,13 +528,19 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
             std::vector<RdKafka::TopicPartition*> kafkaarr;
             consumer->position(kafkaarr);
 
-            if ( !(currentPosition.offset == kafkapartition->offset()) )
+            if ( !(currentPosition.value == kafkapartition->offset()) )
             {
                 if( !currentPosition.isSpecial() )
                 {
 
-                    seekFuncs.push_back([](const ConsumerResult& cr){
-                        return false;
+                    seekFuncs.push_back([=](const ConsumerResult& cr){
+                    //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
+                        auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic, topicPartitionOffset.partition.id, topicPartitionOffset.offset.value);
+                        this->consumer_->seek(*partition, -1);
+
+                        auto is = topicPartitionOffset.topic == partition->topic() && topicPartitionOffset.partition.id == partition->partition() && topicPartitionOffset.offset.value <= partition->offset(); 
+                        delete partition;
+                        return is;
                     });
                     // .Add((cr) =>
                     // {
@@ -706,3 +726,77 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
     // TODO
 }
 
+void KafkaSubscriber::addMessage( RdKafka::Message *message  )
+{
+    auto package = KafkaHelper::fromResult( message );
+
+    if ( this->checkForKeepAlivePackets_ && KafkaPackageExtensions<ByteArrayPackage>( package.get() ).isKeepAlivePackage() )
+    {
+        // this.logger.LogTrace("KafkaOutput: keep alive message read, ignoring.");
+        return;
+    }
+
+    try
+    {
+        this->onNewPackage(package);
+    }
+    catch(...)
+    {
+        // TODO
+    }
+}
+
+void KafkaSubscriber::kafkaPollingThread( )
+{
+    while(threadShouldBeRunning_)
+    {
+        RdKafka::Message *message = this->consumer_->consume(100);
+
+
+        switch (message->err())
+        {
+            case RdKafka::ERR__TIMED_OUT:
+                break;        
+
+            case RdKafka::ERR_NO_ERROR:
+                this->addMessage(message);
+                break;
+
+            case RdKafka::ERR__PARTITION_EOF:
+                /* Last message */
+                // if (exit_eof && ++eof_cnt == partition_cnt) {
+                // std::cerr << "%% EOF reached for all " << partition_cnt << " partition(s)"
+                //             << std::endl;
+                // run = 0;
+                // }
+                break;
+
+            case RdKafka::ERR__UNKNOWN_TOPIC:
+            case RdKafka::ERR__UNKNOWN_PARTITION:
+                // std::cerr << "Consume failed: " << message->errstr() << std::endl;
+                // run = 0;
+                break;
+
+            default:
+                break;
+                /* Errors */
+                // std::cerr << "Consume failed: " << message->errstr() << std::endl;
+                // run = 0;
+        }
+        delete message;
+    }
+}
+
+void KafkaSubscriber::startWorkerThread( )
+{
+    threadShouldBeRunning_ = true;
+    readThread_ = std::thread(&KafkaSubscriber::kafkaPollingThread, this);
+}
+
+
+KafkaSubscriber::~KafkaSubscriber()
+{
+    threadShouldBeRunning_ = false;
+    // this->consumer_->stop();
+    readThread_.join();
+}

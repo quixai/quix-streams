@@ -16,11 +16,11 @@ namespace Quix { namespace Transport { namespace Kafka  {
 
 class Offset {
 public:
-    const int64_t offset;
+    const int64_t value;
 
     Offset(int64_t offset = RdKafka::Topic::OFFSET_STORED-1)
     :
-    offset(offset)
+    value(offset)
     {
 
     }
@@ -36,12 +36,12 @@ public:
 
     bool operator==(const Offset& other )const
     {
-        return offset == other.offset;
+        return value == other.value;
     };
 
     bool operator<(const Offset& other) const
     {
-        return offset < other.offset;
+        return value < other.value;
     }
 
     bool isSpecial() const;

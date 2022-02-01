@@ -80,7 +80,7 @@ void IKafkaSubscriber::commitOffsetsInternal(
         []( 
             const Quix::Transport::Kafka::TopicPartitionOffset& tpo 
         ){ 
-            return tpo.offset.offset;
+            return tpo.offset.value;
         }
     );
     for( auto it = groupped.begin(); it != groupped.end(); ++it )
