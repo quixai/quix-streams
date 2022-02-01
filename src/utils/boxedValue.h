@@ -23,8 +23,6 @@ public:
     :
     type_(Type::Undefined)
     {
-        static int cnt = 0;
-        lvalue_ = cnt++;
     }
 
     BoxedValue(std::string s)
@@ -89,9 +87,10 @@ public:
         {
             case Type::String:
                 return svalue_ < other.svalue_;
-            case Type::Undefined:
             case Type::Long:
                 return lvalue_ < other.lvalue_;
+            case Type::Undefined:
+                return false;
             default:
                 throw std::exception();
         }
@@ -108,12 +107,18 @@ public:
         {
             case Type::String:
                 return svalue_ == other.svalue_;
-            case Type::Undefined:
             case Type::Long:
                 return lvalue_ == other.lvalue_;
+            case Type::Undefined:
+                return true;
             default:
                 throw std::exception();
         }
+    }
+
+    inline bool operator!=(const BoxedValue& other) const
+    {
+        return !(*this == other);
     }
 
 };
