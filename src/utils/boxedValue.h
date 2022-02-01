@@ -1,18 +1,6 @@
 #pragma once
 
-#include <climits>
-
-#include <atomic>
-
-#include <mutex>
-#include <vector>
-#include <chrono>
-#include <functional>
-#include <condition_variable>
-#include <thread>
-
-#include <algorithm>
-
+#include <string>
 
 namespace Quix { 
 
