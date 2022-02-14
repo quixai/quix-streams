@@ -14,7 +14,8 @@ void IKafkaSubscriber::commitOffset(const TopicPartitionOffset& transportContext
 }
 
 std::vector<TopicPartitionOffset> IKafkaSubscriber::getPartitionOffsets( 
-    const std::vector<std::shared_ptr<TransportContext>>& transportContexts
+    const std::vector<std::shared_ptr<TransportContext>>& transportContexts,
+    bool includeInvalidAsUnset
 )
 {
     std::vector<TopicPartitionOffset> ret;
@@ -33,7 +34,7 @@ std::vector<TopicPartitionOffset> IKafkaSubscriber::getPartitionOffsets(
         int64_t offset;
         if ( !KafkaTransportContextExtensions( transportContext.get() ).tryGetKafkaCommitDetails( topic, partition, offset ) )
         {
-            // if (includeInvalidAsNull) yield return null;
+            if ( includeInvalidAsUnset ) { ret.push_back( TopicPartitionOffset( ) ); }
             continue;
         }
         ret.push_back( TopicPartitionOffset( topic, partition, offset ) );
@@ -80,7 +81,7 @@ void IKafkaSubscriber::commitOffsetsInternal(
         []( 
             const Quix::Transport::Kafka::TopicPartitionOffset& tpo 
         ){ 
-            return tpo.offset.value;
+            return tpo.offset.value();
         }
     );
     for( auto it = groupped.begin(); it != groupped.end(); ++it )

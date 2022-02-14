@@ -31,10 +31,10 @@ class TopicPartitionOffsetError
 {
 public:
     const KafkaException error;
-    const TopicPartitionOffset offset;
+    const TopicPartitionOffset topicPartitionOffset;
     TopicPartitionOffsetError(const TopicPartitionOffset& offset, const KafkaException& error)
     :
-    offset(offset),
+    topicPartitionOffset(offset),
     error(error)
     {
 

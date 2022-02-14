@@ -14,8 +14,11 @@ namespace Quix { namespace Transport { namespace Kafka  {
  */
 class IKafkaSubscriber{
 
+protected:
+
     static std::vector<TopicPartitionOffset> getPartitionOffsets( 
-        const std::vector<std::shared_ptr<TransportContext>>& transportContexts
+        const std::vector<std::shared_ptr<TransportContext>>& transportContexts,
+        bool includeInvalidAsUnset = false
     );
 
 public:

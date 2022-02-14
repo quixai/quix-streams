@@ -10,13 +10,14 @@ const Offset Offset::Unset = Offset(RdKafka::Topic::OFFSET_STORED-1);
 bool Offset::isSpecial() const 
 {
     return 
-        this->value == RdKafka::Topic::OFFSET_BEGINNING
+        this->value() == RdKafka::Topic::OFFSET_BEGINNING
         ||
-        this->value == RdKafka::Topic::OFFSET_END
+        this->value() == RdKafka::Topic::OFFSET_END
         ||
-        this->value == RdKafka::Topic::OFFSET_STORED
+        this->value() == RdKafka::Topic::OFFSET_STORED
         ||
-        this->value == (RdKafka::Topic::OFFSET_STORED-1)
+        this->value() == (RdKafka::Topic::OFFSET_STORED-1)
         ;
 }
 
+const Partition Partition::Unset = Partition();

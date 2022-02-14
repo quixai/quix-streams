@@ -8,7 +8,7 @@
 
 namespace Quix { 
 
-template<class Inp, class K, class V>
+template<class Inp, class K, class V = Inp>
 class VectorTools{
 
 public:

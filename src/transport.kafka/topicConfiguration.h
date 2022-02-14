@@ -15,12 +15,11 @@ namespace Quix { namespace Transport { namespace Kafka  {
 
 
 class Offset {
+    int64_t value_;
 public:
-    const int64_t value;
-
     Offset(int64_t offset = RdKafka::Topic::OFFSET_STORED-1)
     :
-    value(offset)
+    value_(offset)
     {
 
     }
@@ -36,13 +35,15 @@ public:
 
     bool operator==(const Offset& other )const
     {
-        return value == other.value;
-    };
+        return value_ == other.value_;
+    }
 
     bool operator<(const Offset& other) const
     {
-        return value < other.value;
+        return value_ < other.value_;
     }
+
+    int64_t value() const{ return value_; }
 
     bool isSpecial() const;
 
@@ -54,6 +55,8 @@ public:
 
     int32_t id;
     std::string topic;
+
+    static const Partition Unset;
 
     Partition(std::string topic_, int32_t id_ = 0)
     :
@@ -111,7 +114,7 @@ public:
     PartitionOffset( const PartitionOffset& other ) = default;
     PartitionOffset& operator=( const PartitionOffset& other ) = default;
 
-    bool operator<(const PartitionOffset& other) const
+    inline bool operator<(const PartitionOffset& other) const
     {
         if( partition < other.partition )
         {
@@ -124,32 +127,78 @@ public:
         return false;
     }
 
+    inline bool isUnset() const
+    {
+        return offset == Offset::Unset && partition == Partition::Unset;
+    }
+
+};
+
+class TopicPartition {
+public:
+    const std::string topic;
+    const Partition partition;
+
+    TopicPartition( const std::string& topic, const Partition& partition )
+    :
+    topic(topic),
+    partition(partition)
+    {
+
+    }
+
+    inline bool operator<(const TopicPartition& other) const
+    {
+        if( topic < other.topic )
+        {
+            return true;
+        }
+        return partition < partition ;
+    }
+
+    inline bool operator==(const TopicPartition& other) const
+    {
+        return topic == other.topic && partition == other.partition;
+    }
 };
 
 class TopicPartitionOffset : public PartitionOffset {
 public:
     const std::string topic;
+    const PartitionOffset partitionOffset;
 
-    TopicPartitionOffset(  ) { }
+    TopicPartitionOffset(  )
+    :
+    topic(""),
+    partitionOffset()
+    {
+
+    }
 
     TopicPartitionOffset( const std::string& topic, const PartitionOffset& partitionOffset )
     :
-    PartitionOffset( partitionOffset ),
+    partitionOffset( partitionOffset ),
     topic(topic)
     {        
     }
 
+    TopicPartitionOffset( const TopicPartition& topicPartition, const Offset& offset )
+    :
+    partitionOffset( PartitionOffset( topicPartition.partition, offset ) ),
+    topic( topicPartition.topic )
+    {        
+    }
 
     TopicPartitionOffset( const std::string& topic, const Partition& partition, const Offset& offset = Offset::Unset )
     :
-    PartitionOffset( partition, offset ),
+    partitionOffset( partition, offset ),
     topic(topic)
     {        
     }
 
     TopicPartitionOffset( const std::string& topic, const int32_t partition, const Offset& offset = Offset::Unset )
     :
-    PartitionOffset( Partition(topic, partition), offset ),
+    partitionOffset( Partition(topic, partition), offset ),
     topic(topic)
     {        
     }
@@ -157,13 +206,23 @@ public:
     TopicPartitionOffset( const TopicPartitionOffset& other ) = default;
     TopicPartitionOffset& operator=( const TopicPartitionOffset& other ) = default;
 
-    bool operator<(const TopicPartitionOffset& other) const
+    TopicPartition topicPartition() const
+    {
+        return TopicPartition(topic, partitionOffset.partition);
+    }
+
+    inline bool operator<(const TopicPartitionOffset& other) const
     {
         if( topic < other.topic )
         {
             return true;
         }
-        return PartitionOffset::operator<( other );
+        return partitionOffset < other.partitionOffset ;
+    }
+
+    inline bool isUnset() const
+    {
+        return this->partitionOffset.isUnset() && topic == "";
     }
 
 };

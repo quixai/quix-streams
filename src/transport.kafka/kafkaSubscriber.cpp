@@ -10,6 +10,7 @@
 #include "./exceptions/kafkaException.h"
 #include "./extensions/kafkaTransportContextExtensions.h"
 #include "./extensions/kafkaPackageExtensions.h"
+#include "../utils/vectorTools.h"
 
 #include <functional>
 #include <algorithm>
@@ -52,10 +53,59 @@ std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedC
     const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter
 )
 {
+    // Figure out the extent of the commit
+    const CommittedOffsets* committedOffsets = dynamic_cast<const CommittedOffsets*>(state);
+    if( committedOffsets == nullptr ) { throw ArgumentOutOfRangeException( "State must be of type CommittedOffsets" ); }
 
+    if( committedOffsets->error.errCode != RdKafka::ERR_NO_ERROR ) { return std::vector<std::shared_ptr<TransportContext>>(); }
+
+    std::vector<TopicPartitionOffset> commitOffsets;
+    for( auto& el : committedOffsets->offsets )
+    {
+        if( el.error.errCode == RdKafka::ERR_NO_ERROR )
+        {
+            commitOffsets.push_back( el.topicPartitionOffset );
+        }
+    }
+
+    // they all had error ?
+    if( commitOffsets.size() <= 0 ) { return std::vector<std::shared_ptr<TransportContext>>(); }
+    
+    std::map<TopicPartition, Offset> topicPartitionMaxOffset;
+    for( auto & el : commitOffsets )
+    {
+        auto topicPartition = el.topicPartition();
+        auto it = topicPartitionMaxOffset.find(topicPartition);
+        if( it != topicPartitionMaxOffset.end() )
+        {
+            if( el.offset < it->second )
+            {
+                it->second = el.offset;
+            }
+        }else{
+            // insert without extra copy
+            topicPartitionMaxOffset.emplace(topicPartition, el.offset);
+        }
+    }
+
+    std::vector<std::shared_ptr<TransportContext>> ret;
+
+    auto contextOffsets = getPartitionOffsets(contextsToFilter, true);
+    for( size_t index = 0; index < contextOffsets.size(); ++index )
+    {
+        auto & contextOffset = contextOffsets[index];
+        for( auto&lco : topicPartitionMaxOffset )
+        {
+            if( lco.first == contextOffset.topicPartition() && ! ( contextOffset.offset < lco.second ) )
+            {
+                ret.push_back( contextsToFilter[index] );
+                break;
+            }
+        }
+    }
 
     // TODO
-    return contextsToFilter;
+    return ret;
 }
 
 std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterRevokedContexts(
@@ -118,24 +168,9 @@ void KafkaSubscriber::close( )
     closing_ = true;
     lastRevokeCompleteAction_();
 
-    // TODO
-    // this.workerTaskCts?.Cancel()
-
     this->consumer_ = nullptr;
 
-
-    try
-    {
-        // TODO
-        // this.workerTaskPollFinished.Task?.Wait(-1); // length of the wait depends on how long each message takes to get processed
-        // this.workerTask = null;
-        // this.workerTaskPollFinished = null;
-    }
-    catch (std::exception ex)
-    {
-        // Any exception which happens here is related to worker task itself, not the processing of the msges
-        // this.logger.LogDebug(ex, "WorkerTask failed when closing");
-    }
+    cons->close();
     delete cons; // can't close before we're done returning from consumer.consume due to AccessViolationException, so
                     // while it would look like we could close consumer sooner than this, we can't really.
     closing_ = false;
@@ -528,17 +563,17 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
             std::vector<RdKafka::TopicPartition*> kafkaarr;
             consumer->position(kafkaarr);
 
-            if ( !(currentPosition.value == kafkapartition->offset()) )
+            if ( !(currentPosition.value() == kafkapartition->offset()) )
             {
                 if( !currentPosition.isSpecial() )
                 {
 
                     seekFuncs.push_back([=](const ConsumerResult& cr){
                     //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
-                        auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic, topicPartitionOffset.partition.id, topicPartitionOffset.offset.value);
+                        auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic, topicPartitionOffset.partition.id, topicPartitionOffset.offset.value());
                         this->consumer_->seek(*partition, -1);
 
-                        auto is = topicPartitionOffset.topic == partition->topic() && topicPartitionOffset.partition.id == partition->partition() && topicPartitionOffset.offset.value <= partition->offset(); 
+                        auto is = topicPartitionOffset.topic == partition->topic() && topicPartitionOffset.partition.id == partition->partition() && topicPartitionOffset.offset.value() <= partition->offset(); 
                         delete partition;
                         return is;
                     });
