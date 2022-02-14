@@ -6,7 +6,7 @@ namespace Quix {
 
 
 /****
- * Boxing type for allowing storing values
+ * Boxing type for allowing dynamic typed values
  */
 
 class BoxedValue {
