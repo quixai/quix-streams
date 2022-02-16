@@ -76,12 +76,12 @@ void IKafkaSubscriber::commitOffsetsInternal(
         []( 
             const Quix::Transport::Kafka::TopicPartitionOffset& tpo 
         ){ 
-            return Quix::Transport::Kafka::TopicPartitionOffset(tpo.topic, tpo.partition, Offset::Unset); 
+            return Quix::Transport::Kafka::TopicPartitionOffset(tpo.topic(), tpo.partition(), Offset::Unset); 
         },
         []( 
             const Quix::Transport::Kafka::TopicPartitionOffset& tpo 
         ){ 
-            return tpo.offset.value();
+            return tpo.offset().value();
         }
     );
     for( auto it = groupped.begin(); it != groupped.end(); ++it )
@@ -89,7 +89,7 @@ void IKafkaSubscriber::commitOffsetsInternal(
         auto& offsets = it->second;
         auto maxOffset = *std::max_element(std::begin(offsets), std::end(offsets)) + offSetToNextPackage;
         auto& tpo = it->first;
-        latestOffsets.push_back( TopicPartitionOffset( tpo.topic, tpo.partition.id, maxOffset ) );
+        latestOffsets.push_back( TopicPartitionOffset( tpo.topic(), tpo.partition().id, maxOffset ) );
     }
     this->commitOffsets( latestOffsets );    
 }

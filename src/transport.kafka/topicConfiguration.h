@@ -91,22 +91,27 @@ public:
         return false;
     }
 
+    bool operator!=(const Partition& other) const 
+    {
+        return !(*this == other);
+    };
 
     static Partition Any;
 
 };
 
 class PartitionOffset {
-public:
-    const Offset offset;
-    const Partition partition;
+    Offset offset_;
+    Partition partition_;
 
-    PartitionOffset( ) : offset(), partition() {};
+public:
+
+    PartitionOffset( ) : offset_(), partition_() {};
 
     PartitionOffset( const Partition& partition, const Offset& offset )
     :
-    partition(partition),
-    offset(offset)
+    partition_(partition),
+    offset_(offset)
     {
 
     }
@@ -116,11 +121,11 @@ public:
 
     inline bool operator<(const PartitionOffset& other) const
     {
-        if( partition < other.partition )
+        if( partition_ < other.partition_ )
         {
             return true;
         }
-        if( offset < other.offset )
+        if( offset_ < other.offset_ )
         {
             return true;
         }
@@ -129,77 +134,99 @@ public:
 
     inline bool isUnset() const
     {
-        return offset == Offset::Unset && partition == Partition::Unset;
+        return offset_ == Offset::Unset && partition_ == Partition::Unset;
+    }
+
+    const Offset offset() const
+    {
+        return offset_;
+    }
+
+    const Partition partition() const
+    {
+        return partition_;
     }
 
 };
 
 class TopicPartition {
+    std::string topic_;
+    Partition partition_;
+
 public:
-    const std::string topic;
-    const Partition partition;
 
     TopicPartition( const std::string& topic, const Partition& partition )
     :
-    topic(topic),
-    partition(partition)
+    topic_(topic),
+    partition_(partition)
     {
 
     }
 
     inline bool operator<(const TopicPartition& other) const
     {
-        if( topic < other.topic )
+        if( topic_ < other.topic_ )
         {
             return true;
         }
-        return partition < partition ;
+        return partition_ < partition_ ;
     }
 
     inline bool operator==(const TopicPartition& other) const
     {
-        return topic == other.topic && partition == other.partition;
+        return topic_ == other.topic_ && partition_ == other.partition_;
+    }
+
+    inline std::string topic() const
+    {
+        return topic_;
+    }
+
+    inline Partition partition() const
+    {
+        return partition_;
     }
 };
 
 class TopicPartitionOffset : public PartitionOffset {
+    std::string topic_;
+    PartitionOffset partitionOffset_;
+
 public:
-    const std::string topic;
-    const PartitionOffset partitionOffset;
 
     TopicPartitionOffset(  )
     :
-    topic(""),
-    partitionOffset()
+    topic_(""),
+    partitionOffset_()
     {
 
     }
 
     TopicPartitionOffset( const std::string& topic, const PartitionOffset& partitionOffset )
     :
-    partitionOffset( partitionOffset ),
-    topic(topic)
+    partitionOffset_( partitionOffset ),
+    topic_(topic)
     {        
     }
 
     TopicPartitionOffset( const TopicPartition& topicPartition, const Offset& offset )
     :
-    partitionOffset( PartitionOffset( topicPartition.partition, offset ) ),
-    topic( topicPartition.topic )
+    partitionOffset_( PartitionOffset( topicPartition.partition(), offset ) ),
+    topic_( topicPartition.topic() )
     {        
     }
 
     TopicPartitionOffset( const std::string& topic, const Partition& partition, const Offset& offset = Offset::Unset )
     :
-    partitionOffset( partition, offset ),
-    topic(topic)
+    partitionOffset_( partition, offset ),
+    topic_(topic)
     {        
     }
 
     TopicPartitionOffset( const std::string& topic, const int32_t partition, const Offset& offset = Offset::Unset )
     :
-    partitionOffset( Partition(topic, partition), offset ),
-    topic(topic)
+    partitionOffset_( Partition(topic, partition), offset ),
+    topic_(topic)
     {        
     }
 
@@ -208,21 +235,33 @@ public:
 
     TopicPartition topicPartition() const
     {
-        return TopicPartition(topic, partitionOffset.partition);
+        return TopicPartition(topic_, partitionOffset_.partition());
     }
+
+    
 
     inline bool operator<(const TopicPartitionOffset& other) const
     {
-        if( topic < other.topic )
+        if( topic_ < other.topic_ )
         {
             return true;
         }
-        return partitionOffset < other.partitionOffset ;
+        return partitionOffset_ < other.partitionOffset_ ;
     }
 
     inline bool isUnset() const
     {
-        return this->partitionOffset.isUnset() && topic == "";
+        return this->partitionOffset_.isUnset() && topic_ == "";
+    }
+
+    inline PartitionOffset partitionOffset() const
+    {
+        return partitionOffset_;
+    }
+
+    inline std::string topic() const
+    {
+        return topic_;
     }
 
 };
@@ -331,7 +370,7 @@ public:
         std::map<std::string, std::vector<TopicPartitionOffset>> groupedTopicPartitions;
         for( auto& tpo : topicPartitionOffsets )
         {
-            auto& key = tpo.topic;
+            const auto key = tpo.topic();
             if( groupedTopicPartitions.find( key ) == groupedTopicPartitions.end() )
             {
                 groupedTopicPartitions[key] = std::vector<TopicPartitionOffset>( );
@@ -351,7 +390,7 @@ public:
                     [](
                         const TopicPartitionOffset& x
                     ){ 
-                        return x.offset == Offset::Unset; 
+                        return x.offset() == Offset::Unset; 
                     } 
                 )  != partitionOffsets.second.end()
             )
@@ -370,14 +409,14 @@ public:
             [](
                 const TopicPartitionOffset& p
             ){
-                return p.partition == Partition::Any && p.offset == Offset::Unset;
+                return p.partition() == Partition::Any && p.offset() == Offset::Unset;
             } 
             ) == topicPartitionOffsets.end() 
         ) 
         {
             for( auto& el : topicPartitionOffsets )
             {
-                this->topics.push_back( el.topic );
+                this->topics.push_back( el.topic() );
             }
             return;
         }

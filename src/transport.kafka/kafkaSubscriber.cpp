@@ -78,13 +78,13 @@ std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedC
         auto it = topicPartitionMaxOffset.find(topicPartition);
         if( it != topicPartitionMaxOffset.end() )
         {
-            if( el.offset < it->second )
+            if( el.offset() < it->second )
             {
-                it->second = el.offset;
+                it->second = el.offset();
             }
         }else{
             // insert without extra copy
-            topicPartitionMaxOffset.emplace(topicPartition, el.offset);
+            topicPartitionMaxOffset.emplace(topicPartition, el.offset());
         }
     }
 
@@ -96,7 +96,7 @@ std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedC
         auto & contextOffset = contextOffsets[index];
         for( auto&lco : topicPartitionMaxOffset )
         {
-            if( lco.first == contextOffset.topicPartition() && ! ( contextOffset.offset < lco.second ) )
+            if( lco.first == contextOffset.topicPartition() && ! ( contextOffset.offset() < lco.second ) )
             {
                 ret.push_back( contextsToFilter[index] );
                 break;
@@ -104,7 +104,6 @@ std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedC
         }
     }
 
-    // TODO
     return ret;
 }
 
@@ -140,7 +139,7 @@ std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterRevokedCon
                     [=](
                         const TopicPartitionOffset& y
                     ){ 
-                        return y.topic == topic && y.partition.id == partition && y.offset == offset; 
+                        return y.topic() == topic && y.partition().id == partition && y.offset() == offset; 
                     } 
                 ) != offsetList->cend()
             )
@@ -200,18 +199,138 @@ void KafkaSubscriber::open()
     if ( this->consumer_ == nullptr ) {
         // TODO: logging
         std::cerr << "Failed to create consumer: " << errstr << std::endl;
+        return;
 //        exit(1);
     }
 
-    // TODO: 
-    // consumerBuilder.SetErrorHandler(this.ConsumerErrorHandler);
-    // consumerBuilder.SetStatisticsHandler(this.ConsumerStatisticsHandler);  // empty
-                // consumerBuilder.SetPartitionsAssignedHandler(this.PartitionsAssignedHandler);
-                // consumerBuilder.SetPartitionsRevokedHandler(this.PartitionsRevokedHandler);
-                // consumerBuilder.SetPartitionsLostHandler(this.PartitionsLostHandler);
+    std::vector<TopicPartitionOffset> partitions = this->topicConfiguration_.partitions;
+    if(!consumerGroupSet_)
+    {
+        if( partitions.empty() )
+        {
+            Offset selectedOffset;
+
+            std::string autoOffsetValue;
+            RdKafka::Conf::ConfResult res = this->config_->get("auto.offset.reset", autoOffsetValue);
+            if( res != RdKafka::Conf::ConfResult::CONF_OK )
+            {
+                selectedOffset = Offset::Unset;
+            }
+            else if( autoOffsetValue == "latest" )
+            {
+                selectedOffset = Offset::End;
+            }
+            else if( autoOffsetValue == "earliest" )
+            {
+                selectedOffset = Offset::Beginning;
+            }
+            else
+            {
+                throw ArgumentOutOfRangeException("config auto.offset.reset");
+            }
+        }
+
+        // convert all "Partition Any" to explicit list of partition because Any doesn't work. // See https://github.com/confluentinc/confluent-kafka-dotnet/issues/917
+        if(
+            std::find_if( 
+                partitions.cbegin(), 
+                partitions.cend(), 
+                []( const TopicPartitionOffset& x ) { return x.partition() == Partition::Any; }
+            ) != partitions.cend()
+        )
+        {
+            std::vector<TopicPartitionOffset> newPartitions;
+
+            std::vector<RdKafka::TopicPartition *> kafkaPartitions;
+            // todo: catch 
+            this->consumer_->assignment(kafkaPartitions);
+
+            for( auto& partition : partitions )
+            {
+                if( partition.partition() != Partition::Any )
+                {
+                    std::string errstr;
+                    auto topic = RdKafka::Topic::create( this->consumer_, partition.topic(), this->config_, errstr );
+
+                    if ( topic == nullptr ) {
+                        throw InvalidOperationException(std::string("Topic creation error: ") + errstr);
+                    }
+
+                    RdKafka::Metadata* metadata;
+                    auto errCode = this->consumer_->metadata(false, topic, &metadata, 10*1000);
+                    if( errCode != RdKafka::ErrorCode::ERR_NO_ERROR )
+                    {
+                        // todo: EXCEPTION
+
+                        throw std::exception();
+                        // throw InvalidOperationException(std::string("Failed to retrieve metadata for topic '{partition.Topic}' with partition {partition.Partition}. Try again or specify partitions explicitly.") + errstr);
+                    }
+
+                    const auto topics = metadata->topics();
+                    const auto topicMetadata = std::find_if( 
+                        topics->cbegin(),
+                        topics->cend(),
+                        [=](const RdKafka::TopicMetadata* el )
+                        {
+                            return el->topic() == partition.topic();
+                        }
+                    );
+
+                    if( topicMetadata == topics->cbegin() )
+                    {
+                        throw std::exception();                                                
+                    }
+
+                    auto partitions = (*topicMetadata)->partitions();
+                    for( auto& x : *partitions )
+                    {
+                        newPartitions.push_back( TopicPartitionOffset( partition.topic(), x->id(), partition.offset() ) );
+                    }
+                    continue;
+                }
+
+                // this.logger.LogTrace("Topic '{0}' with partition {1} requires metadata retrieval", partition.Topic, partition.Partition);
 
 
-    //TODO: 
+                // unlike in C# the regular client is having the information about metadata
+
+                partitions = newPartitions;
+            }
+
+            // only allow OFFSET_BEGINNING, OFFSET_END or absolute offset, see https://github.com/confluentinc/confluent-kafka-python/issues/250
+            for (size_t index = 0; index < partitions.size(); index++)
+            {
+                auto& partition = partitions[index];
+                if (partition.offset() == Offset::Unset)
+                {
+                    // this.logger.LogDebug("Topic '{0}' with partition {1} defaults to end, because neither offset or group was specified.", partition.Topic, partition.Partition);
+                    partitions[index] = TopicPartitionOffset(partition.topic(), partition.partition(), Offset::End);
+                    continue;
+                }
+                if (partition.offset() == Offset::Stored)
+                {
+                    // this.logger.LogWarning("Topic '{0}' with partition {1} is unable to use last stored offset, because group was not specified. Defaulting to end.", partition.Topic, partition.Partition);
+                    partitions[index] = TopicPartitionOffset(partition.topic(), partition.partition(), Offset::End);
+                }
+            }
+
+        }
+    }
+
+    if( !partitions.empty() )
+    {
+        std::vector<RdKafka::TopicPartition*> kafkaPartitions;
+        
+        for( auto& partition : partitions )
+        {
+            kafkaPartitions.push_back( RdKafka::TopicPartition::create( partition.topic(), partition.partition().id, partition.offset().value() ) );
+        }
+
+        this->consumer_->assign( kafkaPartitions );
+    }
+
+    this->disconnected_ = false;
+    this->startWorkerThread();
 }
 
 
@@ -534,7 +653,7 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
         auto index = 0;
         for( auto& el : topicPartitionOffsets )
         {
-            auto tp = TopicPartitionOffset(el.topic, el.partition);
+            auto tp = TopicPartitionOffset(el.topic(), el.partition());
             sameTopicPartitionsSet.insert(tp);
             sameTopicPartitionsMapToOffset.emplace(tp, el);
             sameTopicPartitionsMapToKafkaPartition.emplace(tp, partitions[index]);
@@ -544,7 +663,7 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
         std::set<TopicPartitionOffset> lrsset;
         for( auto& el : this->lastRevokingState )
         {
-            lrsset.insert(TopicPartitionOffset(el.topic, el.partition));
+            lrsset.insert(TopicPartitionOffset(el.topic(), el.partition()));
         }
 
         std::vector<TopicPartitionOffset> sameTopicPartitions;
@@ -556,7 +675,7 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
 
         for ( auto& topicPartitionOffset : sameTopicPartitions)
         {
-            Offset currentPosition(sameTopicPartitionsMapToOffset[topicPartitionOffset].offset);
+            Offset currentPosition( sameTopicPartitionsMapToOffset[topicPartitionOffset].offset() );
 
             const auto kafkapartition = sameTopicPartitionsMapToKafkaPartition[topicPartitionOffset];
 
@@ -570,10 +689,10 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
 
                     seekFuncs.push_back([=](const ConsumerResult& cr){
                     //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
-                        auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic, topicPartitionOffset.partition.id, topicPartitionOffset.offset.value());
+                        auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic(), topicPartitionOffset.partition().id, topicPartitionOffset.offset().value());
                         this->consumer_->seek(*partition, -1);
 
-                        auto is = topicPartitionOffset.topic == partition->topic() && topicPartitionOffset.partition.id == partition->partition() && topicPartitionOffset.offset.value() <= partition->offset(); 
+                        auto is = topicPartitionOffset.topic() == partition->topic() && topicPartitionOffset.partition().id == partition->partition() && topicPartitionOffset.offset().value() <= partition->offset(); 
                         delete partition;
                         return is;
                     });
@@ -724,7 +843,6 @@ void KafkaSubscriber::partitionsRevokedHandler(RdKafka::KafkaConsumer *consumer,
 
 void KafkaSubscriber::automaticOffsetCommitedHandler(const std::vector< RdKafka::TopicPartition * >& partitions, RdKafka::ErrorCode err)
 {    
-    //TODO    
     // if (this.logger.IsEnabled(LogLevel.Trace))
     // {
     //     foreach (var committedOffset in offsets.Offsets)
