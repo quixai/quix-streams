@@ -867,11 +867,13 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
         for( auto& x : offsets )
         {
 
+            auto topic = x.topic();
+
             if(
                 std::find_if( 
                     this->topicConfiguration_.topics.cbegin(),
                     this->topicConfiguration_.topics.cend(),
-                    x.topic()
+                    [=](const std::string& x) { return x == topic; }
                 ) != this->topicConfiguration_.topics.cend()
             )
             {
@@ -929,59 +931,23 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
         this->onCommitting(this, OnCommittingEventArgs(&invalidTopics));
 
 
-        //create 
-        auto q = RdKafka::Queue::create( this->consumer_ );
+        // this logic is copied from Confluent Kafka and intended to commit only selected topics 
+        std::vector<RdKafka::TopicPartition*> list;
+        for ( auto& offset : offsets )
+        {
+            list.push_back( RdKafka::TopicPartition::create( offset.topic(), offset.partition().id, offset.offset().value() ) );
+        }
+        auto errCode = this->consumer_->commitSync( list );
 
-        // this->consumer_->commit()
-        // this->consumer_->
+        // TODO: read committed offset from the kafka
 
-        // this.consumer.Commit(offsets);
-        // this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(offsets, null)));
-    // }
-    }catch(...)
-    // catch (TopicPartitionOffsetException ex)
+        State<CommittedOffsets> committedOffsets(getCommittedOffsets(offsets));
+        this->onCommitted(this, OnCommittedEventArgs(&committedOffsets));
+    }catch( ... )
     {
         // this->onCommitted(this, OnCommittedEventArgs(getCommittedOffsets()));
     }
 
-
-                // if (this.topicConfiguration.Topics != null)
-                // {
-                //     invalidTopics = offsets.Where(x => !this.topicConfiguration.Topics.Contains(x.Topic)).Select(x => x.Topic).Distinct().ToList();
-                // }
-                // else
-                // {
-                //     invalidTopics = offsets.Where(x => this.topicConfiguration.Partitions.All(y => y.TopicPartition != x.TopicPartition)).Select(x => x.Topic).Distinct().ToList();
-                // }
-                // if (invalidTopics.Count > 0)
-                // {
-                //     if (invalidTopics.Count == 0) throw new InvalidOperationException($"Topic {invalidTopics[0]} offset cannot be committed because topic is not subscribed to.");
-                //     throw new InvalidOperationException($"Topic {string.Join(", ", invalidTopics)} offsets cannot be committed because topics are not subscribed to.");
-                // }
-
-                // if (logger.IsEnabled(LogLevel.Trace))
-                // {
-                //     foreach (var topicPartitionOffset in offsets)
-                //     {
-                //         logger.LogTrace("Committing offset {0} for Topic {1}, Partition {2}", topicPartitionOffset.Offset, topicPartitionOffset.Topic, topicPartitionOffset.Partition);
-                //     }
-                // }
-
-                // // TODO maybe validation on given partitions? Difficult, but possible once PartitionsAssignedHandler and PartitionsRevokedHandler is properly implemented
-                // try
-                // {
-                //     this.OnCommitting?.Invoke(this, new OnCommittingEventArgs(offsets));
-                //     this.consumer.Commit(offsets);
-                //     this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(offsets, null)));
-                // }
-                // catch (TopicPartitionOffsetException ex)
-                // {
-                //     this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(null, ex)));
-                // }
-
-
-
-    // TODO
 }
 
 void KafkaSubscriber::addMessage( RdKafka::Message *message  )
@@ -998,9 +964,16 @@ void KafkaSubscriber::addMessage( RdKafka::Message *message  )
     {
         this->onNewPackage(package);
     }
-    catch(...)
+    catch( KafkaException ex )
     {
-        // TODO
+        if ( this->errorOccurred.empty() )
+        {
+            // this.logger.LogError(ex, "Exception processing message read from Kafka");
+        }
+        else
+        {
+            this->errorOccurred(ex);
+        }
     }
 }
 

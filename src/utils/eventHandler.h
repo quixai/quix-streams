@@ -158,6 +158,11 @@ public:
         return callbacks_.size();
     }
 
+    inline bool empty() const 
+    {
+        return callbacks_.empty();
+    }
+
     inline void operator()(_ArgTypes... __args) const
     {
         for( auto func: callbacks_ )
