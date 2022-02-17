@@ -21,6 +21,7 @@
 #include <locale>
 #include <regex>
 #include <set>
+#include <unordered_set>
 #include <string>
 
 
@@ -566,8 +567,6 @@ void KafkaSubscriber::commitOffsets()
     {
         State<std::vector<TopicPartitionOffset>> positions;
 
-    //     // TODO
-
         std::vector< RdKafka::TopicPartition * > partitions;
         RdKafka::ErrorCode resp = this->consumer_->assignment( partitions );
         if ( resp != RdKafka::ERR_NO_ERROR ){
@@ -583,30 +582,15 @@ void KafkaSubscriber::commitOffsets()
         }
         this->onCommitting(this, OnCommittingEventArgs(&positions));
 
-        // TODO
         KafkaOffsetCommitCb receiver(this);
 
-        // TODO: treat return code as a exception
-        this->consumer_->commitSync(&receiver);
+        auto errorCode = this->consumer_->commitSync(&receiver);
+        if( errorCode != RdKafka::ErrorCode::ERR_NO_ERROR )
+        {
+            throw KafkaException(errorCode);
+        }
 
         resp = this->consumer_->committed( partitions, 2000 );
-
-        // todo on committed offsets
-//        this->onCommitted(this, )
-
-
-    //     // var positions = new List<TopicPartitionOffset>();
-    //     // foreach (var topicPartition in this.consumer.Assignment)
-    //     // {
-    //     //     var position = this.consumer.Position(topicPartition);
-    //     //     if (position != Offset.Unset)
-    //     //     {
-    //     //         positions.Add(new TopicPartitionOffset(topicPartition, position));
-    //     //     }
-    //     // }
-    //     // this.OnCommitting?.Invoke(this, new OnCommittingEventArgs(positions));
-    //     // var committed = this.consumer.Commit();
-    //     // this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(committed, null)));
     }
     catch (KafkaException ex)
     {
@@ -617,10 +601,9 @@ void KafkaSubscriber::commitOffsets()
             OnCommittedEventArgs( &st )
         );
     }
-
-
-    // TODO
 }
+
+
 
 std::vector<TopicPartitionOffset> KafkaSubscriber::createTopicPartitionOffsetList(const std::vector< RdKafka::TopicPartition * >& kafkaTopicPartition) const
 {
@@ -696,13 +679,6 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
                         delete partition;
                         return is;
                     });
-                    // .Add((cr) =>
-                    // {
-                    //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
-                    //     this.consumer.Seek(topicPartitionOffset);
-                    //     this.logger.LogDebug("Seeked partition: {0}", topicPartitionOffset.ToString());
-                    //     return cr.TopicPartition == topicPartitionOffset.TopicPartition && cr.Offset <= topicPartitionOffset.Offset;
-                    // });
 
                 }
                 else
@@ -875,6 +851,135 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
     {
         throw InvalidOperationException("Unable to commit offsets when output is not open.");
     }
+
+    if ( !this->consumerGroupSet_ )
+    {
+        // logger.LogWarning("Unable to commit without consumer group.");
+        return;
+    }
+
+    State<std::vector<std::string>> invalidTopics;
+
+    if( !this->topicConfiguration_.topics.empty() )
+    {
+        std::unordered_set<std::string> invalidTopicsSet;
+
+        for( auto& x : offsets )
+        {
+
+            if(
+                std::find_if( 
+                    this->topicConfiguration_.topics.cbegin(),
+                    this->topicConfiguration_.topics.cend(),
+                    x.topic()
+                ) != this->topicConfiguration_.topics.cend()
+            )
+            {
+                invalidTopicsSet.insert(x.topic());
+            }
+        }
+
+        //transform std::set into the vector
+        invalidTopics = std::vector<std::string>( invalidTopicsSet.cbegin(), invalidTopicsSet.cend() );
+
+    }
+    else
+    {
+        std::unordered_set<std::string> invalidTopicsSet;
+
+        for( auto& x : offsets )
+        {
+
+            // check if every element is containing the 
+            const auto& xTopicPartition = x.topicPartition();
+            if( 
+                std::find_if(
+                    this->topicConfiguration_.partitions.cbegin(),
+                    this->topicConfiguration_.partitions.cend(),
+                    [=](const TopicPartitionOffset& y) { return y.topicPartition() == xTopicPartition; }
+                ) == this->topicConfiguration_.partitions.cend()
+            )
+            {
+                invalidTopicsSet.insert(x.topic());
+            }
+        }
+
+        //transform std::set into the vector
+        invalidTopics = std::vector<std::string>( invalidTopicsSet.cbegin(), invalidTopicsSet.cend() );
+
+    }
+
+    if ( invalidTopics.size() > 0 )
+    {
+        //     if (invalidTopics.Count == 0) throw new InvalidOperationException($"Topic {invalidTopics[0]} offset cannot be committed because topic is not subscribed to.");
+        throw InvalidOperationException( "Topic {string.Join(, invalidTopics)} offsets cannot be committed because topics are not subscribed to.");
+    }
+
+
+    // if (logger.IsEnabled(LogLevel.Trace))
+    // {
+    //     foreach (var topicPartitionOffset in offsets)
+    //     {
+    //         logger.LogTrace("Committing offset {0} for Topic {1}, Partition {2}", topicPartitionOffset.Offset, topicPartitionOffset.Topic, topicPartitionOffset.Partition);
+    //     }
+    // }
+
+    try
+    {
+        this->onCommitting(this, OnCommittingEventArgs(&invalidTopics));
+
+
+        //create 
+        auto q = RdKafka::Queue::create( this->consumer_ );
+
+        // this->consumer_->commit()
+        // this->consumer_->
+
+        // this.consumer.Commit(offsets);
+        // this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(offsets, null)));
+    // }
+    }catch(...)
+    // catch (TopicPartitionOffsetException ex)
+    {
+        // this->onCommitted(this, OnCommittedEventArgs(getCommittedOffsets()));
+    }
+
+
+                // if (this.topicConfiguration.Topics != null)
+                // {
+                //     invalidTopics = offsets.Where(x => !this.topicConfiguration.Topics.Contains(x.Topic)).Select(x => x.Topic).Distinct().ToList();
+                // }
+                // else
+                // {
+                //     invalidTopics = offsets.Where(x => this.topicConfiguration.Partitions.All(y => y.TopicPartition != x.TopicPartition)).Select(x => x.Topic).Distinct().ToList();
+                // }
+                // if (invalidTopics.Count > 0)
+                // {
+                //     if (invalidTopics.Count == 0) throw new InvalidOperationException($"Topic {invalidTopics[0]} offset cannot be committed because topic is not subscribed to.");
+                //     throw new InvalidOperationException($"Topic {string.Join(", ", invalidTopics)} offsets cannot be committed because topics are not subscribed to.");
+                // }
+
+                // if (logger.IsEnabled(LogLevel.Trace))
+                // {
+                //     foreach (var topicPartitionOffset in offsets)
+                //     {
+                //         logger.LogTrace("Committing offset {0} for Topic {1}, Partition {2}", topicPartitionOffset.Offset, topicPartitionOffset.Topic, topicPartitionOffset.Partition);
+                //     }
+                // }
+
+                // // TODO maybe validation on given partitions? Difficult, but possible once PartitionsAssignedHandler and PartitionsRevokedHandler is properly implemented
+                // try
+                // {
+                //     this.OnCommitting?.Invoke(this, new OnCommittingEventArgs(offsets));
+                //     this.consumer.Commit(offsets);
+                //     this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(offsets, null)));
+                // }
+                // catch (TopicPartitionOffsetException ex)
+                // {
+                //     this.OnCommitted?.Invoke(this, new OnCommittedEventArgs(GetCommittedOffsets(null, ex)));
+                // }
+
+
 
     // TODO
 }
