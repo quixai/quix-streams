@@ -30,7 +30,7 @@ private:
      * 
      * @return Pointer to the codec from the package value
      */
-    AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
+    const AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
 
 public:
 

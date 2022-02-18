@@ -25,7 +25,7 @@ namespace Quix { namespace Transport {
    }
 
 
-    void CodecRegistry::registerCodec(const ModelKey& model, AbstractCodec* codec)
+    void CodecRegistry::registerCodec(const ModelKey& model, const AbstractCodec* codec)
     {
 
         //not found model >> creating a element of key
@@ -39,7 +39,7 @@ namespace Quix { namespace Transport {
         auto& modelCodecs = codecs[model];
 
         auto codecKey = codec->codecId();
-        auto it = std::find_if(modelCodecs.begin(), modelCodecs.end(), [&](AbstractCodec* val){
+        auto it = std::find_if(modelCodecs.begin(), modelCodecs.end(), [&](const AbstractCodec* val){
             return val->codecId() == codecKey;
         });
         if( it == modelCodecs.end() ) 
@@ -57,23 +57,23 @@ namespace Quix { namespace Transport {
         modelKeyRegistry->registerModel(codecKey, model);
     }
 
-    vector<AbstractCodec*>& CodecRegistry::retrieveCodecs(const ModelKey& modelKey)
+    vector<const AbstractCodec*>& CodecRegistry::retrieveCodecs(const ModelKey& modelKey)
     {
         if ( codecs.find(modelKey) == codecs.end() )
         {
-            static vector<AbstractCodec*> ret = {};
+            static vector<const AbstractCodec*> ret = {};
             return ret;
         }
         return codecs[modelKey];
     }
 
 
-    AbstractCodec* CodecRegistry::retrieveCodec(const ModelKey& modelKey, const string& codecKey)
+    const AbstractCodec* CodecRegistry::retrieveCodec(const ModelKey& modelKey, const string& codecKey)
     {
         auto modelCodecs = retrieveCodecs(modelKey);
 
         //find first codec from the list which has the key matching codecKey
-        auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [&](AbstractCodec* val){
+        auto el = std::find_if(modelCodecs.begin(), modelCodecs.end(), [&](const AbstractCodec* val){
             return val->codecId() == codecKey;
         });
 
@@ -84,7 +84,7 @@ namespace Quix { namespace Transport {
                 *el;
     }
 
-    AbstractCodec* CodecRegistry::retrieveFirstCodec(const ModelKey& modelKey)
+    const AbstractCodec* CodecRegistry::retrieveFirstCodec(const ModelKey& modelKey)
     {
         auto modelCodecs = retrieveCodecs(modelKey);
 

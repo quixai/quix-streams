@@ -4,6 +4,7 @@
 #include "transport/io/ISubscriber.h"
 #include "transport/fw/ICanCommit.h"
 
+#include "transport/codec/binaryCodec.h"
 #include "transport/codec/abstractCodec.h"
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
@@ -52,7 +53,7 @@ TEST(transportWhole, TransportOutput_ShouldCorrespondToTransportInput)
 {
     // This test checks that Transport Input and Output are reverse of each other
 
-    static PackageFactoryCodec<TestSingleMessage> codec1;
+    static BinaryCodec<TestSingleMessage> codec1;
     auto registry = Quix::Transport::CodecRegistry::instance();
     registry->registerCodec( Quix::Transport::ModelKey::forType<TestSingleMessage>() , &codec1 );
 

@@ -28,7 +28,7 @@ namespace Quix { namespace Transport {
     };
 
 
-    AbstractCodec* DeserializingModifier::getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const
+    const AbstractCodec* DeserializingModifier::getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const
     {
         const auto& codecBundle = transportPackageValue->codecBundle();
         const auto codec = CodecRegistry::instance()->retrieveCodec(codecBundle.modelKey(), codecBundle.codecId());

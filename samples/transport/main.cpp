@@ -14,7 +14,6 @@ void exampleReadWriteMessage()
     readMessage.start();
     writeMessage.start();
 
-    readMessage.join();
     writeMessage.join();
 }
 

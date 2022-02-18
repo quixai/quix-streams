@@ -32,7 +32,7 @@ namespace Quix { namespace Transport {
 
     std::shared_ptr<ByteArrayPackage> SerializingModifier::serializePackage(
         std::shared_ptr<IPackage> package, 
-        AbstractCodec* codec, 
+        const AbstractCodec* codec, 
         const CodecBundle& codecBundle
     ) const
     {

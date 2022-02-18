@@ -29,7 +29,7 @@ private:
      */
     std::shared_ptr<ByteArrayPackage> serializePackage(
         std::shared_ptr<IPackage> package, 
-        AbstractCodec* codec, 
+        const AbstractCodec* codec, 
         const CodecBundle& codecBundle
     ) const;
 
