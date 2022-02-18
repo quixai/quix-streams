@@ -20,13 +20,13 @@ namespace Quix { namespace Transport { namespace Kafka  {
 
 
 // typedef std::function<void(const std::string&, std::shared_ptr<Quix::Transport::IPackage>)> ProduceDelegate;
-typedef std::function<void(const std::string&, const ByteArray&, void* state)> ProduceDelegate;
+typedef std::function<RdKafka::ErrorCode(const std::string&, const Quix::Transport::ByteArray&, void* state)> ProduceDelegate;
 
 
 /**
  * Interface for providing a class a way to push Package to listener
  */
-class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublisher{
+class KafkaPublisher : public IKafkaPublisher {
 
     std::mutex openLock_;
     std::mutex flushLock_;
@@ -35,7 +35,7 @@ class KafkaPublisher : public IKafkaPublisher, public Quix::Transport::IPublishe
     std::function<void()> hbAction_;
     std::function<void()> setupKeepAlive_;
     CallbackTimer timer_;
-    std::function<RdKafka::ErrorCode(const std::string& key, const Quix::Transport::ByteArray& data)> produce_;
+    ProduceDelegate produce_;
 
     std::chrono::time_point<std::chrono::system_clock> lastFlush_ = std::chrono::time_point<std::chrono::system_clock>{};
 
@@ -69,6 +69,13 @@ public:
      * @brief Open connection to Kafka
      */
     void open();
+
+    /**
+     * Send a package
+     * 
+     * @param package The package to send
+     */
+    void send(std::shared_ptr<IPackage> package);
 
 };
 

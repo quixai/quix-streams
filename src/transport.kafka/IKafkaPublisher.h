@@ -1,11 +1,13 @@
 #pragma once
 
+#include "../transport/io/IPublisher.h"
+
 namespace Quix { namespace Transport { namespace Kafka  {
 
 /**
  * Interface for providing a class a way to push Package to listener
  */
-class IKafkaPublisher{
+class IKafkaPublisher : public Quix::Transport::IPublisher{
 
 public:
 

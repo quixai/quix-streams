@@ -17,10 +17,6 @@ class PublisherConfiguration {
     std::string brokerList_; // The list of brokers as a comma separated list of broker host or host:port.
     std::map<std::string, std::string> producerProperties_;
 
-    /// Maximum Kafka protocol request message size in bytes.
-    int maxMessageSize_ = 1000012; // https://docs.confluent.io/current/installation/configuration/broker-configs.html
-
-
 
 
 public:
@@ -100,6 +96,13 @@ public:
      *      default: false
     **/
     bool enableIdempotence = false;
+
+    /// <summary>
+    ///     Maximum Kafka protocol request message size in bytes.
+    ///     default: 1000012
+    /// </summary>
+    int maxMessageSize = 1000012; // https://docs.confluent.io/current/installation/configuration/broker-configs.html
+
 
     /**
      *      The backoff time in milliseconds before retrying a protocol request.

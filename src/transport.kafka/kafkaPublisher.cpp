@@ -107,7 +107,7 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
 
 
     // unlike in C# the sending with and without partition can be done via the same code
-    produce_ = [ this, partition, topic ]( const std::string& key, const Quix::Transport::ByteArray& data ){ 
+    produce_ = [ this, partition, topic ]( const std::string& key, const Quix::Transport::ByteArray& data, void* _ ){ 
         /// TODO: remove allocation using RK_MSG_FREE instead of RK_MSG_COPY for better performance
         ///      - not sure yet howto handle memory
         RdKafka::ErrorCode resp = 
@@ -288,6 +288,12 @@ void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDele
 
 }
 
+void KafkaPublisher::send(std::shared_ptr<IPackage> package)
+{
+    sendInternal(package, this->produce_, nullptr);
+}
+
+
 void KafkaPublisher::flush( )
 {
     /// TODO: CancellationToken
@@ -347,6 +353,8 @@ void KafkaPublisher::sendKeepAlive()
                 {
                     throw KafkaException( resp );
                 }
+
+                return resp;
             };
 
     try

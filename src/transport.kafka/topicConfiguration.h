@@ -57,6 +57,7 @@ public:
     std::string topic;
 
     static const Partition Unset;
+    static const Partition Any;
 
     Partition(std::string topic_, int32_t id_ = 0)
     :
@@ -96,7 +97,6 @@ public:
         return !(*this == other);
     };
 
-    static Partition Any;
 
 };
 
@@ -285,7 +285,7 @@ public:
          * @param topic The topic to write to
          * @param partition The partition to write to
          **/
-        InputTopicConfiguration(std::string topic, Partition partition)
+        InputTopicConfiguration( std::string topic, Partition partition = Partition::Any )
         :
          topic_(topic),
          partition_(partition)

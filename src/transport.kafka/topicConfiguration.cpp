@@ -21,3 +21,4 @@ bool Offset::isSpecial() const
 }
 
 const Partition Partition::Unset = Partition();
+const Partition Partition::Any = Partition();
