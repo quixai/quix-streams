@@ -10,17 +10,26 @@ using namespace std;
 using namespace Quix::Transport;
 using namespace Quix::Transport::Kafka;
 
-KafkaConfBuilder::KafkaConfBuilder() 
+KafkaConfBuilder::KafkaConfBuilder( ) 
 :
-conf_(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL))
-{
+conf_( RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL) ),
+topicConf_( RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC) )
+{   
 };
 
 /// Internal function to set key with specific value into the Rdkafak conf 
 KafkaConfBuilder& KafkaConfBuilder::set( const char* key, const char* value )
 {
     std::string errstr;
-    if( conf_->set( key , value, errstr ) != RdKafka::Conf::CONF_OK )
+    RdKafka::Conf::ConfResult res;
+    if ( !strncmp(key, "topic.", strlen("topic.")) )
+    {
+        res = topicConf_->set( key + strlen("topic.") , value, errstr );
+    } else {
+        res = conf_->set( key , value, errstr );
+    }
+
+    if( res != RdKafka::Conf::CONF_OK )
     {
         std::stringstream ss;
         ss << "Failed assign kafka " << key << ">>>> property (" << errstr << ")";
@@ -60,9 +69,7 @@ KafkaConfBuilder& KafkaConfBuilder::set( const char* key, bool value )
     return set( key, value ? "true" : "false" );
 }
 
-RdKafka::Conf* KafkaConfBuilder::toConfig() const
+KafkaConfBuilder::KafkaConfig* KafkaConfBuilder::toConfig() const
 {
-    return conf_;
+    return new KafkaConfig(conf_, topicConf_);
 }
-
-

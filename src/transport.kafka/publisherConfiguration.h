@@ -7,6 +7,8 @@
 #include "../transport/io/IPublisher.h"
 #include "./IKafkaPublisher.h"
 
+#include "./kafkaConfBuilder.h"
+
 namespace Quix { namespace Transport { namespace Kafka  {
 
 /**
@@ -179,8 +181,7 @@ public:
      * @return new instance of the RdKafka::Conf*
      * Note: must be destroyed by delete sometime later to avoid memory leak
      */
-    RdKafka::Conf* toProducerConfig() const;
-
+    KafkaConfBuilder::KafkaConfig* toProducerConfig() const;
 };
 
 } } }

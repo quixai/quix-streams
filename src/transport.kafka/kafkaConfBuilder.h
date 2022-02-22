@@ -13,10 +13,37 @@ namespace Quix { namespace Transport { namespace Kafka  {
 class KafkaConfBuilder {
 
     RdKafka::Conf* conf_;
+    RdKafka::Conf* topicConf_;
+
+    
 
 public:
 
-    KafkaConfBuilder();
+    class KafkaConfig {
+        RdKafka::Conf* global_;
+        RdKafka::Conf* topic_;
+    public:
+
+        KafkaConfig(RdKafka::Conf* global, RdKafka::Conf* topic)
+        : global_(global), topic_(topic) 
+        {
+
+        };
+        KafkaConfig(const KafkaConfig& config) = default;
+
+        ~KafkaConfig()
+        {
+            delete global_;
+            delete topic_;
+        };
+
+
+        RdKafka::Conf* global() const { return global_; };
+        RdKafka::Conf* topic() const { return topic_; };
+
+    };
+
+    KafkaConfBuilder( );
 
     /// Internal function to set key with specific value into the Rdkafak conf 
     KafkaConfBuilder& set( const char* key, const char* value );
@@ -29,7 +56,7 @@ public:
     /// Internal function to set key with specific value into the Rdkafak conf 
     KafkaConfBuilder& set( const char* key, bool value );
 
-    RdKafka::Conf* toConfig() const;
+    KafkaConfig* toConfig() const;
 
 };
 

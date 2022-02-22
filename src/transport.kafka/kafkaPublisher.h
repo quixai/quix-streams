@@ -45,7 +45,8 @@ class KafkaPublisher : public IKafkaPublisher {
     std::vector<Partition> partitionsToKeepAliveWith_;    
 
     RdKafka::Producer*  producer_ = nullptr;
-    RdKafka::Conf*      conf_;
+    const PublisherConfiguration publisherConfiguration_;
+    KafkaConfBuilder::KafkaConfig*      conf_;
 
     void errorHandler(RdKafka::ErrorCode errorCode) const;
     void sendKeepAlive();

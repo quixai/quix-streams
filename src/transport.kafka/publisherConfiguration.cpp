@@ -56,11 +56,9 @@ PublisherConfiguration::PublisherConfiguration(
 };
 
 
-RdKafka::Conf* PublisherConfiguration::toProducerConfig() const
+KafkaConfBuilder::KafkaConfig* PublisherConfiguration::toProducerConfig() const
 {
     KafkaConfBuilder confBuilder;
-
-    RdKafka::Conf* conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
 
     for( auto& it : producerProperties_ )
     {
@@ -103,8 +101,6 @@ RdKafka::Conf* PublisherConfiguration::toProducerConfig() const
     if( this->messageSendMaxRetries >= 0 ) {
         confBuilder.set( "message.send.max.retries", this->messageSendMaxRetries );
     }
-
-
 
     return confBuilder.toConfig();
 }

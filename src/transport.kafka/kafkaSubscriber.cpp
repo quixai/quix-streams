@@ -36,9 +36,9 @@ topicConfiguration_(topicConfiguration),
 consumerGroupSet_(subscriberConfiguration.consumerGroupSet),
 checkForKeepAlivePackets_(subscriberConfiguration.checkForKeepAlivePackets),
 eventCallback_( this ),
-rebalanceCallback_( this )
+rebalanceCallback_( this ),
+config_( subscriberConfiguration.toConsumerConfig() )
 {
-    config_ = subscriberConfiguration.toConsumerConfig();
 }
 
 
@@ -187,16 +187,16 @@ void KafkaSubscriber::open()
     lastRevokeCancelAction_();
 
     std::string errstr;
-    if( this->config_->set("event_cb", &eventCallback_, errstr) != RdKafka::Conf::ConfResult::CONF_OK )
+    if( this->config_->global()->set("event_cb", &eventCallback_, errstr) != RdKafka::Conf::ConfResult::CONF_OK )
     {
         std::cerr << "Failed to set event_cb: " << errstr << std::endl;
     }
-    if( this->config_->set("rebalance_cb", &rebalanceCallback_, errstr ) != RdKafka::Conf::ConfResult::CONF_OK )
+    if( this->config_->global()->set("rebalance_cb", &rebalanceCallback_, errstr ) != RdKafka::Conf::ConfResult::CONF_OK )
     {
         std::cerr << "Failed to set rebalance_cb: " << errstr << std::endl;
     }
 
-    this->consumer_ = RdKafka::KafkaConsumer::create( this->config_, errstr );
+    this->consumer_ = RdKafka::KafkaConsumer::create( this->config_->global(), errstr );
     if ( this->consumer_ == nullptr ) {
         // TODO: logging
         std::cerr << "Failed to create consumer: " << errstr << std::endl;
@@ -212,7 +212,7 @@ void KafkaSubscriber::open()
             Offset selectedOffset;
 
             std::string autoOffsetValue;
-            RdKafka::Conf::ConfResult res = this->config_->get("auto.offset.reset", autoOffsetValue);
+            RdKafka::Conf::ConfResult res = this->config_->global()->get("auto.offset.reset", autoOffsetValue);
             if( res != RdKafka::Conf::ConfResult::CONF_OK )
             {
                 selectedOffset = Offset::Unset;
@@ -251,7 +251,7 @@ void KafkaSubscriber::open()
                 if( partition.partition() != Partition::Any )
                 {
                     std::string errstr;
-                    auto topic = RdKafka::Topic::create( this->consumer_, partition.topic(), this->config_, errstr );
+                    auto topic = RdKafka::Topic::create( this->consumer_, partition.topic(), this->config_->topic(), errstr );
 
                     if ( topic == nullptr ) {
                         throw InvalidOperationException(std::string("Topic creation error: ") + errstr);

@@ -13,6 +13,8 @@
 
 #include "./kafkaPublisher.h"
 
+#include "./kafkaConfBuilder.h"
+
 #include "../transport/io/ISubscriber.h"
 #include "../transport/fw/ICanCommit.h"
 #include "../transport/fw/IRevocation.h"
@@ -66,7 +68,7 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
     std::mutex workerThreadLock_;
 
     RdKafka::KafkaConsumer*  consumer_ = nullptr;
-    RdKafka::Conf*      config_;
+    KafkaConfBuilder::KafkaConfig*      config_;
 
     std::thread readThread_;
     std::mutex threadLock_;

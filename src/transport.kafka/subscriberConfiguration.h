@@ -89,7 +89,7 @@ public:
 
 
 
-    RdKafka::Conf* toConsumerConfig() const
+    KafkaConfBuilder::KafkaConfig* toConsumerConfig() const
     {
         KafkaConfBuilder confBuilder;
 

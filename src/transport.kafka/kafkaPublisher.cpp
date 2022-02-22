@@ -18,10 +18,11 @@ using namespace Quix::Transport::Kafka;
 
 KafkaPublisher::KafkaPublisher(const PublisherConfiguration& publisherConfiguration, InputTopicConfiguration topicConfiguration)
 :
+publisherConfiguration_(publisherConfiguration),
 setupKeepAlive_([](){}),
-timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
+timer_([](){}, Timer::INFINITE, Timer::INFINITE, false),
+conf_( publisherConfiguration.toProducerConfig() )
 {
-    conf_ = publisherConfiguration.toProducerConfig();
 
     std::function<void()> hbAction(nullptr);
     auto partition = topicConfiguration.partition();
@@ -33,7 +34,7 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
             // this.logger.LogTrace($"Creating admin client to retrieve metadata for keep alive details");
 
             std::string errstr;
-            auto adminClient = RdKafka::Producer::create(conf_, errstr);
+            auto adminClient = RdKafka::Producer::create(conf_->global(), errstr);
             if ( !producer_ ) {
                 std::stringstream ss;
                 ss << "Failed to create kafka producer (" << errstr << ")";
@@ -44,7 +45,7 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
             }
 
             RdKafka::Metadata* metadata;
-            RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, this->conf_, errstr);
+            RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, this->conf_->topic(), errstr);
             if ( !kafkaTopic ) {
                 std::stringstream ss;
                 ss << "Failed to create kafka topic (" << errstr << ")";
@@ -54,7 +55,12 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
                 // throw InvalidOperationException(ss.str());
             }
 
-            adminClient->metadata(false, kafkaTopic, &metadata, 10*1000);
+            auto errCode = adminClient->metadata(false, kafkaTopic, &metadata, 10*1000);
+            if( errCode != RdKafka::ErrorCode::ERR_NO_ERROR )
+            {
+                cerr << "Cannot retrieve metadata for " << kafkaTopic->name().c_str() << endl; 
+                return;
+            }
 
             bool found = false;
             for( auto it = metadata->topics()->begin(); it != metadata->topics()->end(); ++it)
@@ -218,8 +224,10 @@ void KafkaPublisher::open()
 
     if( this->producer_ != nullptr ) { return; }
 
+    try{
+
     std::string errstr;
-    producer_ = RdKafka::Producer::create(conf_, errstr);
+    producer_ = RdKafka::Producer::create(conf_->global(), errstr);
     if ( !producer_ ) {
         std::stringstream ss;
         ss << "Failed to create kafka producer (" << errstr << ")";
@@ -227,27 +235,17 @@ void KafkaPublisher::open()
     }
 
 
-
-            // // std::string errstr;
-            // auto adminClient = RdKafka::Producer::create(conf_, errstr);
-            // if ( !producer_ ) {
-            //     std::stringstream ss;
-            //     ss << "Failed to create kafka producer (" << errstr << ")";
-            //     cerr << ss.str().c_str() << endl;
-            //     /// TODO: logger
-            //     return;
-            //     // throw InvalidOperationException(ss.str());
-            // }
-
-            // RdKafka::Metadata* metadata;
-            // std::string topic("Messages");
-            // RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, this->conf_, errstr);
-
-
     // unlike in C# this one is initialized with callback doing nothing for simplicity
     setupKeepAlive_();
 
     this->timer_.start();
+
+    }catch(std::exception e)
+    {
+        cerr << e.what() << endl;
+        throw;
+    }
+
 }
 
 void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDelegate produceDelegate, void* state)
