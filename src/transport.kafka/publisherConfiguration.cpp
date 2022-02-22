@@ -2,6 +2,8 @@
 #include "../exceptions/invalidOperationException.h"
 #include "./publisherConfiguration.h"
 
+#include "./kafkaConfBuilder.h"
+
 #include <functional>
 #include <sstream>
 #include <string>
@@ -56,20 +58,53 @@ PublisherConfiguration::PublisherConfiguration(
 
 RdKafka::Conf* PublisherConfiguration::toProducerConfig() const
 {
-
+    KafkaConfBuilder confBuilder;
 
     RdKafka::Conf* conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
 
     for( auto& it : producerProperties_ )
     {
-        std::string errstr;
-        if( conf->set( it.first.c_str() , it.second.c_str(), errstr ) != RdKafka::Conf::CONF_OK )
-        {
-            std::stringstream ss;
-            ss << "Failed assign kafka property (" << errstr << ")";
-            throw InvalidOperationException(ss.str());
-        }
+        confBuilder.set( it.first.c_str(), it.second.c_str() );
     }
 
-    return conf;
+    confBuilder.set( "bootstrap.servers", this->brokerList().c_str() );
+
+    // Queue buffering
+    if( this->queueBufferingMaxKbytes >= 0 ) {
+        confBuilder.set( "queue.buffering.max.kbytes", this->queueBufferingMaxKbytes );
+    }
+    if( this->queueBufferingMaxKbytes >= 0 ) {
+        confBuilder.set( "queue.buffering.max.messages", this->queueBufferingMaxMessages );
+    }
+    if( this->queueBufferingBackpressureThreshold >= 0 ) {
+        confBuilder.set( "queue.buffering.backpressure.threshold", this->queueBufferingBackpressureThreshold );
+    }
+    // queue buffering
+    if( this->lingerMs >= 0 ) {
+        confBuilder.set( "linger.ms", this->lingerMs );
+    }
+
+    if( this->partitioner != Partitioner::Unset ) {
+        confBuilder.set( "partitioner", partitioner2str[ this->partitioner ] );
+    }    
+    if( this->BatchNumMessages >= 0 ) {
+        confBuilder.set( "batch.num.messages", this->BatchNumMessages );
+    }
+    confBuilder.set( "enable.idempotence", this->enableIdempotence );
+    if( this->maxMessageSize >= 0 ) {
+        confBuilder.set( "message.max.bytes", this->maxMessageSize );
+    }
+    if( this->retryBackoffMs >= 0 ) {
+        confBuilder.set( "retry.backoff.ms", this->retryBackoffMs );
+    }
+    if( this->messageTimeoutMs >= 0 ) {
+        confBuilder.set( "message.timeout.ms", this->messageTimeoutMs );
+    }
+    if( this->messageSendMaxRetries >= 0 ) {
+        confBuilder.set( "message.send.max.retries", this->messageSendMaxRetries );
+    }
+
+
+
+    return confBuilder.toConfig();
 }

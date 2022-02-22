@@ -17,9 +17,20 @@ class PublisherConfiguration {
     std::string brokerList_; // The list of brokers as a comma separated list of broker host or host:port.
     std::map<std::string, std::string> producerProperties_;
 
-
+    /// NOTE: must reflect size of Partitioner
+    const char* partitioner2str[5] = {"random", "consistent", "consistent_random", "murmur2", "murmur2_random"};
 
 public:
+
+    enum Partitioner {
+        Unset = -1,
+        Random = 0,
+        Consistent = 1,
+        ConsistentRandom = 2,
+        Murmur2 = 3,
+        Murmur2Random = 4
+    };
+
 
     /**
      * @brief Initializes a new instance of PublisherConfiguration
@@ -97,10 +108,10 @@ public:
     **/
     bool enableIdempotence = false;
 
-    /// <summary>
-    ///     Maximum Kafka protocol request message size in bytes.
-    ///     default: 1000012
-    /// </summary>
+    /**
+     *      Maximum Kafka protocol request message size in bytes.
+     *      default: 1000012
+     */
     int maxMessageSize = 1000012; // https://docs.confluent.io/current/installation/configuration/broker-configs.html
 
 
@@ -130,14 +141,36 @@ public:
     int BatchNumMessages = -1;
         
     /**
-     *  Enable keep alive messages for publisher. Useful to ensure connection isn't idle reaped.
+     *      Enable keep alive messages for publisher. Useful to ensure connection isn't idle reaped.
     **/
     bool keepConnectionAlive = true;
 
     /**
-     *  The keel alive message interval in milliseconds
+     *      The keel alive message interval in milliseconds
     **/
     int keepConnectionAliveInterval = 60000;
+
+    /**
+     *      Delay in milliseconds to wait for messages in the queue to accumulate before constructing message batches
+     *      (MessageSets) to transmit to brokers. A higher value allows larger and more effective (less overhead, improved
+     *      compression) batches of messages to accumulate at the expense of increased message delivery latency.
+     *      default: 0.5
+     * 
+     *      Note: negative means undefined
+     */
+    double lingerMs = -1;
+
+
+    /**
+     *      Partitioner: `random` - random distribution, `consistent` - CRC32 hash of key (Empty and NULL keys are mapped to
+     *      single partition), `consistent_random` - CRC32 hash of key (Empty and NULL keys are randomly partitioned),
+     *      `murmur2` - Java Producer compatible Murmur2 hash of key (NULL keys are mapped to single partition),
+     *      `murmur2_random` - Java Producer compatible Murmur2 hash of key (NULL keys are randomly partitioned. This is
+     *      functionally equivalent to the default partitioner in the Java Producer.).
+     *      default: consistent_random
+     */
+    Partitioner partitioner = Partitioner::Unset;
+
 
 
     /**

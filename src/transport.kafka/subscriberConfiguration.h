@@ -3,10 +3,13 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <unordered_set>
 
 #include <librdkafka/rdkafkacpp.h>
 
 #include "../utils/stringTools.h"
+
+#include "./kafkaConfBuilder.h"
 
 #include "../transport/io/IPublisher.h"
 #include "../exceptions/argumentOutOfRangeException.h"
@@ -18,6 +21,9 @@ namespace Quix { namespace Transport { namespace Kafka  {
 class SubscriberConfiguration {
     std::map<std::string, std::string> consumerProperties_;
 
+    /// NOTE: must reflect size of AutoOffsetReset
+    const char* autoOffsetReset2Str[2] = {"earliest", "latest"};
+
 public:
     /// The list of brokers as a comma separated list of broker host or host:port.
     const std::string brokerList;
@@ -27,8 +33,13 @@ public:
     const std::string groupId;
     /// Enable checking for alive messages for consumer
     bool checkForKeepAlivePackets = true;
+    
+    enum AutoOffsetReset {
+        Unset = -1,
+        Earliest = 0,
+        Latest = 1
+    };
 
-    /// TODO: auto offset reset
     /**
      *      If consumer group is configured, The auto offset reset determines the start offset in the event
      *      there are not yet any committed offsets for the consumer group for the topic/partitions of interest.
@@ -36,8 +47,10 @@ public:
      *  
      *      If no consumer group is configured, the consumption will start according to value set.
      *      If no auto offset reset is set, in case of no consumer group it defaults to end, otherwise to earliest.
+     * 
+     *      NOTE: if we support cpp17 -> use std::optional<>
     **/
-    // public AutoOffsetReset? AutoOffsetReset { get; set; } = null;
+    AutoOffsetReset autoOffsetReset = AutoOffsetReset::Unset;
 
     SubscriberConfiguration( std::string brokerList, std::string groupId = "", std::map<std::string, std::string> consumerProperties = std::map<std::string, std::string>() )
     :
@@ -74,22 +87,27 @@ public:
         }
     }
 
+
+
     RdKafka::Conf* toConsumerConfig() const
     {
-        RdKafka::Conf* conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
+        KafkaConfBuilder confBuilder;
+
+        std::string errstr;
 
         for( auto& it : consumerProperties_ )
         {
-            std::string errstr;
-            if( conf->set( it.first.c_str() , it.second.c_str(), errstr ) != RdKafka::Conf::CONF_OK )
-            {
-                std::stringstream ss;
-                ss << "Failed assign kafka property (" << errstr << ")";
-                throw InvalidOperationException(ss.str());
-            }
+            confBuilder.set( it.first.c_str(), it.second.c_str() );
         }
 
-        return conf;
+        confBuilder.set( "group.id", this->groupId.c_str() );
+        confBuilder.set( "bootstrap.servers", this->brokerList.c_str() );
+
+        const auto autoOffsetResetVal = autoOffsetReset != AutoOffsetReset::Unset ? autoOffsetReset : ( this->consumerGroupSet ? AutoOffsetReset::Earliest : AutoOffsetReset::Latest );
+        confBuilder.set( "auto.offset.reset", autoOffsetReset2Str[ autoOffsetResetVal ] );
+        confBuilder.set( "enable.auto.commit", false );
+
+        return confBuilder.toConfig();
     }
 
 };
