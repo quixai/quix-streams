@@ -50,7 +50,7 @@ void KafkaSubscriber::commit(
 }
 
 std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedContexts(
-    Quix::Object* state, 
+    const Quix::Object* state, 
     const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter
 )
 {
@@ -949,6 +949,88 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
     }
 
 }
+
+// std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
+// {
+//     const auto committedOffsets = dynamic_cast<const CommittedOffsets*>(state);
+//     if( committedOffsets == nullptr ) { throw ArgumentOutOfRangeException("state must be type committed offsets"); }
+
+//     if( committedOffsets->error != RdKafka::ErrorCode::ERR_NO_ERROR ) { 
+//         return std::vector<std::shared_ptr<TransportContext>>(); 
+//     }
+
+//     std::vector<TopicPartitionOffset> commitOffsets;
+//     for( auto& el : committedOffsets->offsets )
+//     {
+//         if( el.error.errCode != RdKafka::ErrorCode::ERR_NO_ERROR ){ continue; }
+//         commitOffsets.push_back( el.topicPartitionOffset );
+//     }
+
+//     if( commitOffsets.empty() ) { 
+//         // they all had error ?
+//         return std::vector<std::shared_ptr<TransportContext>>(); 
+//     }
+
+
+//     // get max offset for each topicpartition
+//     std::unordered_map<TopicPartition, Offset> topicPartitionOffsetValue;
+//     for( auto& el : commitOffsets )
+//     {
+//         auto key = el.topicPartition();
+        
+//         auto it = topicPartitionOffsetValue.find( key );
+//         if( it == topicPartitionOffsetValue.end() )
+//         {
+//             topicPartitionOffsetValue[key] = el.offset();
+//         } 
+//         else 
+//         {
+//             const auto offset = el.offset();
+//             if( it->second < offset )
+//             {
+//                 it->second = offset;
+//             }
+//         }
+//     }
+
+//     std::vector<TopicPartitionOffset> latestCommitOffsets;
+//     for( auto& el : topicPartitionOffsetValue )
+//     {
+//         latestCommitOffsets.push_back( TopicPartitionOffset( el.first, el.second ) );
+//     }
+
+
+//     // Figure out the extent of the contexts
+//     auto contextOffsets = getPartitionOffsets(contextsToFilter, true);
+
+//     KafkaO
+
+
+
+//     // auto grouppedOffsets = VectorTools<TopicPartitionOffset, TopicPartition, TopicPartitionOffset>::groupBy(commitOffsets, [](const TopicPartitionOffset& el){ return el.topicPartition(); });
+
+
+//             // var latestCommitOffsets = commitOffsets.GroupBy(x => x.TopicPartition)
+//             //     .ToDictionary(x => x.Key, x => x.Max(y => y.Offset.Value)).Select(y =>
+//             //         new TopicPartitionOffset(y.Key, y.Value)).ToArray();
+            
+//             // // Figure out the extent of the contexts
+//             // var contextsToFilterEvaluated = contextsToFilter.ToArray();
+//             // var contextOffsets = KafkaOutputExtensions.GetPartitionOffsets(contextsToFilterEvaluated, true).ToArray();
+//             // for (var index = 0; index < contextOffsets.Length; index++)
+//             // {
+//             //     var contextOffset = contextOffsets[index];
+//             //     if (latestCommitOffsets.Any(lco =>
+//             //         lco.TopicPartition.Equals(contextOffset.TopicPartition) && lco.Offset >= contextOffset.Offset))
+//             //     {
+//             //         yield return contextsToFilterEvaluated[index];
+//             //     }
+//             // }
+
+
+
+// }
+
 
 void KafkaSubscriber::addMessage( RdKafka::Message *message  )
 {

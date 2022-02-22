@@ -450,7 +450,7 @@ public:
      */
     OutputTopicConfiguration( 
         const std::string& topic,
-        const std::vector<Partition>& partitions = std::vector<Partition>{ Partition::Any },
+        const std::vector<Partition>& partitions,
         const Offset& offset = Offset::Unset
     )
     :
@@ -458,6 +458,23 @@ public:
     {
 
     };
+
+    /**
+     *      Initializes a new <see cref="OutputTopicConfiguration" /> with a single topic and offset with default partition.
+     *
+     *  @param topic The topic to set the partitions for
+     *  @param offset The offset to use
+     */
+    OutputTopicConfiguration( 
+        const std::string& topic,
+        const Offset& offset
+    )
+    :
+    OutputTopicConfiguration( topic, std::vector<Partition>{ Partition::Any }, offset )
+    {
+
+    };
+
 
     /**
      *      Initializes a new <see cref="OutputTopicConfiguration" /> for a single topic where partitions will be automatically 
@@ -474,7 +491,7 @@ public:
      :
      OutputTopicConfiguration( topic, std::vector<Partition>{ partition }, offset)
     {
-
+        
     };
 
 

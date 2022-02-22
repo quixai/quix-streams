@@ -11,6 +11,8 @@
 
 #include "./IKafkaSubscriber.h"
 
+#include "./kafkaPublisher.h"
+
 #include "../transport/io/ISubscriber.h"
 #include "../transport/fw/ICanCommit.h"
 #include "../transport/fw/IRevocation.h"
@@ -24,7 +26,7 @@ namespace Quix { namespace Transport { namespace Kafka  {
 class ConsumerResult { };
 
 // typedef std::function<void(const std::string&, std::shared_ptr<Quix::Transport::IPackage>)> ProduceDelegate;
-typedef std::function<void(const std::string&, const ByteArray&, void* state)> ProduceDelegate;
+// typedef std::function<void(const std::string&, const ByteArray&, void* state)> ProduceDelegate;
 typedef std::function<bool(const ConsumerResult&)> ShouldSkipConsumeResult;
 
 class TopicPartitionOffsetError
@@ -170,7 +172,7 @@ public:
      * @return Contexts affected by the commit
      * 
      */
-    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
+    std::vector<std::shared_ptr<TransportContext>> filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter);
 
     /**
      * Filters contexts affected by the revocation.

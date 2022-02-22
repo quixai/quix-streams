@@ -26,6 +26,12 @@ public:
         }
         return ret;
     }
+
+    inline static std::map<K, std::vector<V>> groupBy( const std::vector<Inp>& vec, std::function<K(const Inp&)> getKey )
+    {
+        return VectorTools<Inp, K, V>::groupBy(vec, getKey, [](const Inp& el){ return el; });
+    }
+
 };
 
 }

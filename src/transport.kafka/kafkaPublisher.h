@@ -37,6 +37,8 @@ class KafkaPublisher : public IKafkaPublisher {
     CallbackTimer timer_;
     ProduceDelegate produce_;
 
+    bool disposed_ = false;
+
     std::chrono::time_point<std::chrono::system_clock> lastFlush_ = std::chrono::time_point<std::chrono::system_clock>{};
 
 

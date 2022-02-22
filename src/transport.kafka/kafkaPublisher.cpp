@@ -28,7 +28,8 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
     auto topic = topicConfiguration.topic();
     if ( partition == Partition::Any )
     {
-        hbAction_ = [=](){
+        hbAction_ = [this, topic](){
+            if( this->disposed_ ){ return; }
             // this.logger.LogTrace($"Creating admin client to retrieve metadata for keep alive details");
 
             std::string errstr;
@@ -36,16 +37,18 @@ timer_([](){}, Timer::INFINITE, Timer::INFINITE, false)
             if ( !producer_ ) {
                 std::stringstream ss;
                 ss << "Failed to create kafka producer (" << errstr << ")";
+                cerr << ss.str().c_str() << endl;
                 /// TODO: logger
                 return;
                 // throw InvalidOperationException(ss.str());
             }
 
             RdKafka::Metadata* metadata;
-            RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, conf_, errstr);
+            RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, this->conf_, errstr);
             if ( !kafkaTopic ) {
                 std::stringstream ss;
                 ss << "Failed to create kafka topic (" << errstr << ")";
+                cerr << ss.str().c_str() << endl;
                 /// TODO: logger
                 return;
                 // throw InvalidOperationException(ss.str());
@@ -179,7 +182,7 @@ KafkaPublisher::~KafkaPublisher()
     // this is being called in the C# dispose method
     this->close();
 
-
+    this->disposed_ = true;
     if ( conf_ != nullptr )
     { 
         delete conf_;
@@ -222,6 +225,24 @@ void KafkaPublisher::open()
         ss << "Failed to create kafka producer (" << errstr << ")";
         throw InvalidOperationException(ss.str());
     }
+
+
+
+            // // std::string errstr;
+            // auto adminClient = RdKafka::Producer::create(conf_, errstr);
+            // if ( !producer_ ) {
+            //     std::stringstream ss;
+            //     ss << "Failed to create kafka producer (" << errstr << ")";
+            //     cerr << ss.str().c_str() << endl;
+            //     /// TODO: logger
+            //     return;
+            //     // throw InvalidOperationException(ss.str());
+            // }
+
+            // RdKafka::Metadata* metadata;
+            // std::string topic("Messages");
+            // RdKafka::Topic *kafkaTopic = RdKafka::Topic::create(adminClient, topic, this->conf_, errstr);
+
 
     // unlike in C# this one is initialized with callback doing nothing for simplicity
     setupKeepAlive_();
