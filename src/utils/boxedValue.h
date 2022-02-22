@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 
 namespace Quix { 
 
@@ -120,6 +121,25 @@ public:
     {
         return !(*this == other);
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const BoxedValue& tc)
+    {
+        switch( tc.type_ )
+        {
+            case Type::String:
+                os << tc.svalue_.c_str();
+                break;
+            case Type::Long:
+                os << tc.lvalue_;
+                break;
+            case Type::Undefined:
+                os << "???";
+                break;
+            default:
+                throw std::exception();
+        }
+        return os;
+    };
 
 };
 

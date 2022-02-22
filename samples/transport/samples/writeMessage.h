@@ -21,6 +21,9 @@ protected:
     int messageSizeInBytes = 2048;
     int millisecondsInterval = 1000; // interval between messages sent 0 = none
 
+    int publishedCounter = 0;
+    std::mutex publishedCounterLock;
+
     void run();
 
     void sendMessage( Quix::Transport::IPublisher* publisher );

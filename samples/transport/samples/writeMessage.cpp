@@ -4,9 +4,14 @@
 #include "../utils/ptrLock.h"
 
 #include "transport.kafka/kafkaPublisher.h"
+#include "transport.kafka/extensions/kafkaPackageExtensions.h"
 #include "transport/transportPublisher.h"
 
 #include <iostream>
+#include <sstream>
+
+#include <chrono>
+#include <thread>
 
 #include <mutex>
 
@@ -59,7 +64,37 @@ void WriteMessage::sendMessage( IPublisher* publisher )
     {
         auto currentCounter = counter;
 
-        auto package = ByteArrayPackage( ByteArray::initRandom( this->messageSizeInBytes ) );
+        std::shared_ptr<IPackage> package(new ByteArrayPackage( ByteArray::initRandom( this->messageSizeInBytes ) ));
+
+        stringstream ss;
+        int c;
+        {
+            std::lock_guard<std::mutex> lock(publishedCounterLock);
+            c = counter;
+        }
+        ss << "CustomSize " << c << flush;
+        KafkaPackageExtensions<IPackage>( package.get() ).setKey( ss.str() );
+
+        try{
+            publisher->send( package );
+
+            {
+                std::lock_guard<std::mutex> lock(publishedCounterLock);
+                counter++;
+
+                /// TODO: after async task, implement as well published counter
+                publishedCounter++;
+            }
+        }catch(...)
+        {
+            cerr << "Error during send message" << endl;
+        }
+
+        if ( this->millisecondsInterval > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(this->millisecondsInterval));
+        }
+
 
     }
     

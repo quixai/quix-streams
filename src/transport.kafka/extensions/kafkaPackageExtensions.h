@@ -12,6 +12,7 @@
 #include "../../transport/io/IPublisher.h"
 #include "../../transport/io/IPackage.h"
 #include "../../transport/io/byteArray.h"
+#include "../constants.h"
 #include "../IKafkaPublisher.h"
 #include "../topicConfiguration.h"
 #include "../knownKafkaTransportContextKeys.h"
@@ -51,9 +52,9 @@ public:
         return false;
     }
 
-    void setKey( std::string& value )
+    void setKey( const std::string& value )
     {
-        package_->transportContexts()[ KnownKafkaTransportContextKeys::Key ] = value;
+        (*(package_->transportContext()))[ KnownKafkaTransportContextKeys::Key ] = value;
     }
 
     bool isKeepAlivePackage( )

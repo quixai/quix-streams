@@ -3,6 +3,7 @@
 #include "../../utils/boxedValue.h"
 
 #include <map>
+#include <ostream>
 #include <string>
 
 namespace Quix { namespace Transport {
@@ -77,6 +78,17 @@ public:
             return false;
         }
         return true;
+    };
+
+    friend std::ostream& operator<<(std::ostream& os, const TransportContext& tc)
+    {
+        os << ">>>>> TransportContext <<<<<<<" << std::endl;
+        for( auto& el : tc )
+        {
+            os << "[" << el.first.c_str() << "] = " << el.second << std::endl;
+        }
+        os << ">>>>>>>>>>>>>>  <<<<<<<<<<<<<<" << std::endl;
+        return os;
     };
 
 };

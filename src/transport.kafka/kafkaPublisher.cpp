@@ -254,7 +254,7 @@ void KafkaPublisher::sendInternal(std::shared_ptr<IPackage> package, ProduceDele
 
     const auto originalPackage = dynamic_pointer_cast<ByteArrayPackage>(package);
 
-    if( this->producer_ != nullptr ) { return; }
+    if( this->producer_ == nullptr )
     {
         std::lock_guard<std::mutex> guard(openLock_);
         if( this->producer_ != nullptr )

@@ -190,7 +190,7 @@ namespace Quix { namespace Transport {
 
         return 
             std::shared_ptr<ByteArrayPackage>(
-                new ByteArrayPackage(packet)
+                new ByteArrayPackage(packet, originalPackage_->transportContext())
             );
     }
 
