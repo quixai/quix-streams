@@ -327,7 +327,18 @@ void KafkaSubscriber::open()
             kafkaPartitions.push_back( RdKafka::TopicPartition::create( partition.topic(), partition.partition().id, partition.offset().value() ) );
         }
 
-        this->consumer_->assign( kafkaPartitions );
+        auto errCode = this->consumer_->assign( kafkaPartitions );
+        if( errCode != RdKafka::ERR_NO_ERROR)
+        {
+            throw KafkaException( errCode );
+        }
+    } else {
+
+        auto errCode = this->consumer_->subscribe( topicConfiguration_.topics );
+        if( errCode != RdKafka::ERR_NO_ERROR)
+        {
+            throw KafkaException( errCode );
+        }
     }
 
     this->disconnected_ = false;
@@ -429,32 +440,17 @@ void KafkaSubscriber::KafkaRebalanceCb::rebalance_cb(RdKafka::KafkaConsumer *con
 
     if ( err == RdKafka::ERR__ASSIGN_PARTITIONS )
     {
-        // if ( consumer->rebalance_protocol() == "COOPERATIVE" )
-        //     consumer->incremental_assign(partitions);
-        // else
-        //     consumer->assign(partitions);
+        consumer->assign(partitions);
             
         this->parent_->partitionsAssignedHandler(consumer, partitions);
     }
     else if( err == RdKafka::ERR__REVOKE_PARTITIONS ) 
     {
+        consumer->unassign();
 
-        //  if (consumer->rebalance_protocol() == "COOPERATIVE")
-        //    consumer->incremental_unassign(partitions);
-        //  else
-        //    consumer->unassign();
-
-        std::vector< RdKafka::TopicPartition * > p = partitions;                 
-
-        // TODO: missing assignment_lost
-        // if( RdKafka::KafkaConsumer::assignment_lost() )
-        // {
-        //     this->parent_->partitionsLostHandler(consumer, partitions);
-        // }
-        // else 
-        // {
-            this->parent_->partitionsRevokedHandler(consumer, partitions);
-        // }
+        this->parent_->partitionsRevokedHandler(consumer, partitions);
+    }else{
+        std::cerr << "Rebalancing error: "<< RdKafka::err2str( err ) << std::endl;
     }
 
 }
