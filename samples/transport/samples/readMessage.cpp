@@ -16,9 +16,6 @@ using namespace Quix::Transport::Kafka;
 const Quix::Transport::BinaryCodec<ExampleModel> ReadMessage::codec1 = Quix::Transport::BinaryCodec<ExampleModel>();
 
 ReadMessage::ReadMessage()
-:
-inputGroup("Test-Subscriber#2"),
-topicName(Const::PackageTopic)
 {
 
 }
@@ -49,7 +46,6 @@ ISubscriber* ReadMessage::start( bool useConsumerGroup, Quix::Transport::Kafka::
     KafkaSubscriber* kafkaSubscriber = new KafkaSubscriber(*subConfig, *topicConfig);
     kafkaSubscriber->errorOccurred += [](const KafkaException& exception) { 
         cout << "Exception occurred" << endl;
-        // cout << "Exception occurred" << exception << endl;
     };
 
     TransportSubscriber* subscriber = new TransportSubscriber(kafkaSubscriber);

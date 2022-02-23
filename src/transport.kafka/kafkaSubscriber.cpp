@@ -1061,15 +1061,17 @@ void KafkaSubscriber::addMessage( RdKafka::Message *message  )
 
 void KafkaSubscriber::kafkaPollingThread( )
 {
+    cout << "KafkaSubscriber polling thread start" << endl;
     while(threadShouldBeRunning_)
     {
         RdKafka::Message *message = this->consumer_->consume(100);
 
 
-        switch (message->err())
+        auto err = message->err();
+        switch ( err )
         {
             case RdKafka::ERR__TIMED_OUT:
-                break;        
+                break;
 
             case RdKafka::ERR_NO_ERROR:
                 this->addMessage(message);
@@ -1098,6 +1100,8 @@ void KafkaSubscriber::kafkaPollingThread( )
         }
         delete message;
     }
+
+    cout << "KafkaSubscriber polling thread stop" << endl;
 }
 
 void KafkaSubscriber::startWorkerThread( )

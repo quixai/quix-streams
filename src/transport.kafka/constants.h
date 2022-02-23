@@ -11,7 +11,7 @@
 
 namespace Quix { namespace Transport { namespace Kafka  {
 
-class KeepAliveMessage : public IModel{
+class KeepAliveMessage : public ByteArray{
 public:
     KeepAliveMessage( ) { 
     }

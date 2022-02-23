@@ -16,8 +16,8 @@ class ReadMessage /* : public MyThread */
 {
     static const Quix::Transport::BinaryCodec<ExampleModel> codec1;
 
-    const std::string inputGroup;
-    const std::string topicName;
+    const std::string inputGroup = "Test-Subscriber#1";
+    const std::string topicName = Const::MessagesTopic;
 
     std::mutex lock_;
     long long consumerCounter = 0;

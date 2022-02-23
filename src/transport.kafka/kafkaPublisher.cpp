@@ -381,7 +381,7 @@ void KafkaPublisher::sendKeepAlive()
         for( auto topicPartition : this->partitionsToKeepAliveWith_ )
         {
             // logger.LogTrace("Sending keep alive msg to {0}", topicPartition);
-            //TODO:
+
             sendInternal( Constants::keepAlivePackage, produceKeepAlive, &topicPartition );
             // sendInternal(Constants::keepAlivePackage, produceKeepAlive, state: topicPartition).GetAwaiter().GetResult();
             // logger.LogTrace("Sent keep alive msg to {0}", topicPartition);

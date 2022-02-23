@@ -93,8 +93,6 @@ public:
     {
         KafkaConfBuilder confBuilder;
 
-        std::string errstr;
-
         for( auto& it : consumerProperties_ )
         {
             confBuilder.set( it.first.c_str(), it.second.c_str() );
