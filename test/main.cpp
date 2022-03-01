@@ -3,6 +3,12 @@
 #include <google/protobuf/stubs/common.h>   /* google::protobuf::ShutdownProtobufLibrary */
 
 #include <ctime>       /* time */
+#if _WIN32
+  #include <windows.h>
+#else
+  #include <sys/time.h>
+#endif
+
 #include <cstdlib>     /* srand, rand */
 
 

@@ -5,7 +5,8 @@
 #include <map>
 #include <unordered_set>
 
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
 
 #include "../utils/stringTools.h"
 

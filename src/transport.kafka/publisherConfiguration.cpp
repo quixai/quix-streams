@@ -28,10 +28,10 @@ PublisherConfiguration::PublisherConfiguration(
         producerProperties_["log_level"] = std::string("0");
     }
 
-    if ( producerProperties_.find("compression.type") == producerProperties_.end() )
-    {
-        producerProperties_["compression.type"] = std::string("gzip"); // default to gzip
-    }
+    // if ( producerProperties_.find("compression.type") == producerProperties_.end() )
+    // {
+    //     producerProperties_["compression.type"] = std::string("gzip"); // default to gzip
+    // }
         
     if ( producerProperties_.find("socket.keepalive.enable") == producerProperties_.end() )
     {

@@ -3,10 +3,16 @@
 #include <mutex>
 #include <string>
 #include <chrono>
+
 #include <functional>
 #include <memory>
 
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
+
+#if _WIN32
+  #include <windows.h>
+#endif
 
 #include "../../utils/timer.h"
 

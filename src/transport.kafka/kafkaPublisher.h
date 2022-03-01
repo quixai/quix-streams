@@ -1,11 +1,18 @@
 #pragma once
 
+#define __STDC_WANT_LIB_EXT1__ 1
+
 #include <mutex>
 #include <chrono>
+
 #include <functional>
 #include <memory>
 
-#include <librdkafka/rdkafkacpp.h>
+#include <rdkafkacpp.h>
+
+#if _WIN32
+  #include <windows.h>
+#endif
 
 #include "../utils/timer.h"
 

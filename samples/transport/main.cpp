@@ -2,6 +2,12 @@
 #include "./samples/writeMessage.h"
 
 #include <ctime>       /* time */
+#if _WIN32
+    #include <windows.h>
+#else
+    #include <sys/time.h>
+#endif
+
 #include <cstdlib>     /* srand, rand */
 
 

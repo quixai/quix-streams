@@ -2,7 +2,8 @@
 #include "../utils/object.h"
 #include "../utils/state.h"
 
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
 
 #include "./kafkaSubscriber.h"
 #include "./kafkaHelper.h"
@@ -201,7 +202,6 @@ void KafkaSubscriber::open()
         // TODO: logging
         std::cerr << "Failed to create consumer: " << errstr << std::endl;
         return;
-//        exit(1);
     }
 
     std::vector<TopicPartitionOffset> partitions = this->topicConfiguration_.partitions;
@@ -350,7 +350,15 @@ template<typename Clock, typename Duration>
 std::ostream &operator<<(std::ostream &stream,
   const std::chrono::time_point<Clock, Duration> &time_point) {
   const time_t time = Clock::to_time_t(time_point);
-#if __GNUC__ > 4 || \
+#if _WIN32
+    char buffer[26];
+    buffer[25] = '\0';  // Removes the newline that is added
+    errno_t e = ctime_s(buffer, 25, &time);
+    if( e != 0) {
+        return stream << buffer;
+    }
+    return stream;
+#elif __GNUC__ > 4 || \
     ((__GNUC__ == 4) && __GNUC_MINOR__ > 8 && __GNUC_REVISION__ > 1)
   // Maybe the put_time will be implemented later?
   struct tm tm;

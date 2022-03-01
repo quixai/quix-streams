@@ -1,7 +1,8 @@
 #include <sstream>
 #include <string>
 
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
 
 #include "../exceptions/argumentOutOfRangeException.h"
 #include "./kafkaConfBuilder.h"

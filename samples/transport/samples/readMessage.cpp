@@ -89,7 +89,7 @@ void ReadMessage::hookupStatistics()
         auto publishedPerMin = (double)published * 60 / elapsed_s;
 
         cout << "Subscribed Messages: "<<published<<", "<<publishedPerMin<<"/min" << endl;
-    }, Timer::INFINITE, 1000, true);
+    }, Timer::UNSET, 1000, true);
 }
 
 void ReadMessage::newMessageHandler(std::shared_ptr<Quix::Transport::IPackage> package)

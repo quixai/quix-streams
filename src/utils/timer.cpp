@@ -10,17 +10,17 @@ namespace Quix {
             int interval = interval_;
 
             int waitFor;
-            if( delay != INFINITE )
+            if( delay != UNSET )
             {
                 waitFor = delay;
             }
-            else if( interval != INFINITE )
+            else if( interval != UNSET )
             {
                 waitFor = interval;
             }
             else
             {
-                waitFor = INFINITE;
+                waitFor = UNSET;
             }
             return waitFor;
     }
@@ -74,17 +74,17 @@ namespace Quix {
                 int interval = interval_;
                 waitFor;
 
-                if( delay != INFINITE )
+                if( delay != UNSET )
                 {
                     waitFor = delay;
                 }
-                else if( waitFor != INFINITE )
+                else if( waitFor != UNSET )
                 {
                     waitFor = interval;
                 }
                 else
                 {
-                    waitFor = INFINITE;
+                    waitFor = UNSET;
                 }
 
                 //// check elapsed time
@@ -93,9 +93,9 @@ namespace Quix {
                 if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
                 {
                     // if it is only timeout then reset timer for timeout
-                    if( delay != INFINITE )
+                    if( delay != UNSET )
                     {
-                        delay_ = INFINITE;
+                        delay_ = UNSET;
                     }
 
                     executeFunction = true;
@@ -153,8 +153,8 @@ namespace Quix {
 
         lastRun_ = std::chrono::system_clock::now();
 
-        delay_ = INFINITE;
-        interval_ = INFINITE;
+        delay_ = UNSET;
+        interval_ = UNSET;
 
         cond_.notify_all();
     }

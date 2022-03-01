@@ -2,7 +2,8 @@
 
 #include <string>
 #include <functional>
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
 
 namespace Quix { namespace Transport {
 

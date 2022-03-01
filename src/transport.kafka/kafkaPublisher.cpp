@@ -20,7 +20,7 @@ KafkaPublisher::KafkaPublisher(const PublisherConfiguration& publisherConfigurat
 :
 publisherConfiguration_(publisherConfiguration),
 setupKeepAlive_([](){}),
-timer_([](){}, Timer::INFINITE, Timer::INFINITE, false),
+timer_([](){}, Timer::UNSET, Timer::UNSET, false),
 conf_( publisherConfiguration.toProducerConfig() )
 {
 
@@ -149,7 +149,7 @@ conf_( publisherConfiguration.toProducerConfig() )
 
         /// TODO: this uses Threading interval so once we rewrite Timer, then this needs to stay in separate thread
         timer_.setAction(std::bind(&KafkaPublisher::sendKeepAlive, this));
-        timer_.change(Timer::INFINITE, publisherConfiguration.keepConnectionAliveInterval);
+        timer_.change(Timer::UNSET, publisherConfiguration.keepConnectionAliveInterval);
     }
 
 };

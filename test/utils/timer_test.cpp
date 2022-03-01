@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <mutex>
 #include <chrono>         // std::chrono::seconds
+#if _WIN32
+  #include <windows.h>
+#endif
+
 #include <thread>         // std::this_thread::sleep_for
 
 

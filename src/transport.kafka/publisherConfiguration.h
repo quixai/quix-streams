@@ -3,7 +3,9 @@
 #include <string>
 #include <map>
 
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
+
 #include "../transport/io/IPublisher.h"
 #include "./IKafkaPublisher.h"
 

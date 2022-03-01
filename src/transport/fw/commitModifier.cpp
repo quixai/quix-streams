@@ -19,7 +19,7 @@ namespace Quix { namespace Transport {
 
     void CommitModifier::onCommitIntervalCallback()
     {
-        this->commitTimer_.change(CallbackTimer::INFINITE, CallbackTimer::INFINITE); // Disable flush timer
+        this->commitTimer_.change(CallbackTimer::UNSET, CallbackTimer::UNSET); // Disable flush timer
 
         {
             std::lock_guard<std::mutex> guard(commitCheckLock_);        
@@ -77,7 +77,7 @@ namespace Quix { namespace Transport {
         {
             commitTimer_.setAction(
                                 [=](){
-                    this->commitTimer_.change(Timer::INFINITE, Timer::INFINITE);   //disable flush timer
+                    this->commitTimer_.change(Timer::UNSET, Timer::UNSET);   //disable flush timer
 
                     /// commitCheckLock
                     {
@@ -111,7 +111,7 @@ namespace Quix { namespace Transport {
 
                     if( this->closed_ ) { return; }
 
-                    this->commitTimer_.change(commitInterval, Timer::INFINITE);   //disable flush timer
+                    this->commitTimer_.change(commitInterval, Timer::UNSET);   //disable flush timer
                 }
             );
             commitTimer_.change(commitInterval);
@@ -416,7 +416,7 @@ namespace Quix { namespace Transport {
         closed_ = true;
         onClose();
 
-        commitTimer_.change(Timer::INFINITE, Timer::INFINITE);
+        commitTimer_.change(Timer::UNSET, Timer::UNSET);
     }
 
     void CommitModifier::acknowledgeTransportContext(const std::vector<std::shared_ptr<TransportContext>>& acknowledge)

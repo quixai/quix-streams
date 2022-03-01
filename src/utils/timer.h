@@ -7,6 +7,10 @@
 #include <mutex>
 #include <vector>
 #include <chrono>
+#if _WIN32
+  #include <windows.h>
+#endif
+
 #include <functional>
 #include <condition_variable>
 #include <thread>
@@ -38,8 +42,8 @@ class Timer {
 
     std::mutex changePropsLock_;
     bool autoStart_;
-    int delay_ = INFINITE;
-    int interval_ = INFINITE;
+    int delay_ = UNSET;
+    int interval_ = UNSET;
 
     std::chrono::duration<double, std::nano> calculateNextWait(int waitFor) const;
     int calculateNextWaitTime() const;
@@ -47,15 +51,15 @@ class Timer {
     void run();
 
 public:
-    static const int INFINITE = INT_MAX;
 
-    void change(int delay = INFINITE, int interval = INFINITE);
+    static const int UNSET = INT_MAX;
+    void change(int delay = UNSET, int interval = UNSET);
 
     void stop();
     void start();
 
     // Timer(std::function<void()> cbk, int delay = INFINITE, int interval = INFINITE);
-    Timer(int delay = INFINITE, int interval = INFINITE, bool autoStart = true);
+    Timer(int delay = UNSET, int interval = UNSET, bool autoStart = true);
 
     virtual void callback() = 0;
 
@@ -67,7 +71,7 @@ public:
 class CallbackTimer : public Timer{
     std::function<void()> cbk_;
     public:
-        CallbackTimer(std::function<void()> cbk_ = [](){}, int delay = INFINITE, int interval = INFINITE, bool autoStart = true);
+        CallbackTimer(std::function<void()> cbk_ = [](){}, int delay = UNSET, int interval = UNSET, bool autoStart = true);
         void setAction(std::function<void()> cbk);
         void callback();
 };

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <mutex>
-#include <librdkafka/rdkafkacpp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <rdkafkacpp.h>
 
 #include "../transport/io/ISubscriber.h"
 #include "../transport/io/package.h"
