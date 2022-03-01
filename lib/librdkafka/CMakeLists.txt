@@ -54,7 +54,7 @@ IF (WIN32)
     # set(RDKAFKA_BUILD_STATIC ON CACHE BOOL "")
     # set(RDKAFKA_BUILD_STATIC ON CACHE BOOL "")
     set(RDKAFKA_BUILD_STATIC ON)
-,,,
+
     add_subdirectory(repo)
 
     # set_property(TARGET rdkafka PROPERTY
