@@ -21,7 +21,7 @@ template<typename T1, typename std::enable_if<std::is_base_of<Quix::Transport::I
 std::shared_ptr< Quix::Transport::IPackage > createPackage( const T1& value, std::shared_ptr< Quix::Transport::TransportContext > transportContext )
 {
     //arrange
-    static BinaryCodec<T1> codec1;
+    static Quix::Transport::BinaryCodec<T1> codec1;
 
     auto registry = Quix::Transport::CodecRegistry::instance();
     registry->registerCodec( Quix::Transport::ModelKey::forType<T1>() , &codec1 );
