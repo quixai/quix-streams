@@ -3,7 +3,6 @@
 #include <string>
 #include <map>
 
-#define __STDC_WANT_LIB_EXT1__ 1
 #include <rdkafkacpp.h>
 
 #include "../transport/io/IPublisher.h"
@@ -72,14 +71,6 @@ public:
     int queueBufferingMaxKbytes = -1;
 
     /**
-     *      Delay in milliseconds to wait for messages in the queue to accumulate before constructing message batches
-     *      (MessageSets) to transmit to brokers. A higher value allows larger and more effective (less overhead, improved
-     *      compression) batches of messages to accumulate at the expense of increased message delivery latency.
-     *      default: 0.5
-     *      Note: negative means undefined
-    **/
-
-    /**
      *      How many times to retry sending a failing Message. **Note:** retrying may cause reordering unless ` <see cref="EnableIdempotence" />` is set to true.
      *      default: 2
      *      Note: negative means undefined
@@ -94,16 +85,6 @@ public:
      *      Note: negative means undefined
     **/
     int messageTimeoutMs = -1;
-
-        // /// <summary>
-        // ///     Partitioner: `random` - random distribution, `consistent` - CRC32 hash of key (Empty and NULL keys are mapped to
-        // ///     single partition), `consistent_random` - CRC32 hash of key (Empty and NULL keys are randomly partitioned),
-        // ///     `murmur2` - Java Producer compatible Murmur2 hash of key (NULL keys are mapped to single partition),
-        // ///     `murmur2_random` - Java Producer compatible Murmur2 hash of key (NULL keys are randomly partitioned. This is
-        // ///     functionally equivalent to the default partitioner in the Java Producer.).
-        // ///     default: consistent_random
-        // /// </summary>
-        // public Partitioner? Partitioner { get; set; }
 
     /**
      *      When set to `true`, the producer will ensure that messages are successfully produced exactly once and in the

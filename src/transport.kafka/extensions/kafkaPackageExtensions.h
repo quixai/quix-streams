@@ -1,7 +1,5 @@
 #pragma once
 
-#define __STDC_WANT_LIB_EXT1__ 1
-
 #include <mutex>
 #include <chrono>
 #if _WIN32
@@ -42,6 +40,12 @@ public:
 
     }
 
+    /**
+     *  Retrieves the Kafka key from the package according to the Kafka protocol
+     * 
+     *  @param out output variable containing key
+     *  @returns boolean if key was found and set into out variable
+     **/
     bool tryGetKey( std::string& out )
     {
         auto& transportContext = package_->transportContext();
@@ -58,6 +62,11 @@ public:
         return false;
     }
 
+    /**
+     *  Sets the Kafka key for the package according to the Kafka protocol
+     * 
+     *  @param value The kafka key
+     **/
     void setKey( const std::string& value )
     {
         (*(package_->transportContext()))[ KnownKafkaTransportContextKeys::Key ] = value;

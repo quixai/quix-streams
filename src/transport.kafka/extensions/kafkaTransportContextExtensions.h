@@ -7,7 +7,6 @@
 #include <functional>
 #include <memory>
 
-#define __STDC_WANT_LIB_EXT1__ 1
 #include <rdkafkacpp.h>
 
 #if _WIN32
@@ -38,6 +37,15 @@ public:
 
     }
 
+    /**
+     * @brief Retrieves kafka commit details from the specified transport context
+     * 
+     * @param topic Topic name
+     * @param partition Partition id within topic
+     * @param offset Offset within topic and partition
+     * 
+     * @return boolean if retrieval was successful
+     **/
     bool tryGetKafkaCommitDetails(std::string& topic, int& partition, int64_t& offset) const
     {
         if( !context_->tryGetValue( KnownKafkaTransportContextKeys::Topic, topic ) )

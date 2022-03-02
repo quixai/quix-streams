@@ -2,7 +2,6 @@
 #include "../utils/object.h"
 #include "../utils/state.h"
 
-#define __STDC_WANT_LIB_EXT1__ 1
 #include <rdkafkacpp.h>
 
 #include "./kafkaSubscriber.h"

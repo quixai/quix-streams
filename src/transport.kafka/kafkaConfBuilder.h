@@ -1,6 +1,5 @@
 #pragma once
 
-#define __STDC_WANT_LIB_EXT1__ 1
 #include <rdkafkacpp.h>
 
 namespace Quix { namespace Transport { namespace Kafka  {
@@ -13,8 +12,8 @@ namespace Quix { namespace Transport { namespace Kafka  {
  */
 class KafkaConfBuilder {
 
-    RdKafka::Conf* conf_;
-    RdKafka::Conf* topicConf_;
+    RdKafka::Conf* conf_; //global ( non-topic specific ) configuration
+    RdKafka::Conf* topicConf_; // topic specific configuration
 
     
 
@@ -39,7 +38,9 @@ public:
         };
 
 
+        // returns global ( non-topic specific ) RdKafka::conf configuration 
         RdKafka::Conf* global() const { return global_; };
+        // returns topic specific RdKafka::conf configuration 
         RdKafka::Conf* topic() const { return topic_; };
 
     };

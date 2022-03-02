@@ -28,6 +28,7 @@ PublisherConfiguration::PublisherConfiguration(
         producerProperties_["log_level"] = std::string("0");
     }
 
+    // TODO: enable gzip in kafka build
     // if ( producerProperties_.find("compression.type") == producerProperties_.end() )
     // {
     //     producerProperties_["compression.type"] = std::string("gzip"); // default to gzip
