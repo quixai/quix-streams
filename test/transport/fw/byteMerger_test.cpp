@@ -13,10 +13,10 @@
 using namespace std;
 using namespace Quix::Transport;
 
-void getSplitData(vector<shared_ptr<ByteArrayPackage>>& splitData, shared_ptr<ByteArrayPackage>& originalData)
+void getSplitData(vector<shared_ptr<ByteArrayPackage>>& splitData, shared_ptr<ByteArrayPackage>& originalData, size_t splitterLen = 50, size_t len = 0)
 {
-    ByteSplitter splitter(50);
-    auto length = splitter.absoluteMaxMessageSize() - 10; // just a bit less than max;
+    ByteSplitter splitter(splitterLen);
+    auto length = len != 0 ? len : splitter.absoluteMaxMessageSize() - 10 ; // just a bit less than max;
 
     originalData = shared_ptr<ByteArrayPackage>(
                         new ByteArrayPackage(ByteArray::initRandom(length))
@@ -85,6 +85,40 @@ TEST(byteMergerTest, Merge_WithSplitDataNotLastMessageFullPackets_ShouldReturnNu
         auto result = merger.tryMerge(segment, string(""), outPackage);
         ASSERT_FALSE( result );
         ASSERT_EQ( outPackage.get(), nullptr );
+    }
+
+}
+
+TEST(byteMergerTest, Merge_WithSplitDataNotLastMessage_VariousSize) 
+{
+    // Arrange
+    ByteMerger merger;  
+    vector<shared_ptr<ByteArrayPackage>> splitData;
+    shared_ptr<ByteArrayPackage> originalData( nullptr );
+
+    for( int totalLen = 17; totalLen < 200; totalLen++) {
+        getSplitData(splitData, originalData, 15, totalLen);
+
+        // Act & Assert
+        for( size_t index = 0; index < splitData.size() - 1; ++index )
+        {
+            if( index >= splitData.size() - 1 )
+            {
+                // last message is tested elsewhere
+                break;
+            }
+            auto& segment = splitData[index];
+
+            shared_ptr<ByteArrayPackage> outPackage(nullptr);
+            auto result = merger.tryMerge(segment, string(""), outPackage);
+            ASSERT_FALSE( result );
+            ASSERT_EQ( outPackage.get(), nullptr );
+        }
+
+        shared_ptr<ByteArrayPackage> outPackage(nullptr);
+        auto result = merger.tryMerge(splitData[splitData.size() - 1], string(""), outPackage);
+        ASSERT_TRUE( result );
+        ASSERT_EQ( outPackage->value(), originalData->value() );        
     }
 
 }

@@ -80,14 +80,14 @@ namespace Quix { namespace Transport {
             );            
         }
 
-        uint8_t maxIndex = ceil( originalLen / (float)maxMessageSizeWithoutHeader_ );
+        uint8_t maxIndex = ( originalLen - 1 ) / maxMessageSizeWithoutHeader_;
 
         //curIndex is maxIndex + 1
         return IByteSplitter::Iterator(
             originalPackage,                //originalPackage
             maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
             0,              //messageId does not matter
-            maxIndex
+            maxIndex + 1
         );
     };
 
@@ -99,7 +99,7 @@ namespace Quix { namespace Transport {
         while( dataIt != dataEnd )
         {
             ret.push_back(*dataIt);
-            ++dataIt;
+            dataIt++;
         }
         return ret;
     }
@@ -155,7 +155,7 @@ namespace Quix { namespace Transport {
         const size_t originalLen = originalValue.len();
 
         uint8_t curIndex = curIndex_;
-        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+        uint8_t maxIndex = (originalLen - 1) / maxMessageSizeWithoutHeader_;
 
 
         ByteSplitProtocolHeader packetHeader(messageId_, curIndex, maxIndex);
