@@ -98,6 +98,11 @@ public:
         return !(*this == other);
     };
 
+    friend std::ostream& operator<<(std::ostream& os, const Partition& partition)
+    {
+        os << "Partition["<< partition.id << "]";
+        return os;
+    };
 
 };
 

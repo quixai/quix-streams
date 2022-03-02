@@ -159,7 +159,6 @@ std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterRevokedCon
 
 void KafkaSubscriber::close( )
 {
-
     if ( this->consumer_ == nullptr ) { return; }
 
     std::lock_guard<std::mutex> guard( consumerLock_ );
@@ -172,7 +171,7 @@ void KafkaSubscriber::close( )
     this->consumer_ = nullptr;
 
     cons->close();
-    delete cons; // can't close before we're done returning from consumer.consume due to AccessViolationException, so
+    delete cons;    // can't close before we're done returning from consumer.consume due to AccessViolationException, so
                     // while it would look like we could close consumer sooner than this, we can't really.
     closing_ = false;
 }
@@ -190,10 +189,12 @@ void KafkaSubscriber::open()
     std::string errstr;
     if( this->config_->global()->set("event_cb", &eventCallback_, errstr) != RdKafka::Conf::ConfResult::CONF_OK )
     {
+        // TODO: logging and maybe throw kafka error
         std::cerr << "Failed to set event_cb: " << errstr << std::endl;
     }
     if( this->config_->global()->set("rebalance_cb", &rebalanceCallback_, errstr ) != RdKafka::Conf::ConfResult::CONF_OK )
     {
+        // TODO: logging and maybe throw kafka error
         std::cerr << "Failed to set rebalance_cb: " << errstr << std::endl;
     }
 
@@ -243,7 +244,6 @@ void KafkaSubscriber::open()
             std::vector<TopicPartitionOffset> newPartitions;
 
             std::vector<RdKafka::TopicPartition *> kafkaPartitions;
-            // todo: catch 
             this->consumer_->assignment(kafkaPartitions);
 
             for( auto& partition : partitions )
@@ -261,10 +261,9 @@ void KafkaSubscriber::open()
                     auto errCode = this->consumer_->metadata(false, topic, &metadata, 10*1000);
                     if( errCode != RdKafka::ErrorCode::ERR_NO_ERROR )
                     {
-                        // todo: EXCEPTION
-
-                        throw std::exception();
-                        // throw InvalidOperationException(std::string("Failed to retrieve metadata for topic '{partition.Topic}' with partition {partition.Partition}. Try again or specify partitions explicitly.") + errstr);
+                        stringstream ss;
+                        ss << "Failed to retrieve metadata for topic '" << partition.topic() << "' with partition " << partition.partition() << ". Try again or specify partitions explicitly. " << RdKafka::err2str(errCode) << flush;
+                        throw InvalidOperationException( ss.str() );
                     }
 
                     const auto topics = metadata->topics();
@@ -332,7 +331,9 @@ void KafkaSubscriber::open()
         {
             throw KafkaException( errCode );
         }
-    } else {
+    } 
+    else
+    {
 
         auto errCode = this->consumer_->subscribe( topicConfiguration_.topics );
         if( errCode != RdKafka::ERR_NO_ERROR)
@@ -393,35 +394,15 @@ void KafkaSubscriber::KafkaEventCb::event_cb(RdKafka::Event &event)
 
     switch (event.type()) {
         case RdKafka::Event::EVENT_ERROR:
-//         if (event.fatal()) {
-//             std::cerr << "FATAL ";
-// //            run = 0;
-//         }
-        // std::cerr << "ERROR (" << RdKafka::err2str(event.err())
-        //             << "): " << event.str() << std::endl;
             subscriber_->onErrorOccurred( KafkaException( event.err() ) );
         break;
 
-        // case RdKafka::Event::EVENT_STATS:
-        //     std::cerr << "\"STATS\": " << event.str() << std::endl;
-        // break;
-
-        // case RdKafka::Event::EVENT_LOG:
-        // fprintf(stderr, "LOG-%i-%s: %s\n", event.severity(), event.fac().c_str(),
-        //         event.str().c_str());
-        // break;
-
-        // case RdKafka::Event::EVENT_THROTTLE:
-        // std::cerr << "THROTTLED: " << event.throttle_time() << "ms by "
-        //             << event.broker_name() << " id " << (int)event.broker_id()
-        //             << std::endl;
-        // break;
-
         default:
-        print_time();
-        std::cerr << "EVENT " << event.type() << " ("
-                    << RdKafka::err2str(event.err()) << "): " << event.str()
-                    << std::endl;
+            print_time();
+            // todo: logger
+            std::cerr << "EVENT " << event.type() << " ("
+                        << RdKafka::err2str(event.err()) << "): " << event.str()
+                        << std::endl;
         break;
     }
 }
@@ -429,6 +410,7 @@ void KafkaSubscriber::KafkaEventCb::event_cb(RdKafka::Event &event)
 void KafkaSubscriber::KafkaOffsetCommitCb::offset_commit_cb(RdKafka::ErrorCode err,
                                 std::vector<RdKafka::TopicPartition*>&offsets)
 {
+    // todo: logger
     std::cerr << "KafkaSubscriber::KafkaOffsetCommitCb::offset_commit_cb(): " << RdKafka::err2str(err) << "\n";
 
     this->parent_->automaticOffsetCommitedHandler(offsets, err);
@@ -439,11 +421,11 @@ void KafkaSubscriber::KafkaRebalanceCb::rebalance_cb(RdKafka::KafkaConsumer *con
                     RdKafka::ErrorCode err,
                     std::vector<RdKafka::TopicPartition *> &partitions)
 {
+    // todo: logger
     std::cerr << "RebalanceCb: " << RdKafka::err2str(err) << ": ";
 
     part_list_print(partitions);
 
-    // RdKafka::Error *error      = NULL;
     RdKafka::ErrorCode ret_err = RdKafka::ERR_NO_ERROR;
 
     if ( err == RdKafka::ERR__ASSIGN_PARTITIONS )
@@ -457,7 +439,10 @@ void KafkaSubscriber::KafkaRebalanceCb::rebalance_cb(RdKafka::KafkaConsumer *con
         consumer->unassign();
 
         this->parent_->partitionsRevokedHandler(consumer, partitions);
-    }else{
+    }
+    else
+    {
+        // todo: logger
         std::cerr << "Rebalancing error: "<< RdKafka::err2str( err ) << std::endl;
     }
 
@@ -539,7 +524,7 @@ void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
                     return;
                 }
         //         this.logger.LogWarning(exception, $"Connection timed out (after {ms}ms in state UP). Kafka will reconnect.");
-        //          return;
+                 return;
             }
         }        
     }
@@ -598,7 +583,6 @@ void KafkaSubscriber::commitOffsets()
     }
     catch (KafkaException ex)
     {
-        /// TODO: make state hold the shared_ptr
         State<CommittedOffsets> st = getCommittedOffsets( std::vector<TopicPartitionOffset>() );
         this->onCommitted( 
             this, 
@@ -625,119 +609,131 @@ std::vector<TopicPartitionOffset> KafkaSubscriber::createTopicPartitionOffsetLis
 
 void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer, const std::vector< RdKafka::TopicPartition * >& partitions)
 {
-    auto topicPartitionOffsets = this->createTopicPartitionOffsetList(partitions);
+    try{
+        auto topicPartitionOffsets = this->createTopicPartitionOffsetList(partitions);
 
-    auto lrs = this->lastRevokingState;
-    this->lastRevokeCancelAction_();
+        auto lrs = this->lastRevokingState;
+        this->lastRevokeCancelAction_();
 
-    auto assignedPartitions = topicPartitionOffsets;
+        auto assignedPartitions = topicPartitionOffsets;
 
-    if( !lrs.empty() )
-    {
-        std::map<TopicPartitionOffset, TopicPartitionOffset> sameTopicPartitionsMapToOffset;
-        std::map<TopicPartitionOffset, RdKafka::TopicPartition* > sameTopicPartitionsMapToKafkaPartition;
-        std::set<TopicPartitionOffset> sameTopicPartitionsSet;
-        auto index = 0;
-        for( auto& el : topicPartitionOffsets )
+        if( !lrs.empty() )
         {
-            auto tp = TopicPartitionOffset(el.topic(), el.partition());
-            sameTopicPartitionsSet.insert(tp);
-            sameTopicPartitionsMapToOffset.emplace(tp, el);
-            sameTopicPartitionsMapToKafkaPartition.emplace(tp, partitions[index]);
-            index++;
-        }
-
-        std::set<TopicPartitionOffset> lrsset;
-        for( auto& el : this->lastRevokingState )
-        {
-            lrsset.insert(TopicPartitionOffset(el.topic(), el.partition()));
-        }
-
-        std::vector<TopicPartitionOffset> sameTopicPartitions;
-        std::set_intersection( sameTopicPartitionsSet.begin(), sameTopicPartitionsSet.end(), lrsset.begin(), lrsset.end(),  std::back_inserter(sameTopicPartitions) );
-
-
-        std::vector<TopicPartitionOffset> sameAsPreviously;
-        std::vector<ShouldSkipConsumeResult> seekFuncs;
-
-        for ( auto& topicPartitionOffset : sameTopicPartitions)
-        {
-            Offset currentPosition( sameTopicPartitionsMapToOffset[topicPartitionOffset].offset() );
-
-            const auto kafkapartition = sameTopicPartitionsMapToKafkaPartition[topicPartitionOffset];
-
-            std::vector<RdKafka::TopicPartition*> kafkaarr;
-            consumer->position(kafkaarr);
-
-            if ( !(currentPosition.value() == kafkapartition->offset()) )
+            std::map<TopicPartitionOffset, TopicPartitionOffset> sameTopicPartitionsMapToOffset;
+            std::map<TopicPartitionOffset, RdKafka::TopicPartition* > sameTopicPartitionsMapToKafkaPartition;
+            std::set<TopicPartitionOffset> sameTopicPartitionsSet;
+            auto index = 0;
+            for( auto& el : topicPartitionOffsets )
             {
-                if( !currentPosition.isSpecial() )
-                {
-
-                    seekFuncs.push_back([=](const ConsumerResult& cr){
-                    //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
-                        auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic(), topicPartitionOffset.partition().id, topicPartitionOffset.offset().value());
-                        this->consumer_->seek(*partition, -1);
-
-                        auto is = topicPartitionOffset.topic() == partition->topic() && topicPartitionOffset.partition().id == partition->partition() && topicPartitionOffset.offset().value() <= partition->offset(); 
-                        delete partition;
-                        return is;
-                    });
-
-                }
-                else
-                {
-                    continue; // Do not add it to same as previous
-                }
+                auto tp = TopicPartitionOffset(el.topic(), el.partition());
+                sameTopicPartitionsSet.insert(tp);
+                sameTopicPartitionsMapToOffset.emplace(tp, el);
+                sameTopicPartitionsMapToKafkaPartition.emplace(tp, partitions[index]);
+                index++;
             }
-            sameAsPreviously.push_back(sameTopicPartitionsMapToOffset[topicPartitionOffset]);
 
-        }
-
-
-        if( seekFuncs.size() > 0 )
-        {
-            this->seekFunc = [=](const ConsumerResult& cr)
+            std::set<TopicPartitionOffset> lrsset;
+            for( auto& el : this->lastRevokingState )
             {
-                bool skip = false;
-                for ( auto& func : seekFuncs )
+                lrsset.insert(TopicPartitionOffset(el.topic(), el.partition()));
+            }
+
+            std::vector<TopicPartitionOffset> sameTopicPartitions;
+            std::set_intersection( sameTopicPartitionsSet.begin(), sameTopicPartitionsSet.end(), lrsset.begin(), lrsset.end(),  std::back_inserter(sameTopicPartitions) );
+
+
+            std::vector<TopicPartitionOffset> sameAsPreviously;
+            std::vector<ShouldSkipConsumeResult> seekFuncs;
+
+            for ( auto& topicPartitionOffset : sameTopicPartitions)
+            {
+                Offset currentPosition( sameTopicPartitionsMapToOffset[topicPartitionOffset].offset() );
+
+                const auto kafkapartition = sameTopicPartitionsMapToKafkaPartition[topicPartitionOffset];
+
+                std::vector<RdKafka::TopicPartition*> kafkaarr;
+                consumer->position(kafkaarr);
+
+                if ( !(currentPosition.value() == kafkapartition->offset()) )
                 {
-                    skip = func(cr) || skip; // order is important
+                    if( !currentPosition.isSpecial() )
+                    {
+
+                        seekFuncs.push_back([=](const ConsumerResult& cr){
+                        //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
+                            auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic(), topicPartitionOffset.partition().id, topicPartitionOffset.offset().value());
+                            this->consumer_->seek(*partition, -1);
+
+                            auto is = topicPartitionOffset.topic() == partition->topic() && topicPartitionOffset.partition().id == partition->partition() && topicPartitionOffset.offset().value() <= partition->offset(); 
+                            delete partition;
+                            return is;
+                        });
+
+                    }
+                    else
+                    {
+                        continue; // Do not add it to same as previous
+                    }
                 }
+                sameAsPreviously.push_back(sameTopicPartitionsMapToOffset[topicPartitionOffset]);
 
-                this->seekFunc = [=](const ConsumerResult& cr){ return true; };
-                return skip;
-            }; // reset after seeking
-        }
+            }
 
-        State<std::vector<TopicPartitionOffset>> revoked;
-        std::set_difference( lrs.begin(), lrs.end(), sameAsPreviously.begin(), sameAsPreviously.end(), std::back_inserter(revoked) );
 
-        if( revoked.size() > 0 )
-        {
+            if( seekFuncs.size() > 0 )
+            {
+                this->seekFunc = [=](const ConsumerResult& cr)
+                {
+                    bool skip = false;
+                    for ( auto& func : seekFuncs )
+                    {
+                        skip = func(cr) || skip; // order is important
+                    }
+
+                    this->seekFunc = [=](const ConsumerResult& cr){ return true; };
+                    return skip;
+                }; // reset after seeking
+            }
+
+            State<std::vector<TopicPartitionOffset>> revoked;
+            std::set_difference( lrs.begin(), lrs.end(), sameAsPreviously.begin(), sameAsPreviously.end(), std::back_inserter(revoked) );
+
+            if( revoked.size() > 0 )
+            {
+                // if (this.logger.IsEnabled(LogLevel.Debug))
+                // {
+                //     foreach (var partition in revoked)
+                //     {
+                //         this.logger.LogDebug("Partition revoked: {0}", partition.ToString());
+                //     }
+                // }
+                this->onRevoked(this, OnRevokedEventArgs(&revoked));
+            }
+
             // if (this.logger.IsEnabled(LogLevel.Debug))
             // {
-            //     foreach (var partition in revoked)
+            //     foreach (var partition in sameAsPreviously)
             //     {
-            //         this.logger.LogDebug("Partition revoked: {0}", partition.ToString());
+            //         assignedPartitions.Remove(partition.TopicPartition);
+            //         this.logger.LogDebug("Partition re-assigned: {0}", partition.ToString());
             //     }
             // }
-            this->onRevoked(this, OnRevokedEventArgs(&revoked));
+
+
         }
 
         // if (this.logger.IsEnabled(LogLevel.Debug))
         // {
-        //     foreach (var partition in sameAsPreviously)
+        //     foreach (var partition in assignedPartitions)
         //     {
-        //         assignedPartitions.Remove(partition.TopicPartition);
-        //         this.logger.LogDebug("Partition re-assigned: {0}", partition.ToString());
+        //         this.logger.LogDebug("Partition Assigned: {0}", partition.ToString());
         //     }
         // }
-
-
     }
-
-    // TODO
+    catch(...)
+    {
+        // logger.LogError("Exception occurred in PartitionsAssignedHandler", ex);
+    }
 }
 
 void KafkaSubscriber::partitionsLostHandler(RdKafka::KafkaConsumer *consumer, const std::vector< RdKafka::TopicPartition * >& partitions)
@@ -774,7 +770,8 @@ void KafkaSubscriber::partitionsRevokedHandler(RdKafka::KafkaConsumer *consumer,
     State<std::vector<TopicPartitionOffset>> state(topicPartitionOffsets);
     this->onRevoking( this, IRevocationPublisher::OnRevokingEventArgs(&state) );
 
-    for(auto &it : topicPartitionOffsets){
+    for(auto &it : topicPartitionOffsets)
+    {
         this->lastRevokingState.push_back(it);
     }
 
@@ -814,9 +811,10 @@ void KafkaSubscriber::partitionsRevokedHandler(RdKafka::KafkaConsumer *consumer,
     else
     {
         this->lastRevokeCompleteAction_();
-        // todo: 
+
+        // todo: after async implemented
         // Task.Delay(revokeTimeoutPeriodInMs, cts.Token).ContinueWith(t => lastRevokeCompleteAction(),
-        //     TaskContinuationOptions.OnlyOnRanToCompletion);        
+        // TaskContinuationOptions.OnlyOnRanToCompletion);        
     }
 
 }
@@ -830,7 +828,6 @@ void KafkaSubscriber::automaticOffsetCommitedHandler(const std::vector< RdKafka:
     //         logger.LogTrace("Auto committed offset {0} for Topic {1}, Partition {2}, with result {3}", committedOffset.Offset, committedOffset.Topic, committedOffset.Partition, committedOffset.Error);   
     //     }
     // }
-
 }
 
 
@@ -842,7 +839,6 @@ CommittedOffsets KafkaSubscriber::getCommittedOffsets( const std::vector<TopicPa
         tpoe.push_back( TopicPartitionOffsetError( offset, KafkaException( RdKafka::ERR_NO_ERROR ) ) );
     }
     return CommittedOffsets( tpoe, KafkaException( RdKafka::ERR_NO_ERROR ) ) ;
-    // return CommittedOffsets(offsets.Select(y => new TopicPartitionOffsetError(y, new Error(ErrorCode.NoError))).ToList(), new Error(ErrorCode.NoError));      
 }
 
 
@@ -917,8 +913,21 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
 
     if ( invalidTopics.size() > 0 )
     {
-        //     if (invalidTopics.Count == 0) throw new InvalidOperationException($"Topic {invalidTopics[0]} offset cannot be committed because topic is not subscribed to.");
-        throw InvalidOperationException( "Topic {string.Join(, invalidTopics)} offsets cannot be committed because topics are not subscribed to.");
+        stringstream ss;
+        if (invalidTopics.size() == 0)
+        {
+            ss << "Topic " << invalidTopics[0] << " offset cannot be committed because topic is not subscribed to." << flush;
+            throw InvalidOperationException(ss.str());
+        }
+        ss << "Topic ";
+        
+        ss << invalidTopics[0];
+        for ( auto it = invalidTopics.begin() + 1 ; it != invalidTopics.end(); ++it )
+        {
+            ss << " " << *it;
+        } 
+        ss << " offsets cannot be committed because topics are not subscribed to." << flush;
+        throw InvalidOperationException(ss.str());
     }
 
 
@@ -954,88 +963,6 @@ void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& off
 
 }
 
-// std::vector<std::shared_ptr<TransportContext>> KafkaSubscriber::filterCommittedContexts(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contextsToFilter)
-// {
-//     const auto committedOffsets = dynamic_cast<const CommittedOffsets*>(state);
-//     if( committedOffsets == nullptr ) { throw ArgumentOutOfRangeException("state must be type committed offsets"); }
-
-//     if( committedOffsets->error != RdKafka::ErrorCode::ERR_NO_ERROR ) { 
-//         return std::vector<std::shared_ptr<TransportContext>>(); 
-//     }
-
-//     std::vector<TopicPartitionOffset> commitOffsets;
-//     for( auto& el : committedOffsets->offsets )
-//     {
-//         if( el.error.errCode != RdKafka::ErrorCode::ERR_NO_ERROR ){ continue; }
-//         commitOffsets.push_back( el.topicPartitionOffset );
-//     }
-
-//     if( commitOffsets.empty() ) { 
-//         // they all had error ?
-//         return std::vector<std::shared_ptr<TransportContext>>(); 
-//     }
-
-
-//     // get max offset for each topicpartition
-//     std::unordered_map<TopicPartition, Offset> topicPartitionOffsetValue;
-//     for( auto& el : commitOffsets )
-//     {
-//         auto key = el.topicPartition();
-        
-//         auto it = topicPartitionOffsetValue.find( key );
-//         if( it == topicPartitionOffsetValue.end() )
-//         {
-//             topicPartitionOffsetValue[key] = el.offset();
-//         } 
-//         else 
-//         {
-//             const auto offset = el.offset();
-//             if( it->second < offset )
-//             {
-//                 it->second = offset;
-//             }
-//         }
-//     }
-
-//     std::vector<TopicPartitionOffset> latestCommitOffsets;
-//     for( auto& el : topicPartitionOffsetValue )
-//     {
-//         latestCommitOffsets.push_back( TopicPartitionOffset( el.first, el.second ) );
-//     }
-
-
-//     // Figure out the extent of the contexts
-//     auto contextOffsets = getPartitionOffsets(contextsToFilter, true);
-
-//     KafkaO
-
-
-
-//     // auto grouppedOffsets = VectorTools<TopicPartitionOffset, TopicPartition, TopicPartitionOffset>::groupBy(commitOffsets, [](const TopicPartitionOffset& el){ return el.topicPartition(); });
-
-
-//             // var latestCommitOffsets = commitOffsets.GroupBy(x => x.TopicPartition)
-//             //     .ToDictionary(x => x.Key, x => x.Max(y => y.Offset.Value)).Select(y =>
-//             //         new TopicPartitionOffset(y.Key, y.Value)).ToArray();
-            
-//             // // Figure out the extent of the contexts
-//             // var contextsToFilterEvaluated = contextsToFilter.ToArray();
-//             // var contextOffsets = KafkaOutputExtensions.GetPartitionOffsets(contextsToFilterEvaluated, true).ToArray();
-//             // for (var index = 0; index < contextOffsets.Length; index++)
-//             // {
-//             //     var contextOffset = contextOffsets[index];
-//             //     if (latestCommitOffsets.Any(lco =>
-//             //         lco.TopicPartition.Equals(contextOffset.TopicPartition) && lco.Offset >= contextOffset.Offset))
-//             //     {
-//             //         yield return contextsToFilterEvaluated[index];
-//             //     }
-//             // }
-
-
-
-// }
-
-
 void KafkaSubscriber::addMessage( RdKafka::Message *message  )
 {
     auto package = KafkaHelper::fromResult( message );
@@ -1065,46 +992,85 @@ void KafkaSubscriber::addMessage( RdKafka::Message *message  )
 
 void KafkaSubscriber::kafkaPollingThread( )
 {
+    // todo: logging
     cout << "KafkaSubscriber polling thread start" << endl;
+
+    // todo: guard access to disconnect_ with mutex
+
+    bool reconnect = false;
     while(threadShouldBeRunning_)
     {
         RdKafka::Message *message = this->consumer_->consume(100);
 
-
         auto err = message->err();
-        switch ( err )
+        if( err == RdKafka::ERR_NO_ERROR )
         {
-            case RdKafka::ERR__TIMED_OUT:
-                break;
-
-            case RdKafka::ERR_NO_ERROR:
-                this->addMessage(message);
-                break;
-
-            case RdKafka::ERR__PARTITION_EOF:
-                /* Last message */
-                // if (exit_eof && ++eof_cnt == partition_cnt) {
-                // std::cerr << "%% EOF reached for all " << partition_cnt << " partition(s)"
-                //             << std::endl;
-                // run = 0;
-                // }
-                break;
-
-            case RdKafka::ERR__UNKNOWN_TOPIC:
-            case RdKafka::ERR__UNKNOWN_PARTITION:
-                // std::cerr << "Consume failed: " << message->errstr() << std::endl;
-                // run = 0;
-                break;
-
-            default:
-                break;
-                /* Errors */
-                // std::cerr << "Consume failed: " << message->errstr() << std::endl;
-                // run = 0;
+            this->addMessage(message);
         }
+
         delete message;
+
+        if (this->disconnected_)
+        {
+            this->disconnected_ = false;
+            reconnect = true;
+            break;
+        }
+
     }
 
+    // this.workerTaskPollFinished.SetResult(null);
+    reconnect = reconnect && !closing_ && !disposed_;
+    if (!reconnect)
+    {
+        // logger.LogTrace("Kafka polling work finished");
+        return;
+    }
+
+    if (!this->canReconnect_)
+    {
+        // logger.LogTrace("Kafka disconnected but is not allowed to reconnect.");
+        return;
+    }
+    
+    if (this->disposed_) { return; } // nothing to do here
+    // logger.LogDebug("Disconnecting from kafka as connection is deemed dead");
+    this->close();
+
+    std::unique_lock<std::mutex> lk(pollingThreadChangePropsLock_);
+
+    // Not able to wait for it as the close it waiting for this method to complete
+    if (this->isLastReconnect_)
+    {
+        auto cutoff = this->lastReconnect_ + this->minimumReconnectDelay_;
+        auto diff = cutoff - chrono::system_clock::now();
+        if (diff > chrono::duration<int, std::milli>(0))
+        {
+            // logger.LogDebug("Kafka is reconnecting after {0:g} delay", diff);
+            pollingThreadWaitCond_.wait_for(
+                lk, 
+                diff, 
+                [=](){ 
+                    return 
+                        !this->disposed_ ;
+                });
+        }
+    }
+    
+    // logger.LogDebug("Reconnecting to kafka");
+    if (this->disposed_)
+    {
+        // logger.LogDebug("Unable to reconnect to Kafka as {0} is disposed", nameof(KafkaOutput));
+        return;
+    }
+    this->lastReconnect_ = chrono::system_clock::now();
+    this->isLastReconnect_ = true;
+
+    this->open();
+    // logger.LogDebug("Reconnected to kafka");
+
+
+    // todo: logging
     cout << "KafkaSubscriber polling thread stop" << endl;
 }
 
@@ -1117,7 +1083,10 @@ void KafkaSubscriber::startWorkerThread( )
 
 KafkaSubscriber::~KafkaSubscriber()
 {
-    threadShouldBeRunning_ = false;
-    // this->consumer_->stop();
+    {
+        std::lock_guard<std::mutex> guard(pollingThreadChangePropsLock_);
+        disposed_ = true;
+        threadShouldBeRunning_ = false;
+    }
     readThread_.join();
 }

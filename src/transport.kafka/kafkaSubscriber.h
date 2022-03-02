@@ -33,8 +33,6 @@ namespace Quix { namespace Transport { namespace Kafka  {
 
 class ConsumerResult { };
 
-// typedef std::function<void(const std::string&, std::shared_ptr<Quix::Transport::IPackage>)> ProduceDelegate;
-// typedef std::function<void(const std::string&, const ByteArray&, void* state)> ProduceDelegate;
 typedef std::function<bool(const ConsumerResult&)> ShouldSkipConsumeResult;
 
 class TopicPartitionOffsetError
@@ -82,15 +80,18 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
 
     const OutputTopicConfiguration topicConfiguration_;
 
+    bool disposed_ = false;
     bool canReconnect_ = true;
     bool closing_ = false;
     bool disconnected_ = false; // connection is deemed dead
 
     ShouldSkipConsumeResult seekFunc = [](const ConsumerResult&){ return false; };
 
-
+    bool isLastReconnect_ = false;
     std::chrono::time_point<std::chrono::system_clock> lastReconnect_;
     std::chrono::duration<int, std::milli> minimumReconnectDelay_ = std::chrono::duration<int, std::milli>(30000);    // the absolute minimum time between two reconnect attempts
+    std::condition_variable pollingThreadWaitCond_;  //conditional variable used for waiting inside the polling thread
+    std::mutex pollingThreadChangePropsLock_;
 
 
     const int revokeTimeoutPeriodInMs_ = 5000;
