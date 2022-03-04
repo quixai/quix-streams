@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package Quix.Transport;
+
+option csharp_namespace = "Quix.Sdk.Process.Models.Codecs";
+
+
+message StreamEndProto {
+    uint32 streamEndType = 1;
+}
