@@ -1,0 +1,21 @@
+syntax = "proto3";
+package Quix.Process;
+
+
+
+option csharp_namespace = "Quix.Sdk.Process.Models.Codecs";
+
+
+message EventDataRawProto {
+    int64 timestamp = 1;
+    
+    map<string, string> tags = 2;
+    
+    string id = 3;
+    
+    string value = 4;
+}
+
+message EventDataRawsProto {
+    repeated EventDataRawProto events = 1;
+}
