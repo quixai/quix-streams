@@ -7,10 +7,10 @@
 
 namespace Quix { namespace Process {
 
-    class StreamEndProtobufCodec : public Quix::Transport::AbstractCodec
+    class EventDefinitionsProtobufCodec : public Quix::Transport::AbstractCodec
     {
     public:
-        StreamEndProtobufCodec();
+        EventDefinitionsProtobufCodec();
         /**
          *  Serialize object into the ByteArray
          */

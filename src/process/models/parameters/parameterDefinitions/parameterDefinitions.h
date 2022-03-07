@@ -1,17 +1,18 @@
 #pragma once
 
+#include <vector>
+
+#include "./parameterDefinition.h"
+
 #include "../../../../transport/io/IModel.h"
 
 namespace Quix { namespace Process {
 
-    class StreamEnd : public Quix::Transport::IModel
+    class ParameterDefinitions : public Quix::Transport::IModel
     {
     public:
-        enum StreamEndType{
-            Closed = 0,
-            Aborted = 1,
-            Terminated = 2
-        };
+
+        std::vector< ParameterDefinition > parameters;
 
         /**
          * Get Model Key definition of the ByteArray model
@@ -20,9 +21,7 @@ namespace Quix { namespace Process {
          */
         inline const Quix::Transport::ModelKey modelKey() const 
         { 
-            return Quix::Transport::ModelKey::forType<StreamEnd>();
+            return Quix::Transport::ModelKey::forType<ParameterDefinitions>();
         };
-
-        StreamEndType streamEndType = StreamEndType::Closed;
     };
 } }

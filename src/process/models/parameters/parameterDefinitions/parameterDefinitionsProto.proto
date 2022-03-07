@@ -1,0 +1,52 @@
+syntax = "proto3";
+package Quix.Process;
+
+
+
+option csharp_namespace = "Quix.Sdk.Process.Models.Codecs";
+
+
+message ParameterDefinitionProto {
+    string id = 1;
+
+    oneof name {
+        bool name_null = 2;
+        string name_value = 3;
+    };
+    
+    oneof description {
+        bool description_null = 4;
+        string description_value = 5;
+    };
+    
+    oneof minimumValue {
+        bool minimumValue_null = 6;  // always set this to "true" when null
+        double minimumValue_value = 7;
+    };
+
+    oneof maximumValue {
+        bool maximumValue_null = 8;  // always set this to "true" when null
+        double maximumValue_value = 9;
+    };
+    
+    oneof unit {
+        bool unit_null = 10;
+        string unit_value = 11;
+    };
+    
+    oneof format {
+        bool format_null = 12;
+        string format_value = 13;
+    };
+    
+    oneof customProperties {
+        bool customProperties_null = 14;
+        string customProperties_value = 15;
+    };
+    
+    string location = 16;
+}
+
+message ParameterDefinitionsProto {
+    repeated ParameterDefinitionProto parameters = 1;
+}
