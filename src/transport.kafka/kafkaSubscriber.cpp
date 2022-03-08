@@ -182,6 +182,7 @@ void KafkaSubscriber::open()
     std::lock_guard<std::mutex> guard( consumerLock_ );
 
     if ( this->consumer_ != nullptr ) { return; }
+    // this.logger.LogTrace("Open started");
     closing_ = false;
     lastRevokeCancelAction_();
 
@@ -249,6 +250,7 @@ void KafkaSubscriber::open()
             {
                 if( partition.partition() != Partition::Any )
                 {
+                    // this.logger.LogTrace("Topic '{0}' with partition {1} requires metadata retrieval", partition.Topic, partition.Partition);
                     std::string errstr;
                     auto topic = RdKafka::Topic::create( this->consumer_, partition.topic(), this->config_->topic(), errstr );
 
@@ -264,6 +266,7 @@ void KafkaSubscriber::open()
                         ss << "Failed to retrieve metadata for topic '" << partition.topic() << "' with partition " << partition.partition() << ". Try again or specify partitions explicitly. " << RdKafka::err2str(errCode) << flush;
                         throw InvalidOperationException( ss.str() );
                     }
+                    // this.logger.LogTrace("Retrieved metadata for Topic {0} with partition {1}", partition.Topic, partition.Partition);
 
                     const auto topics = metadata->topics();
                     const auto topicMetadata = std::find_if( 
@@ -277,7 +280,7 @@ void KafkaSubscriber::open()
 
                     if( topicMetadata == topics->cbegin() )
                     {
-                        throw std::exception();                                                
+                        throw std::exception(); // throw new Exception($"Failed to retrieve metadata for topic '{partition.Topic}' with partition {partition.Partition}. Try again or specify partitions explicitly."); // Maybe a more specific exception ?
                     }
 
                     auto partitions = (*topicMetadata)->partitions();
@@ -318,6 +321,7 @@ void KafkaSubscriber::open()
 
     if( !partitions.empty() )
     {
+        // this.logger.LogTrace("Assigning partitions to consumer");
         std::vector<RdKafka::TopicPartition*> kafkaPartitions;
         
         for( auto& partition : partitions )
@@ -330,19 +334,22 @@ void KafkaSubscriber::open()
         {
             throw KafkaException( errCode );
         }
+        // this.logger.LogTrace("Assigned partitions to consumer");
     } 
     else
     {
-
+        // this.logger.LogTrace("Assigning topics to consumer");
         auto errCode = this->consumer_->subscribe( topicConfiguration_.topics );
         if( errCode != RdKafka::ERR_NO_ERROR)
         {
             throw KafkaException( errCode );
         }
+        // this.logger.LogTrace("Assigned topics to consumer");
     }
 
     this->disconnected_ = false;
     this->startWorkerThread();
+    // this.logger.LogTrace("Open finished");  
 }
 
 
@@ -476,7 +483,7 @@ void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
                 int ms = atoi(  base_match[1].str().c_str() );
                 if (ms > 180000)
                 {
-                    std::cerr << "% Idle connection reaped. >>" << msgLowerCase << "<<" << std::endl;
+                    std::cerr << "% Idle connection reaped. >>" << msgLowerCase << "<<" << std::endl; // this.logger.LogDebug(exception, "Idle connection reaped."); 
                     return;
                 }
             }
@@ -519,7 +526,7 @@ void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
                 int ms = atoi(  base_match[1].str().c_str() );
                 if (ms > 7500000)
                 {
-                    std::cerr << "% Idle connection timed out, Kafka will reconnect." << std::endl;
+                    std::cerr << "% Idle connection timed out, Kafka will reconnect." << std::endl; // this.logger.LogInformation(exception, "Idle connection timed out, Kafka will reconnect.");
                     return;
                 }
         //         this.logger.LogWarning(exception, $"Connection timed out (after {ms}ms in state UP). Kafka will reconnect.");
@@ -662,7 +669,7 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
                         //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
                             auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic(), topicPartitionOffset.partition().id, topicPartitionOffset.offset().value());
                             this->consumer_->seek(*partition, -1);
-
+                        // this.logger.LogDebug("Seeked partition: {0}", topicPartitionOffset.ToString());
                             auto is = topicPartitionOffset.topic() == partition->topic() && topicPartitionOffset.partition().id == partition->partition() && topicPartitionOffset.offset().value() <= partition->offset(); 
                             delete partition;
                             return is;
@@ -843,6 +850,10 @@ CommittedOffsets KafkaSubscriber::getCommittedOffsets( const std::vector<TopicPa
 
 void KafkaSubscriber::commitOffsets(const std::vector<TopicPartitionOffset>& offsets)
 {
+    //            if (this.disposed)
+    //        {
+    //            throw new ObjectDisposedException("Unable to commits offset when disposed.");
+    //        }
 
     std::lock_guard<std::mutex> guard( consumerLock_ );
 
@@ -1038,7 +1049,7 @@ void KafkaSubscriber::kafkaPollingThread( )
 
     std::unique_lock<std::mutex> lk(pollingThreadChangePropsLock_);
 
-    // Not able to wait for it as the close it waiting for this method to complete
+    // Not able to wait for it as the close is waiting for this method to complete
     if (this->isLastReconnect_)
     {
         auto cutoff = this->lastReconnect_ + this->minimumReconnectDelay_;
