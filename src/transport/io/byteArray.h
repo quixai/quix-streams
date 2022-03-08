@@ -174,7 +174,7 @@ public:
      */
     inline const ModelKey modelKey() const 
     { 
-        return ModelKey("ByteArrayPackage");
+        return Quix::Transport::ModelKey::forType<ByteArray>();
     };
 
     /**

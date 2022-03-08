@@ -92,10 +92,9 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
     std::mutex pollingThreadChangePropsLock_;
 
 
-    const int revokeTimeoutPeriodInMs_ = 5000;
-
-    const bool consumerGroupSet_ = false; // higher number should only mean up to this seconds of delay if you are never going to get new assignments,
-                                    // but should not prove to cause any other issue
+    const int revokeTimeoutPeriodInMs_ = 5000;  // higher number should only mean up to this seconds of delay if you are never going to get new assignments,
+                                                // but should not prove to cause any other issue
+    const bool consumerGroupSet_ = false; 
 
     bool checkForKeepAlivePackets_ = true;   // Enables the check for keep alive messages from Quix
 

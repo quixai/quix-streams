@@ -231,7 +231,7 @@ void KafkaPublisher::open()
     if ( !producer_ ) {
         std::stringstream ss;
         ss << "Failed to create kafka producer (" << errstr << ")";
-        throw InvalidOperationException(ss.str());
+        throw InvalidOperationException(ss.str()); // TODO some other exception type
     }
 
 
