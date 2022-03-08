@@ -3,35 +3,21 @@
 #include <string>
 #include <memory>
 
-#include "transport/codec/abstractCodec.h"
+#include "transport/codec/ICodec.h"
 #include "transport/codec/codecId.h"
 #include "transport/io/package.h"
 #include "transport/io/IModel.h"
 #include "transport/fw/modelKey.h"
 #include "transport/registry/codecRegistry.h"
 
-class TestModelCodec: public Quix::Transport::AbstractCodec
-{
-public:
-    TestModelCodec();
-
-    Quix::Transport::ByteArray serialize(const std::shared_ptr<Quix::Transport::IPackage> obj) const;
-
-    const std::shared_ptr<Quix::Transport::IPackage> deserialize(
-        const std::shared_ptr<Quix::Transport::ByteArrayPackage> rawPackage
-    ) const;
-
-};
-
 class TestModel : public Quix::Transport::IModel
 {
     char datastr_[10];
     unsigned int number_;
 
+    static Quix::Transport::BaseCodec* defaultCodec;
 public:
     TestModel();
-
-    static TestModelCodec defaultCodec;
 
     const Quix::Transport::ModelKey modelKey() const
     {
@@ -47,9 +33,25 @@ public:
         {
             Quix::Transport::CodecRegistry::instance()->registerCodec(
                 Quix::Transport::ModelKey::forType<TestModel>(), 
-                &defaultCodec
+                defaultCodec
             );
         }
     } _initializer;
 
 };
+
+class TestModelCodec: public Quix::Transport::ICodec<TestModel>
+{
+
+public:
+    /**
+     * Serialize the object with the codec.
+     */
+    virtual Quix::Transport::ByteArray serialize(const TestModel& obj) const;
+    /**
+     * Deserialize the byte array with the codec.
+     */
+    virtual TestModel deserialize(const Quix::Transport::ByteArray& package) const;
+
+};
+

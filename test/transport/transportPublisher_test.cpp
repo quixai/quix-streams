@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "transport/codec/abstractCodec.h"
+#include "transport/codec/ICodec.h"
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"

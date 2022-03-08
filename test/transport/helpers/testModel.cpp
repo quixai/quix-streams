@@ -18,31 +18,20 @@ bool TestModel::operator==(const TestModel& other) const
 
 
 
-TestModelCodec::TestModelCodec()
- : 
- AbstractCodec(CodecId("TestModelCodec"))
-{
-
-};
-
-ByteArray TestModelCodec::serialize(const std::shared_ptr<IPackage> obj) const
-{
-    const auto typedPackage = std::dynamic_pointer_cast<Package<TestModel>>(obj);
-
+ByteArray TestModelCodec::serialize(const TestModel& value) const{
     const auto len = sizeof(TestModel);
     const auto arr = ByteArray(
         std::shared_ptr<uint8_t>(new uint8_t[len], std::default_delete<uint8_t[]>()),
         len
     );
     //serialize in a simple way of only dumping the memory footprint of TestModel into array
-    *((TestModel*)arr.data()) = typedPackage->value();
+    *((TestModel*)arr.data()) = value;
 
     return arr;
 }
 
-const std::shared_ptr<IPackage> TestModelCodec::deserialize(const std::shared_ptr<ByteArrayPackage> rawPackage) const
+TestModel TestModelCodec::deserialize(const ByteArray& barr) const
 {
-    ByteArray barr = rawPackage->value();
     if(barr.len() < sizeof(TestModel)){
         throw DeserializingException("TOO LITTLE OF DATA");
     }
@@ -50,10 +39,7 @@ const std::shared_ptr<IPackage> TestModelCodec::deserialize(const std::shared_pt
     //deserialize in a simple way of only casting the input memory array into the TestModel
     TestModel model = *((TestModel*)barr.data());
 
-    return std::shared_ptr<IPackage>(
-        new Package<TestModel>(rawPackage, model),
-        std::default_delete<IPackage>()
-    );
+    return model;
 }
 
 TestModel::TestModel(){
@@ -68,5 +54,6 @@ TestModel::TestModel(){
 }
 
 
-TestModelCodec TestModel::defaultCodec;
 TestModel::_init TestModel::_initializer;
+TestModelCodec testModelCodec;
+Quix::Transport::BaseCodec* TestModel::defaultCodec = &testModelCodec;

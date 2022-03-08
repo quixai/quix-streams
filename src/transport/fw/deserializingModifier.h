@@ -6,7 +6,7 @@
 
 #include "./helpers/transportPackageValue.h"
 #include "../io/IPackage.h"
-#include "../codec/abstractCodec.h"
+#include "../codec/ICodec.h"
 #include "../codec/codecId.h"
 #include "../io/IPublisher.h"
 #include "../io/ISubscriber.h"
@@ -30,7 +30,7 @@ private:
      * 
      * @return Pointer to the codec from the package value
      */
-    const AbstractCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
+    const BaseCodec* getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const;        
 
 public:
 

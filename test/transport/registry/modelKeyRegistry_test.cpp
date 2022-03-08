@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "transport/codec/abstractCodec.h"
+#include "transport/codec/ICodec.h"
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"
@@ -9,11 +9,11 @@
 using namespace std;
 using namespace Quix::Transport;
 
-class MockCodec : public AbstractCodec
+class MockCodec : public BaseCodec
 {
     private:
     public:
-        MockCodec(const std::string& id): AbstractCodec(id){};
+        MockCodec(const std::string& id): BaseCodec(id){};
 };
 
 TEST(modelKeyRegistryTest, retrieve_AfterSuccessfulRegister_ShouldReturnExpected)

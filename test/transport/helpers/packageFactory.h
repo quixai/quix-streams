@@ -6,7 +6,7 @@
 #include <functional>
 
 #include "transport/codec/binaryCodec.h"
-#include "transport/codec/abstractCodec.h"
+#include "transport/codec/ICodec.h"
 #include "transport/codec/codecId.h"
 #include "transport/io/package.h"
 #include "transport/io/byteArray.h"

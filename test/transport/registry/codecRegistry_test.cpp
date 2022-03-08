@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "transport/codec/abstractCodec.h"
+#include "transport/codec/ICodec.h"
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
 #include "transport/transport.h"
@@ -11,17 +11,26 @@
 using namespace std;
 using namespace Quix::Transport;
 
-class MockCodec : public AbstractCodec
+class MockCodec : public BaseCodec
 {
     private:
     public:
-        MockCodec(const std::string& id): AbstractCodec(id){};
-        ByteArray serialize(const std::shared_ptr<IPackage> obj) const{
+        MockCodec(const std::string& id): BaseCodec(id){};
+
+        /**
+         * Serialize the object with the codec.
+         */
+        bool trySerialize(ByteArray& out, const std::shared_ptr<IPackage>& obj) const
+        {
             throw SerializingException("UNREACHABLE");
-        };
-        const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<ByteArrayPackage> package) const{
-            throw DeserializingException("UNREACHABLE");
-        };
+        }
+
+        /**
+         * Deserialize the byte array with the codec.
+         */
+        bool tryDeserialize(std::shared_ptr<IPackage>& out, const std::shared_ptr<ByteArrayPackage> package) const {
+            throw SerializingException("UNREACHABLE");
+        }
 
 };
 

@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "../codec/abstractCodec.h"
+#include "../codec/ICodec.h"
 #include "../fw/modelKey.h"
 
 namespace Quix { namespace Transport {

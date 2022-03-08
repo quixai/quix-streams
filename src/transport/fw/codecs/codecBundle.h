@@ -4,7 +4,7 @@
 #include <functional>
 
 #include "../../io/IPackage.h"
-#include "../../codec/abstractCodec.h"
+#include "../../codec/ICodec.h"
 #include "../../codec/codecId.h"
 #include "../../io/IPublisher.h"
 #include "../../io/ISubscriber.h"
