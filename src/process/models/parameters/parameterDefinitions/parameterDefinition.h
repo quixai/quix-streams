@@ -1,6 +1,8 @@
 #pragma once
 
+#include <optional>
 #include <vector>
+
 #include "../../../../utils/optional.hpp"
 
 #include "../../utility/helpers.h"

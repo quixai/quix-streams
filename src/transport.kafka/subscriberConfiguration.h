@@ -48,7 +48,7 @@ public:
      *      If no consumer group is configured, the consumption will start according to value set.
      *      If no auto offset reset is set, in case of no consumer group it defaults to end, otherwise to earliest.
      * 
-     *      NOTE: if we support cpp17 -> use std::optional<>
+     *      NOTE: if we support cpp17 -> use std::experimental::optional<>
     **/
     AutoOffsetReset autoOffsetReset = AutoOffsetReset::Unset;
 

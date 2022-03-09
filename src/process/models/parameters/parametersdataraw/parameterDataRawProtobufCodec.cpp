@@ -8,19 +8,39 @@ using namespace std;
 using namespace Quix::Process;
 using namespace Quix::Transport;
 
-template<typename ProtobufT, typename ValueIt>
-void addElementToProtobufItem(ProtobufT* val, ValueIt it)
+template<typename ProtobufT, typename ValueIt, typename DefaultT>
+void addElementToProtobufItem(ProtobufT* val, ValueIt it, DefaultT defaultValue)
 {
     val->set_header(it->first);
 
-    for( auto& value : it->second.values )
+    for( auto& value : it->second )
     {
-        val->add_values(value);
+        if( value.has_value() )
+        {
+            val->add_isnull(false);
+            val->add_values(*value);
+        }
+        else
+        {
+            val->add_isnull(true);
+            val->add_values(defaultValue);
+        }
     }
-    for( const auto& isnull : it->second.isnull )
+}
+
+template<typename ElT, typename ValueIt>
+std::vector<ElT> loadElementFromProtobufItem(ValueIt it)
+{
+    vector<ElT> data;
+    data.reserve(it->values_size());
+    for(int i = 0; i < it->values_size(); ++i)
     {
-        val->add_isnull(isnull);
+        if( !it->isnull(i) )
+        {
+            data[i] = it->values(i);
+        }
     }
+    return data;
 }
 
 ByteArray ParameterDataRawProtobufCodec::serialize(const ParameterDataRaw& parameterDataRaw) const
@@ -36,38 +56,50 @@ ByteArray ParameterDataRawProtobufCodec::serialize(const ParameterDataRaw& param
     }
 
     // add strings
-    for( map<string, ParameterDataRaw::OptionalVector<string>>::const_iterator it = parameterDataRaw.stringValues.cbegin() ; it != parameterDataRaw.stringValues.cend() ; ++it )
+    for( map<string, std::vector<std::experimental::optional<string>> >::const_iterator it = parameterDataRaw.stringValues.cbegin() ; it != parameterDataRaw.stringValues.cend() ; ++it )
     {
         auto val = protobufCodec.add_string_values();
-        addElementToProtobufItem<::Quix::Process::ParameterDataRawProto_StringValues, map<string, ParameterDataRaw::OptionalVector<string>>::const_iterator>( val, it );
+        addElementToProtobufItem<::Quix::Process::ParameterDataRawProto_StringValues, map<string, std::vector<std::experimental::optional<string>>, string >::const_iterator>( val, it, "" );
     }
     // add tags
-    for( map<string, ParameterDataRaw::OptionalVector<string>>::const_iterator it = parameterDataRaw.tagValues.cbegin() ; it != parameterDataRaw.tagValues.cend() ; ++it )
+    for( map<string, std::vector<std::experimental::optional<string>> >::const_iterator it = parameterDataRaw.tagValues.cbegin() ; it != parameterDataRaw.tagValues.cend() ; ++it )
     {
         auto val = protobufCodec.add_tag_values();
-        addElementToProtobufItem<::Quix::Process::ParameterDataRawProto_StringValues, map<string, ParameterDataRaw::OptionalVector<string>>::const_iterator>( val, it );
+        addElementToProtobufItem<::Quix::Process::ParameterDataRawProto_StringValues, map<string, std::vector<std::experimental::optional<string>>, string >::const_iterator>( val, it, "" );
     }
     // add numeric values
-    for( map<string, ParameterDataRaw::OptionalVector<double>>::const_iterator it = parameterDataRaw.numericValues.cbegin() ; it != parameterDataRaw.numericValues.cend() ; ++it )
+    for( map<string, std::vector<std::experimental::optional<double>> >::const_iterator it = parameterDataRaw.numericValues.cbegin() ; it != parameterDataRaw.numericValues.cend() ; ++it )
     {
         auto val = protobufCodec.add_numeric_values();
-        addElementToProtobufItem<::Quix::Process::ParameterDataRawProto_NumericValues, map<string, ParameterDataRaw::OptionalVector<double>>::const_iterator>( val, it );
+        addElementToProtobufItem<::Quix::Process::ParameterDataRawProto_NumericValues, map<string, std::vector<std::experimental::optional<double>>, double >::const_iterator>( val, it, 0. );
     }
     // add binary values
-    for( map<string, ParameterDataRaw::OptionalVector<ByteArray>>::const_iterator it = parameterDataRaw.binaryValues.cbegin() ; it != parameterDataRaw.binaryValues.cend() ; ++it )
+    for( map<string, std::vector<std::experimental::optional<ByteArray>> >::const_iterator it = parameterDataRaw.binaryValues.cbegin() ; it != parameterDataRaw.binaryValues.cend() ; ++it )
     {
         auto val = protobufCodec.add_binary_values();
 
-        val->set_header(it->first);
+        val->set_header( it->first );
 
-        for( auto& value : it->second.values )
+        for( auto& value : it->second )
         {
-            val->add_values(value.data(), value.len());
+            if( value.has_value() )
+            {
+                val->add_isnull(false);
+                val->add_values((*value).data(), (*value).len());
+            }
+            else
+            {
+                val->add_isnull(true);
+                char text[1] = {0};
+                val->add_values(&text,0);
+            }
+            
+            // val->add_values(value.data(), value.len());
         }
-        for( const auto& isnull : it->second.isnull )
-        {
-            val->add_isnull(isnull);
-        }
+        // for( const auto& isnull : it->second.isnull )
+        // {
+        //     val->add_isnull(isnull);
+        // }
     }
 
 
@@ -97,60 +129,83 @@ ParameterDataRaw ParameterDataRawProtobufCodec::deserialize(const ByteArray& dat
     vector<long long> timestamps(protobufCodec.timestamps().begin(), protobufCodec.timestamps().end());
 
     //load string values
-    map<string, ParameterDataRaw::OptionalVector<string>> stringValues;
+    map<string, vector<std::experimental::optional<string>> > stringValues;
     for( auto it = protobufCodec.string_values().begin(); it != protobufCodec.string_values().end() ; it++ )
     {
+        vector<std::experimental::optional<string>> data;
+        data.reserve(it->values_size());
+        for(int i = 0; i < it->values_size(); ++i)
+        {
+            if( !it->isnull(i) )
+            {
+                data[i] = it->values(i);
+            }
+        }
+
         stringValues.emplace(
             it->header(), 
-            ParameterDataRaw::OptionalVector<string>( 
-                vector<string>(it->values().begin(), it->values().end()),
-                vector<bool>(it->isnull().begin(), it->isnull().end())
-            )
+            data
         );
     }
 
     //load string values
-    map<string, ParameterDataRaw::OptionalVector<string>> tagValues;
+    map<string, vector<std::experimental::optional<string>> > tagValues;
     for( auto it = protobufCodec.tag_values().begin(); it != protobufCodec.tag_values().end() ; it++ )
     {
+        vector<std::experimental::optional<string>> data;
+        data.reserve(it->values_size());
+        for(int i = 0; i < it->values_size(); ++i)
+        {
+            if( !it->isnull(i) )
+            {
+                data[i] = it->values(i);
+            }
+        }
+
         tagValues.emplace(
             it->header(), 
-            ParameterDataRaw::OptionalVector<string>( 
-                vector<string>(it->values().begin(), it->values().end()),
-                vector<bool>(it->isnull().begin(), it->isnull().end())
-            )
+            data
         );
     }
 
     //load numeric values
-    map<string, ParameterDataRaw::OptionalVector<double>> numericValues;
+    map<string, vector<std::experimental::optional<double>> > numericValues;
     for( auto it = protobufCodec.numeric_values().begin(); it != protobufCodec.numeric_values().end() ; it++ )
     {
+        vector<std::experimental::optional<double>> data;
+        data.reserve(it->values_size());
+        for(int i = 0; i < it->values_size(); ++i)
+        {
+            if( !it->isnull(i) )
+            {
+                data[i] = it->values(i);
+            }
+        }
+
         numericValues.emplace(
             it->header(), 
-            ParameterDataRaw::OptionalVector<double>( 
-                vector<double>(it->values().begin(), it->values().end()),
-                vector<bool>(it->isnull().begin(), it->isnull().end())
-            )
+            data
         );
     }
 
-    map<string, ParameterDataRaw::OptionalVector<ByteArray>> binaryValues;
+    map<string, vector<std::experimental::optional<ByteArray>> > binaryValues;
     for( auto it = protobufCodec.binary_values().begin(); it != protobufCodec.binary_values().end() ; it++ )
     {
-        vector<ByteArray> bytearrays;
-        bytearrays.reserve(it->values_size());
-        for(auto value : it->values() )
+
+        vector<std::experimental::optional<ByteArray>> data;
+        data.reserve(it->values_size());
+        for(int i = 0; i < it->values_size(); ++i)
         {
-            bytearrays.push_back(ByteArray(value));
+            if( !it->isnull(i) )
+            {
+                data[i] = ByteArray(it->values(i));
+            }
         }
+
 
         binaryValues.emplace(
             it->header(), 
-            ParameterDataRaw::OptionalVector<ByteArray>( 
-                bytearrays,
-                vector<bool>(it->isnull().begin(), it->isnull().end())
-            )
+            data
         );
     }
 

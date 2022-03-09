@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 
+#include "../../../../utils/optional.hpp"
 
 #include "../../../../transport/io/IModel.h"
 #include "../../../../transport/io/byteArray.h"
@@ -22,24 +23,22 @@ namespace Quix { namespace Process {
         struct OptionalVector
         {
             OptionalVector() {};
-            OptionalVector( std::vector<T> values, std::vector<bool> isnull ) : values(values), isnull(isnull) {};
-            std::vector<T> values;
-            std::vector<bool> isnull;
+            std::vector<std::experimental::optional<T>> values;
         };
 
 
         ParameterDataRaw( ) 
         {
-
+            
         };
 
         ParameterDataRaw(
             long long epoch, 
             std::vector<long long> timestamps,
-            std::map<std::string, OptionalVector<double>> numericValues,
-            std::map<std::string, OptionalVector<std::string>> stringValues,
-            std::map<std::string, OptionalVector<Quix::Transport::ByteArray>> binaryValues,
-            std::map<std::string, OptionalVector<std::string>> tagValues
+            std::map< std::string, std::vector<std::experimental::optional<double>> > numericValues,
+            std::map< std::string, std::vector<std::experimental::optional<std::string>> > stringValues,
+            std::map< std::string, std::vector<std::experimental::optional<Quix::Transport::ByteArray>> > binaryValues,
+            std::map< std::string, std::vector<std::experimental::optional<std::string>> > tagValues
         )
          : 
         epoch(epoch),
@@ -69,29 +68,29 @@ namespace Quix { namespace Process {
          *  The key is the parameter Id the values belong to
          *  The value is the numerical values of the parameter. Values are matched by index to <see cref="Timestamps"/>
          */
-        std::map<std::string, OptionalVector<double>> numericValues;
+        std::map< std::string, std::vector<std::experimental::optional<double>> > numericValues;
 
         /**
          *  The string values for parameters.
          *  The key is the parameter Id the values belong to
          *  The value is the string values of the parameter. Values are matched by index to <see cref="Timestamps"/>
          */
-        std::map<std::string, OptionalVector<std::string>> stringValues;
-
-        /**
-         *  The binary values for parameters.
-         *  The key is the parameter Id the values belong to
-         *  The value is the binary values of the parameter. Values are matched by index to <see cref="Timestamps"/>
-         */
-        std::map<std::string, OptionalVector<std::string>> tagValues;
-
+        std::map< std::string, std::vector<std::experimental::optional<std::string>> > stringValues;
 
         /**
          *  The tag values for parameters.
          *  The key is the parameter Id the values belong to
          *  The value is the tag values of the parameter. Values are matched by index to <see cref="Timestamps"/>
          */
-        std::map<std::string, OptionalVector<Quix::Transport::ByteArray>> binaryValues;
+        std::map< std::string, std::vector<std::experimental::optional<std::string>> > tagValues;
+
+
+        /**
+         *  The binary values for parameters.
+         *  The key is the parameter Id the values belong to
+         *  The value is the binary values of the parameter. Values are matched by index to <see cref="Timestamps"/>
+         */
+        std::map<std::string, std::vector<std::experimental::optional<Quix::Transport::ByteArray>> > binaryValues;
 
         std::shared_ptr<Quix::Transport::TransportContext> transportContext;
 

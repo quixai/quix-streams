@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 
 #include "./eventDefinition.h"
 #include "../../utility/helpers.h"
