@@ -6,13 +6,12 @@
 #include "../../utility/helpers.h"
 
 #include "../../../../utils/optional.hpp"
-#include "../../../../transport/io/IModel.h"
 
 namespace Quix { namespace Process {
 
     class EventDefinition
     {
-        std::string id_;
+        std::string id_ = "";
         std::string location_;
 
     public:
@@ -27,7 +26,7 @@ namespace Quix { namespace Process {
         };
 
         inline std::string id() const { return id_; }
-        inline void setId( const std::string& i );
+        void setId( const std::string& i );
 
         /// The display name of the event
         std::experimental::optional< std::string > name;
