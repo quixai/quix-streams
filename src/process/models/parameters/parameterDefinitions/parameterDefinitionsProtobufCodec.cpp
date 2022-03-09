@@ -8,18 +8,8 @@ using namespace std;
 using namespace Quix::Process;
 using namespace Quix::Transport;
 
-ParameterDefinitionsProtobufCodec::ParameterDefinitionsProtobufCodec() : AbstractCodec( string( typeid(this).name() ) )
+ByteArray ParameterDefinitionsProtobufCodec::serialize(const ParameterDefinitions& parameterDefinitions) const
 {
-
-}
-
-
-ByteArray ParameterDefinitionsProtobufCodec::serialize(const shared_ptr<IPackage> obj) const
-{
-    auto package = dynamic_pointer_cast<Package<ParameterDefinitions>>(obj);
-
-    auto& parameterDefinitions = package->value();
-
     ParameterDefinitionsProto protobufCodec;
 
     for( auto& parameter : parameterDefinitions.parameters )
@@ -108,10 +98,8 @@ ByteArray ParameterDefinitionsProtobufCodec::serialize(const shared_ptr<IPackage
     return bytePackageValue;    
 }
 
-const shared_ptr<IPackage> ParameterDefinitionsProtobufCodec::deserialize(const shared_ptr<ByteArrayPackage> package) const
+ParameterDefinitions ParameterDefinitionsProtobufCodec::deserialize(const ByteArray& data) const
 {
-    auto& data = package->value();
-
     ParameterDefinitionsProto protobufCodec;
 
     //parse from the index 1 and not 0 because index 0 is controlling character to specify codec type
@@ -161,10 +149,5 @@ const shared_ptr<IPackage> ParameterDefinitionsProtobufCodec::deserialize(const 
         );
     }
 
-    return 
-        std::shared_ptr<IPackage>(
-            new Package<ParameterDefinitions>(
-                parameterDefinitions
-            )
-        );
+    return parameterDefinitions;
 }

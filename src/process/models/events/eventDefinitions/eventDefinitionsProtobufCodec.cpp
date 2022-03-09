@@ -8,18 +8,10 @@ using namespace std;
 using namespace Quix::Process;
 using namespace Quix::Transport;
 
-EventDefinitionsProtobufCodec::EventDefinitionsProtobufCodec() : AbstractCodec( string( typeid(this).name() ) )
+
+
+ByteArray EventDefinitionsProtobufCodec::serialize(const EventDefinitions& eventDefinitions) const
 {
-
-}
-
-
-ByteArray EventDefinitionsProtobufCodec::serialize(const shared_ptr<IPackage> obj) const
-{
-    auto package = dynamic_pointer_cast<Package<EventDefinitions>>(obj);
-
-    auto& eventDefinitions = package->value();
-
     EventDefinitionsProto protobufCodec;
 
     for( auto& event : eventDefinitions.events )
@@ -73,10 +65,8 @@ ByteArray EventDefinitionsProtobufCodec::serialize(const shared_ptr<IPackage> ob
     return bytePackageValue;    
 }
 
-const shared_ptr<IPackage> EventDefinitionsProtobufCodec::deserialize(const shared_ptr<ByteArrayPackage> package) const
+EventDefinitions EventDefinitionsProtobufCodec::deserialize(const Quix::Transport::ByteArray& data) const
 {
-    auto& data = package->value();
-
     EventDefinitionsProto protobufCodec;
 
     //parse from the index 1 and not 0 because index 0 is controlling character to specify codec type
@@ -111,10 +101,5 @@ const shared_ptr<IPackage> EventDefinitionsProtobufCodec::deserialize(const shar
         );
     }
 
-    return 
-        std::shared_ptr<IPackage>(
-            new Package<EventDefinitions>(
-                eventDefinitions
-            )
-        );
+    return eventDefinitions;
 }

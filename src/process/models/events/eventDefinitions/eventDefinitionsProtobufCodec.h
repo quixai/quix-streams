@@ -2,22 +2,23 @@
 
 #include <memory>
 
-#include "../../../../transport/codec/abstractCodec.h"
+#include "./eventDefinitions.h"
+
+#include "../../../../transport/codec/ICodec.h"
 #include "../../../../transport/io/package.h"
 
 namespace Quix { namespace Process {
 
-    class EventDefinitionsProtobufCodec : public Quix::Transport::AbstractCodec
+    class EventDefinitionsProtobufCodec : public Quix::Transport::ICodec<EventDefinitions>
     {
     public:
-        EventDefinitionsProtobufCodec();
         /**
-         *  Serialize object into the ByteArray
+         * Serialize the object with the codec.
          */
-        Quix::Transport::ByteArray serialize(const std::shared_ptr<Quix::Transport::IPackage> obj) const;
+        Quix::Transport::ByteArray serialize(const EventDefinitions& obj) const;
         /**
-         *  Deserialize object from the ByteArray
+         * Deserialize the byte array with the codec.
          */
-        const std::shared_ptr<Quix::Transport::IPackage> deserialize(const std::shared_ptr<Quix::Transport::ByteArrayPackage> package) const;
+        EventDefinitions deserialize(const Quix::Transport::ByteArray& package) const;
     };
 } }

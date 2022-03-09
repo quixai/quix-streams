@@ -2,6 +2,9 @@
 
 #include <vector>
 
+#include "../../utility/helpers.h"
+
+#include "../../../../exceptions/argumentOutOfRangeException.h"
 #include "../../../../utils/optional.hpp"
 #include "../../../../transport/io/IModel.h"
 
@@ -15,11 +18,7 @@ namespace Quix { namespace Process {
     public:
 
         inline std::string id() const { return id_; }
-        inline void setId( const std::string& i ) { 
-            // TODO: add validation
-            
-            id_ = i;
-        }
+        void setId( const std::string& i );
 
         /// The display name of the event
         std::experimental::optional< std::string > name;
@@ -49,7 +48,7 @@ namespace Quix { namespace Process {
             return location_;
         };
         inline void setLocation( const std::string& l ) { 
-            location_ = l;
+            location_ = Helpers::formatLocation(l);
         };
 
     };

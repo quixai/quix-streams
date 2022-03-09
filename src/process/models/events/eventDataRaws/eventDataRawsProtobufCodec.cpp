@@ -8,18 +8,9 @@ using namespace std;
 using namespace Quix::Process;
 using namespace Quix::Transport;
 
-EventDataRawProtobufCodec::EventDataRawProtobufCodec() : AbstractCodec( string( typeid(this).name() ) )
+
+ByteArray EventDataRawProtobufCodec::serialize(const EventDataRaws& eventDataRaws) const
 {
-
-}
-
-
-ByteArray EventDataRawProtobufCodec::serialize(const shared_ptr<IPackage> obj) const
-{
-    auto package = dynamic_pointer_cast<Package<EventDataRaws>>(obj);
-
-    auto& eventDataRaws = package->value();
-
     EventDataRawsProto protobufCodec;
 
     for( auto& event : eventDataRaws.events )
@@ -51,10 +42,8 @@ ByteArray EventDataRawProtobufCodec::serialize(const shared_ptr<IPackage> obj) c
     return bytePackageValue;    
 }
 
-const shared_ptr<IPackage> EventDataRawProtobufCodec::deserialize(const shared_ptr<ByteArrayPackage> package) const
+EventDataRaws EventDataRawProtobufCodec::deserialize(const ByteArray& data) const
 {
-    auto& data = package->value();
-
     EventDataRawsProto protobufCodec;
 
     //parse from the index 1 and not 0 because index 0 is controlling character to specify codec type
@@ -84,10 +73,5 @@ const shared_ptr<IPackage> EventDataRawProtobufCodec::deserialize(const shared_p
     // streamEnd.streamEndType = (StreamEnd::StreamEndType)protobufCodec.streamendtype();
 
 
-    return 
-        std::shared_ptr<IPackage>(
-            new Package<EventDataRaws>(
-                eventDataRaws
-            )
-        );
+    return  eventDataRaws;
 }

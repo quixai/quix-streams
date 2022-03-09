@@ -8,12 +8,6 @@ using namespace std;
 using namespace Quix::Process;
 using namespace Quix::Transport;
 
-ParameterDataRawProtobufCodec::ParameterDataRawProtobufCodec() : AbstractCodec( string( typeid(this).name() ) )
-{
-
-}
-
-
 template<typename ProtobufT, typename ValueIt>
 void addElementToProtobufItem(ProtobufT* val, ValueIt it)
 {
@@ -29,14 +23,11 @@ void addElementToProtobufItem(ProtobufT* val, ValueIt it)
     }
 }
 
-ByteArray ParameterDataRawProtobufCodec::serialize(const shared_ptr<IPackage> obj) const
+ByteArray ParameterDataRawProtobufCodec::serialize(const ParameterDataRaw& parameterDataRaw) const
 {
-    auto package = dynamic_pointer_cast<Package<ParameterDataRaw>>(obj);
-    auto& parameterDataRaw = package->value();
-
     ParameterDataRawProto protobufCodec;
 
-    protobufCodec.set_epoch(package->value().epoch);
+    protobufCodec.set_epoch(parameterDataRaw.epoch);
 
     // add timestamps
     for( vector<long long>::const_iterator it = parameterDataRaw.timestamps.cbegin() ; it != parameterDataRaw.timestamps.cend() ; ++it )
@@ -92,13 +83,11 @@ ByteArray ParameterDataRawProtobufCodec::serialize(const shared_ptr<IPackage> ob
     protobufCodec.SerializeToArray((uint8_t*)array, size);
 
     //return object containing raw array and its length
-    return bytePackageValue;    
+    return bytePackageValue;
 }
 
-const shared_ptr<IPackage> ParameterDataRawProtobufCodec::deserialize(const shared_ptr<ByteArrayPackage> package) const
+ParameterDataRaw ParameterDataRawProtobufCodec::deserialize(const ByteArray& data) const
 {
-    auto& data = package->value();
-
     ParameterDataRawProto protobufCodec;
 
     //parse protobuf object from the input byte array
@@ -175,10 +164,5 @@ const shared_ptr<IPackage> ParameterDataRawProtobufCodec::deserialize(const shar
     );
 
 
-    return 
-        std::shared_ptr<IPackage>(
-            new Package<ParameterDataRaw>(
-                parameterDataRaw
-            )
-        );
+    return parameterDataRaw;
 }
