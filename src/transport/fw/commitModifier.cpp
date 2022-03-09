@@ -63,12 +63,14 @@ namespace Quix { namespace Transport {
 
         if( !autoCommit )
         {
+            // In case there is no auto committing then all we have to do is pass the message up in the chain
             onSend_ = std::bind( &CommitModifier::onSendOnAutocommitDisabled, this, std::placeholders::_1 );
             return;
         }
 
         if( commitEvery == 1 )
         {
+            // if we're committing every single message, then any kind of timer based commit is irrelevant
             onSend_ = std::bind( &CommitModifier::onSendOnCommitEvery1, this, std::placeholders::_1 );
             return;
         }
@@ -130,10 +132,13 @@ namespace Quix { namespace Transport {
 
         if( commitEvery <= 0 )
         {
+            // This is a condition where I do not actually want to commit after every N number of messages.
+            // The task here is to simply keep track of every message going through this modifier
             onSend_ = std::bind( &CommitModifier::onSendOnCommitEveryLessEq0, this, std::placeholders::_1 );
         }
         else
         {
+            // This is a condition where I want to commit after every N number of messages.
             onSend_ = std::bind( &CommitModifier::onSendOnCommitEveryGt1, this, std::placeholders::_1 );
         }
     }
@@ -213,7 +218,7 @@ namespace Quix { namespace Transport {
         //TODO: cancellationToken
 
         this->onNewPackage(package);
-        if (package.get() == nullptr) return;   //TODO: maybe not neccessary ( remaint from the Csharp rewrite )
+        if (package.get() == nullptr) return; 
         if (this->closed_) return;
 //        logger.LogTrace("Committing contexts due to reaching limit {0}", commitEvery);
         this->commitSingle(package->transportContext());
@@ -225,8 +230,7 @@ namespace Quix { namespace Transport {
         //TODO: cancellationToken
 
         this->onNewPackage(package);
-        // await (this.OnNewPackage?.Invoke(package) ?? Task.CompletedTask);
-        if (package.get() == nullptr) return;   //TODO: maybe not neccessary ( remaint from the Csharp rewrite )
+        if (package.get() == nullptr) return;
         if (this->closed_) return;
 
         {
@@ -240,7 +244,7 @@ namespace Quix { namespace Transport {
         //TODO: cancellationToken
 
         this->onNewPackage(package);
-        if (package.get() == nullptr) { return; }   //TODO: maybe not neccessary ( remaint from the Csharp rewrite )
+        if (package.get() == nullptr) { return; }
         if (this->closed_) { return; }
 
         int contextsReadyToCommitCnt;
@@ -289,10 +293,9 @@ namespace Quix { namespace Transport {
 
         auto affectedContexts = sender->filterRevokedContexts(args.state(), contexts);
 
-        // Theoretically it is possible to have a concurrency issue here. The issue is that the old queue gets enumerated and creates a new queue.
-        // Then it gets assigned to the variable. Between creating the new queue and assigning it to the variable another thread could still add to the
-        // old queue which would no longer get evaluated.
         {
+            std::lock_guard<std::mutex> guard(this->contextsReadyToCommitLock_);
+
             std::list<std::shared_ptr<TransportContext>> filteredContexts;
 
             for( auto el : contextsReadyToCommit_ )

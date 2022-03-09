@@ -22,11 +22,9 @@ namespace Quix { namespace Transport {
 class ByteArray : public IModel{
 
 private:
-    const size_t len_;
-    const size_t start_;
-    const std::shared_ptr<uint8_t> data_;
-
-    static uint8_t zerolenarr[1];
+    size_t len_;
+    size_t start_;
+    std::shared_ptr<uint8_t> data_;
 
 public:
     /**
@@ -188,6 +186,21 @@ public:
                 && 
             (len_ <= 0 || memcmp(data(), other.data(), len_) == 0)
             ;
+    }
+
+    /**
+     * Assign operator
+     */
+    inline ByteArray& operator=(const ByteArray& other) { 
+        if( this == &other ){
+            return *this;
+        }
+
+        this->len_ = other.len_;
+        this->start_ = other.start_;
+        this->data_ = other.data_;
+
+        return *this;
     }
 
     /**

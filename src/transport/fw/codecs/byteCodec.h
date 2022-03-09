@@ -4,7 +4,7 @@
 #include <functional>
 
 #include "../../io/IPackage.h"
-#include "../../codec/abstractCodec.h"
+#include "../../codec/ICodec.h"
 #include "../../codec/codecId.h"
 #include "../../io/IPublisher.h"
 #include "../../io/ISubscriber.h"
@@ -15,17 +15,17 @@ namespace Quix { namespace Transport {
     /**
      *  Codec for serializing and deserializing a ByteArray
      */
-    class ByteCodec : public AbstractCodec{
+    class ByteCodec : public ICodec< ByteArray >{
         public:
             ByteCodec();
             /**
              *  Serialize object into the ByteArray
              */
-            virtual ByteArray serialize(const std::shared_ptr<IPackage> obj) const;
+            ByteArray serialize( const ByteArray& obj ) const;
             /**
              *  Deserialize object from the ByteArray
              */
-            virtual const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<ByteArrayPackage> package) const;
+            ByteArray deserialize( const ByteArray& package ) const;
     };
 
 } }

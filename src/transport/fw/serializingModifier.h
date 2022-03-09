@@ -6,7 +6,7 @@
 
 #include "../io/package.h"
 #include "../io/IPackage.h"
-#include "../codec/abstractCodec.h"
+#include "../codec/ICodec.h"
 #include "./codecs/codecBundle.h"
 #include "./IModifier.h"
 
@@ -29,7 +29,7 @@ private:
      */
     std::shared_ptr<ByteArrayPackage> serializePackage(
         std::shared_ptr<IPackage> package, 
-        const AbstractCodec* codec, 
+        const BaseCodec* codec, 
         const CodecBundle& codecBundle
     ) const;
 

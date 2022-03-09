@@ -45,9 +45,11 @@ namespace Quix { namespace Transport {
             )
         )
         {
+            // if we do not have a merged package, then that means that this was not a standalone package, and the 
+            // content of this package was not enough to create a merged package.
             if( bufferKey == IByteMerger::ByteMergerBufferKey() )
             {
-                return;
+                return; // Means that the package is invalid, due to buffering // missing data constraints
             }
 
             tryAddToBuffer( bufferKey, std::shared_ptr<ByteArrayPackage>(nullptr), originalPackage->transportContext() );
@@ -129,6 +131,7 @@ namespace Quix { namespace Transport {
     void ByteMergingModifier::raiseNextPackageIfReady( )
     {
         // Csharp uses here semaphoreSlim because of Task locking
+        // The logic here has to be locked, because it touches multiple objects based on condition of other ones
         std::lock_guard<std::mutex> guard(raiseNextPackageIfReadyLock_);
 
         vector<pair<IByteMerger::ByteMergerBufferKey, long>> sortedPackageOrder;

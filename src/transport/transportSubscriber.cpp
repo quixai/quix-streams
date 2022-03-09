@@ -1,5 +1,3 @@
-// A2DD.cpp
-#include "transport.h"
 #include "./transportSubscriber.h"
 #include "./fw/deserializingModifier.h"
 #include "./fw/IModifier.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./abstractCodec.h"
+#include "./ICodec.h"
 
 namespace Quix { namespace Transport {
 
@@ -9,37 +9,32 @@ namespace Quix { namespace Transport {
  * Simple codec which only copies the binary content of the message 
  */
 template<class T>
-class BinaryCodec : public AbstractCodec
+class BinaryCodec : public ICodec<T>
 {
-    private:
     public:
-        BinaryCodec(): AbstractCodec( std::string( typeid(this).name() ) )
+        /**
+         * Serialize the object with the codec.
+         */
+        ByteArray serialize(const T& value) const
         {
-
-        };
-
-        ByteArray serialize(const std::shared_ptr< IPackage > obj) const
-        {
-            auto casted = std::dynamic_pointer_cast< Package<T> >(obj);
-
-            //returns only the casted previous value since the obj variable should already be of byte array type
             ByteArray arr = ByteArray::initEmpty( sizeof(T) );
 
-            T value = casted->value();
             memcpy(arr.data(), (void*)(&value), sizeof(T) );
 
             return arr;
-        };
+        }
 
-        const std::shared_ptr<IPackage> deserialize(const std::shared_ptr<ByteArrayPackage> package) const
+        /**
+         * Deserialize the byte array with the codec.
+         */
+        T deserialize(const ByteArray& value) const
         {
-            //returns only the casted previous value since the package variable is being parent of IPackage
-
             T data;
-            memcpy((void*)&data, (void*)package->value().data(), sizeof(T) );
+            memcpy((void*)&data, (void*)value.data(), sizeof(T) );
 
-            return std::shared_ptr<IPackage>( new Package<T>(package, data) );
-        };
+            return data;
+        }
+
 };
 
 
