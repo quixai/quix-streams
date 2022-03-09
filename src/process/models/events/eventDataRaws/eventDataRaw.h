@@ -3,8 +3,6 @@
 #include <map>
 #include <string>
 
-#include "../../../../transport/io/IModel.h"
-
 namespace Quix { namespace Process {
 
     class EventDataRaw

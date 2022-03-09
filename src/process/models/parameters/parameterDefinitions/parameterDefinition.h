@@ -1,12 +1,11 @@
 #pragma once
 
 #include <vector>
+#include "../../../../utils/optional.hpp"
 
 #include "../../utility/helpers.h"
 
 #include "../../../../exceptions/argumentOutOfRangeException.h"
-#include "../../../../utils/optional.hpp"
-#include "../../../../transport/io/IModel.h"
 
 namespace Quix { namespace Process {
 
