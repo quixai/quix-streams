@@ -7,7 +7,6 @@
 #include "transport/codec/ICodec.h"
 #include "transport/registry/codecRegistry.h"
 #include "transport/registry/modelKeyRegistry.h"
-#include "transport/transport.h"
 #include "transport/io/package.h"
 #include "transport/io/IModel.h"
 #include "transport/transportSubscriber.h"

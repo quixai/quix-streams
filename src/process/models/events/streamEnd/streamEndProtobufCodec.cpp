@@ -8,19 +8,13 @@ using namespace std;
 using namespace Quix::Process;
 using namespace Quix::Transport;
 
-StreamEndProtobufCodec::StreamEndProtobufCodec() : AbstractCodec( string( typeid(this).name() ) )
+
+
+ByteArray StreamEndProtobufCodec::serialize(const StreamEnd& value) const
 {
-
-}
-
-
-ByteArray StreamEndProtobufCodec::serialize(const shared_ptr<IPackage> obj) const
-{
-    auto package = dynamic_pointer_cast<Package<StreamEnd>>(obj);
-
     StreamEndProto protobufCodec;
 
-    protobufCodec.set_streamendtype(package->value().streamEndType);
+    protobufCodec.set_streamendtype(value.streamEndType);
 
 
 
@@ -39,10 +33,8 @@ ByteArray StreamEndProtobufCodec::serialize(const shared_ptr<IPackage> obj) cons
     return bytePackageValue;    
 }
 
-const shared_ptr<IPackage> StreamEndProtobufCodec::deserialize(const shared_ptr<ByteArrayPackage> package) const
+StreamEnd StreamEndProtobufCodec::deserialize(const ByteArray& data) const
 {
-    auto& data = package->value();
-
     StreamEndProto protobufCodec;
 
     //parse from the index 1 and not 0 because index 0 is controlling character to specify codec type
@@ -52,10 +44,5 @@ const shared_ptr<IPackage> StreamEndProtobufCodec::deserialize(const shared_ptr<
     streamEnd.streamEndType = (StreamEnd::StreamEndType)protobufCodec.streamendtype();
 
 
-    return 
-        std::shared_ptr<IPackage>(
-            new Package<StreamEnd>(
-                streamEnd
-            )
-        );
+    return streamEnd;
 }

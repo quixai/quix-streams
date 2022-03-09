@@ -1,5 +1,3 @@
-// A2DD.cpp
-#include "transport.h"
 #include "./transportPublisher.h"
 #include "./io/IPackage.h"
 

@@ -35,7 +35,6 @@ namespace Quix { namespace Transport {
         }
 
         //find if the codec with same codecId exists
-        //TODO: this is slow due to RTTI dispatch of virtual id() >> redo to cache the ids
         auto& modelCodecs = codecs[model];
 
         auto codecKey = codec->codecId();

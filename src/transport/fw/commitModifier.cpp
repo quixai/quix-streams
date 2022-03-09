@@ -293,10 +293,9 @@ namespace Quix { namespace Transport {
 
         auto affectedContexts = sender->filterRevokedContexts(args.state(), contexts);
 
-        // Theoretically it is possible to have a concurrency issue here. The issue is that the old queue gets enumerated and creates a new queue.
-        // Then it gets assigned to the variable. Between creating the new queue and assigning it to the variable another thread could still add to the
-        // old queue which would no longer get evaluated.
         {
+            std::lock_guard<std::mutex> guard(this->contextsReadyToCommitLock_);
+
             std::list<std::shared_ptr<TransportContext>> filteredContexts;
 
             for( auto el : contextsReadyToCommit_ )

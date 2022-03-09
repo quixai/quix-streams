@@ -18,7 +18,6 @@ namespace Quix { namespace Transport {
         //TODO: add cancellationToken
 
         const auto& transportMessageValue = TransportPackageValueCodec::deserialize((static_cast<ByteArrayPackage*>(&*package))->value());
-        const auto codecBundle = transportMessageValue->codecBundle();
 
         auto codec = getCodec(transportMessageValue);
         std::shared_ptr<Quix::Transport::IPackage> deserializedPackage(nullptr);

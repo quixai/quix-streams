@@ -34,6 +34,12 @@ public:
      *      Type is <see cref="DateTime" /> in UTC
     **/
     static constexpr const char* DateTime = "KafkaDataTime";
+
+    /**
+     *      The key used to identify the message size read from kafka. This is uncompressed size
+     *      Type is <see cref="long" />, measured in bytes
+    **/
+    static constexpr const char* MessageSize = "KafkaMessageSize";    
 };
 
 } } }

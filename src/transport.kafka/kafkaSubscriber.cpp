@@ -250,73 +250,74 @@ void KafkaSubscriber::open()
             {
                 if( partition.partition() != Partition::Any )
                 {
-                    // this.logger.LogTrace("Topic '{0}' with partition {1} requires metadata retrieval", partition.Topic, partition.Partition);
-                    std::string errstr;
-                    auto topic = RdKafka::Topic::create( this->consumer_, partition.topic(), this->config_->topic(), errstr );
-
-                    if ( topic == nullptr ) {
-                        throw InvalidOperationException(std::string("Topic creation error: ") + errstr);
-                    }
-
-                    RdKafka::Metadata* metadata;
-                    auto errCode = this->consumer_->metadata(false, topic, &metadata, 10*1000);
-                    if( errCode != RdKafka::ErrorCode::ERR_NO_ERROR )
-                    {
-                        stringstream ss;
-                        ss << "Failed to retrieve metadata for topic '" << partition.topic() << "' with partition " << partition.partition() << ". Try again or specify partitions explicitly. " << RdKafka::err2str(errCode) << flush;
-                        throw InvalidOperationException( ss.str() );
-                    }
-                    // this.logger.LogTrace("Retrieved metadata for Topic {0} with partition {1}", partition.Topic, partition.Partition);
-
-                    const auto topics = metadata->topics();
-                    const auto topicMetadata = std::find_if( 
-                        topics->cbegin(),
-                        topics->cend(),
-                        [=](const RdKafka::TopicMetadata* el )
-                        {
-                            return el->topic() == partition.topic();
-                        }
-                    );
-
-                    if( topicMetadata == topics->cbegin() )
-                    {
-                        throw std::exception(); // throw new Exception($"Failed to retrieve metadata for topic '{partition.Topic}' with partition {partition.Partition}. Try again or specify partitions explicitly."); // Maybe a more specific exception ?
-                    }
-
-                    auto partitions = (*topicMetadata)->partitions();
-                    for( auto& x : *partitions )
-                    {
-                        newPartitions.push_back( TopicPartitionOffset( partition.topic(), x->id(), partition.offset() ) );
-                    }
+                    newPartitions.push_back( partition );
                     continue;
                 }
 
                 // this.logger.LogTrace("Topic '{0}' with partition {1} requires metadata retrieval", partition.Topic, partition.Partition);
+                std::string errstr;
+                auto topic = RdKafka::Topic::create( this->consumer_, partition.topic(), this->config_->topic(), errstr );
 
+                if ( topic == nullptr ) {
+                    throw InvalidOperationException(std::string("Topic creation error: ") + errstr);
+                }
 
-                // unlike in C# the regular client is having the information about metadata
+                RdKafka::Metadata* metadata;
+                auto errCode = this->consumer_->metadata(false, topic, &metadata, 10*1000);
+                if( errCode != RdKafka::ErrorCode::ERR_NO_ERROR )
+                {
+                    stringstream ss;
+                    ss << "Failed to retrieve metadata for topic '" << partition.topic() << "' with partition " << partition.partition() << ". Try again or specify partitions explicitly. " << RdKafka::err2str(errCode) << flush;
+                    throw InvalidOperationException( ss.str() );
+                }
+                // this.logger.LogTrace("Retrieved metadata for Topic {0} with partition {1}", partition.Topic, partition.Partition);
 
-                partitions = newPartitions;
+                const auto topics = metadata->topics();
+                const auto topicMetadata = std::find_if( 
+                    topics->cbegin(),
+                    topics->cend(),
+                    [=](const RdKafka::TopicMetadata* el )
+                    {
+                        return el->topic() == partition.topic();
+                    }
+                );
+
+                if( topicMetadata == topics->cbegin() )
+                {
+                    throw std::exception(); // throw new Exception($"Failed to retrieve metadata for topic '{partition.Topic}' with partition {partition.Partition}. Try again or specify partitions explicitly."); // Maybe a more specific exception ?
+                }
+
+                auto partitions = (*topicMetadata)->partitions();
+                for( auto& x : *partitions )
+                {
+                    newPartitions.push_back( TopicPartitionOffset( partition.topic(), x->id(), partition.offset() ) );
+                }
+
+                // this.logger.LogTrace("Topic '{0}' with partition {1} requires metadata retrieval", partition.Topic, partition.Partition);
             }
 
-            // only allow OFFSET_BEGINNING, OFFSET_END or absolute offset, see https://github.com/confluentinc/confluent-kafka-python/issues/250
-            for (size_t index = 0; index < partitions.size(); index++)
-            {
-                auto& partition = partitions[index];
-                if (partition.offset() == Offset::Unset)
-                {
-                    // this.logger.LogDebug("Topic '{0}' with partition {1} defaults to end, because neither offset or group was specified.", partition.Topic, partition.Partition);
-                    partitions[index] = TopicPartitionOffset(partition.topic(), partition.partition(), Offset::End);
-                    continue;
-                }
-                if (partition.offset() == Offset::Stored)
-                {
-                    // this.logger.LogWarning("Topic '{0}' with partition {1} is unable to use last stored offset, because group was not specified. Defaulting to end.", partition.Topic, partition.Partition);
-                    partitions[index] = TopicPartitionOffset(partition.topic(), partition.partition(), Offset::End);
-                }
-            }
+            partitions = newPartitions;
 
         }
+
+
+        // only allow OFFSET_BEGINNING, OFFSET_END or absolute offset, see https://github.com/confluentinc/confluent-kafka-python/issues/250
+        for (size_t index = 0; index < partitions.size(); index++)
+        {
+            auto& partition = partitions[index];
+            if (partition.offset() == Offset::Unset)
+            {
+                // this.logger.LogDebug("Topic '{0}' with partition {1} defaults to end, because neither offset or group was specified.", partition.Topic, partition.Partition);
+                partitions[index] = TopicPartitionOffset(partition.topic(), partition.partition(), Offset::End);
+                continue;
+            }
+            if (partition.offset() == Offset::Stored)
+            {
+                // this.logger.LogWarning("Topic '{0}' with partition {1} is unable to use last stored offset, because group was not specified. Defaulting to end.", partition.Topic, partition.Partition);
+                partitions[index] = TopicPartitionOffset(partition.topic(), partition.partition(), Offset::End);
+            }
+        }
+
     }
 
     if( !partitions.empty() )
@@ -459,14 +460,11 @@ void KafkaSubscriber::onErrorOccurred(const KafkaException& exception)
 {
     const auto msg = exception.kafkaMessage();
 
+
+    //transform msg to lowercase
     std::string msgLowerCase;
     msgLowerCase.resize(msg.size());
-
-    // Allocate the destination space
-    std::locale loc;
-
-    string test = "Hello World";
-    for(auto& c : test)
+    for(auto& c : msg)
     {
         msgLowerCase.push_back(tolower(c));
     }
