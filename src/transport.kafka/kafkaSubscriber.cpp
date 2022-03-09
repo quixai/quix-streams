@@ -686,7 +686,7 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
 
             if( seekFuncs.size() > 0 )
             {
-                this->seekFunc = [=](const ConsumerResult& cr)
+                this->seekFunc_ = [=](const ConsumerResult& cr)
                 {
                     bool skip = false;
                     for ( auto& func : seekFuncs )
@@ -694,7 +694,7 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
                         skip = func(cr) || skip; // order is important
                     }
 
-                    this->seekFunc = [=](const ConsumerResult& cr){ return true; };
+                    this->seekFunc_ = [=](const ConsumerResult& cr){ return true; };
                     return skip;
                 }; // reset after seeking
             }
@@ -1013,6 +1013,13 @@ void KafkaSubscriber::kafkaPollingThread( )
         auto err = message->err();
         if( err == RdKafka::ERR_NO_ERROR )
         {
+
+            // if( this->seekFunc_() )
+            // {
+
+            //     continue;
+            // }
+
             this->addMessage(message);
         }
 

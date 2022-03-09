@@ -83,7 +83,7 @@ class KafkaSubscriber : public IKafkaSubscriber, public Quix::Transport::ISubscr
     bool closing_ = false;
     bool disconnected_ = false; // connection is deemed dead
 
-    ShouldSkipConsumeResult seekFunc = [](const ConsumerResult&){ return false; };
+    ShouldSkipConsumeResult seekFunc_ = [](const ConsumerResult&){ return false; };
 
     bool isLastReconnect_ = false;
     std::chrono::time_point<std::chrono::system_clock> lastReconnect_;
