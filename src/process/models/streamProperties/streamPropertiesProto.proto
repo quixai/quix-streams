@@ -1,0 +1,22 @@
+syntax = "proto3";
+package Quix.Process;
+
+
+
+option csharp_namespace = "Quix.Sdk.Process.Models.Codecs";
+
+
+message StreamPropertiesProto {
+    string name = 1;
+
+    string location = 2;
+    
+    map<string, string> metadata = 3;
+    
+    repeated string parents = 4;
+    
+    oneof timeOfRecording {
+        bool timeOfRecording_null = 5;  // always set this to "true" when null
+        int64 timeOfRecording_value = 6;
+    };
+}

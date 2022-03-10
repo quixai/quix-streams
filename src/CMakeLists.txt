@@ -32,6 +32,8 @@ add_library(${BINARY}_lib STATIC ${SOURCES})
 #     set(LINK_LIBRARIES "${LINK_LIBRARIES} pthread")
 # ENDIF()
 
+target_link_libraries(${BINARY}_lib PUBLIC spdlog)
+
 IF (WIN32) 
     target_link_libraries(${BINARY}_lib PUBLIC rdkafka++ ${Protobuf_LIBRARIES} protobuf) 
     # target_link_libraries(${BINARY}_lib PUBLIC ws2_32.lib secur32.lib crypt32.lib legacy_stdio_definitions.lib User32.lib rdkafka++ ${Protobuf_LIBRARIES} protobuf) 

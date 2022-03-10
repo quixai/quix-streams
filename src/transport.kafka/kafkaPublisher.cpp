@@ -11,6 +11,7 @@
 #include <regex>
 #include <string>
 
+#include "utils/log.h"
 
 using namespace std;
 using namespace Quix::Transport;
@@ -173,7 +174,7 @@ void KafkaPublisher::errorHandler(RdKafka::ErrorCode errorCode) const
                     return;
                 }
             }
-
+            LOG_WARN("Disconnected from kafka. Ignore unless occurs frequently in short period of time as client automatically reconnects.");
         }
 
     }

@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/lib/spdlog/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -12,7 +13,7 @@
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "intelliSenseMode": "windows-msvc-x64"
+            "intelliSenseMode": "linux-gcc-x86"
         }
     ],
     "version": 4
