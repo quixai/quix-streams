@@ -11,6 +11,7 @@
 #include <regex>
 #include <string>
 
+#include "utils/log.h"
 
 using namespace std;
 using namespace Quix::Transport;
@@ -218,6 +219,8 @@ void KafkaPublisher::close()
 
 void KafkaPublisher::open()
 {
+    LOG_INFO("Test logger");
+
     if( this->producer_ != nullptr ) { return; }
 
     std::lock_guard<std::mutex> guard(openLock_);

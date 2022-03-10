@@ -8,7 +8,6 @@
 #include "transport.kafka/topicConfiguration.h"
 
 #include <iostream>
-#include <spdlog/spdlog.h>
 
 
 using namespace std;
@@ -34,7 +33,6 @@ ReadMessage::~ReadMessage()
 
 ISubscriber* ReadMessage::start( bool useConsumerGroup, Quix::Transport::Kafka::Offset offset )
 {
-    spdlog::info("Welcome to spdlog!");
     cout << "START READ MESSAGE" << endl;
 
     SubscriberConfiguration* subConfig;
