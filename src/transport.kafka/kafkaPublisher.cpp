@@ -174,7 +174,7 @@ void KafkaPublisher::errorHandler(RdKafka::ErrorCode errorCode) const
                     return;
                 }
             }
-
+            LOG_WARN("Disconnected from kafka. Ignore unless occurs frequently in short period of time as client automatically reconnects.");
         }
 
     }
@@ -219,8 +219,6 @@ void KafkaPublisher::close()
 
 void KafkaPublisher::open()
 {
-    LOG_INFO("Test logger");
-
     if( this->producer_ != nullptr ) { return; }
 
     std::lock_guard<std::mutex> guard(openLock_);
