@@ -663,12 +663,18 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
                     if( !currentPosition.isSpecial() )
                     {
 
-                        seekFuncs.push_back([=](const ConsumerResult& cr){
+                        seekFuncs.push_back([=]( ){
                         //     this.logger.LogDebug("Seeking partition: {0}", topicPartitionOffset.ToString());
                             auto partition = RdKafka::TopicPartition::create(topicPartitionOffset.topic(), topicPartitionOffset.partition().id, topicPartitionOffset.offset().value());
                             this->consumer_->seek(*partition, -1);
                         // this.logger.LogDebug("Seeked partition: {0}", topicPartitionOffset.ToString());
-                            auto is = topicPartitionOffset.topic() == partition->topic() && topicPartitionOffset.partition().id == partition->partition() && topicPartitionOffset.offset().value() <= partition->offset(); 
+                            auto is = 
+                                topicPartitionOffset.topic() == partition->topic() 
+                                    && 
+                                topicPartitionOffset.partition().id == partition->partition() 
+                                    && 
+                                topicPartitionOffset.offset().value() <= partition->offset()
+                                ; 
                             delete partition;
                             return is;
                         });
@@ -686,15 +692,15 @@ void KafkaSubscriber::partitionsAssignedHandler(RdKafka::KafkaConsumer *consumer
 
             if( seekFuncs.size() > 0 )
             {
-                this->seekFunc_ = [=](const ConsumerResult& cr)
+                this->seekFunc_ = [=]( )
                 {
                     bool skip = false;
                     for ( auto& func : seekFuncs )
                     {
-                        skip = func(cr) || skip; // order is important
+                        skip = func( ) || skip; // order is important
                     }
 
-                    this->seekFunc_ = [=](const ConsumerResult& cr){ return true; };
+                    this->seekFunc_ = [=]( ){ return false; };
                     return skip;
                 }; // reset after seeking
             }
@@ -1014,11 +1020,11 @@ void KafkaSubscriber::kafkaPollingThread( )
         if( err == RdKafka::ERR_NO_ERROR )
         {
 
-            // if( this->seekFunc_() )
-            // {
-
-            //     continue;
-            // }
+            if( this->seekFunc_() )
+            {
+                // logger.LogDebug("Polled for msg, but dropped because it came from a partition which we seeked into further than this message.");
+                continue;
+            }
 
             this->addMessage(message);
         }
