@@ -51,6 +51,8 @@ add_executable(${BINARY} ${SAMPLE_TRANSPORT_SOURCES})
 # target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib pthread protobuf rdkafka rdkafka++)
 
 target_link_libraries(${BINARY} PRIVATE rdkafka++ ${CMAKE_PROJECT_NAME}_lib)
+target_link_libraries(${BINARY} PRIVATE spdlog)
+
 IF (WIN32) 
     set_target_properties(${BINARY} PROPERTIES COMPILE_DEFINITIONS BUILDER_STATIC_DEFINE)
 ENDIF()
