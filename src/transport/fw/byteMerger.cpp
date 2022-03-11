@@ -1,13 +1,23 @@
 #include <string>
 #include <memory>
+#include <iostream>
 #include <sstream>
 #include <functional>
+
+#include "../../utils/boxedValue.h"  
 
 #include "./byteMerger.h"
 
 namespace Quix { namespace Transport {
 
     using namespace std;
+
+    ByteMerger::ByteMerger()
+    :
+    buffer_()
+    {
+
+    }
 
     bool ByteMerger::tryMerge
     (
@@ -33,7 +43,7 @@ namespace Quix { namespace Transport {
         IByteMerger::ByteMergerBufferKey&           bufferKey
     )
     {
-        ByteSplitProtocolHeader header;
+        auto header = ByteSplitProtocolHeader();
 
         // is this even a split message ?
         if( !tryGetHeader(originalPackage, header) )
@@ -42,7 +52,6 @@ namespace Quix { namespace Transport {
             return true;
         }
 
-        //add into buffer
         bufferKey = IByteMerger::ByteMergerBufferKey( msgGroupKey, header.msgId() );
         {
             std::lock_guard<std::mutex> guard(bufferLock_);
@@ -51,7 +60,7 @@ namespace Quix { namespace Transport {
                 buffer_.emplace(
                     bufferKey, 
                     shared_ptr<ByteMergerBufferItem>(
-                        new ByteMergerBufferItem(header.maxIndex() + 1)
+                        new ByteMergerBufferItem(header.maxIndex())
                     )
                 );
             }
@@ -79,9 +88,9 @@ namespace Quix { namespace Transport {
     )
     {
         auto& packageBytes = originalPackage->value();
-        std::string key;
-        originalPackage->transportContext().tryGetValue(KnownTransportContextKeys::MessageGroupKey, key);
-        return this->tryMerge(originalPackage, key, outPackage, bufferId);
+        Quix::BoxedValue key;
+        originalPackage->transportContext()->tryGetValue(KnownTransportContextKeys::MessageGroupKey, key);
+        return this->tryMerge(originalPackage, key.stringValue(), outPackage, bufferId);
     }
 
 
@@ -103,9 +112,9 @@ namespace Quix { namespace Transport {
     };
 
     bool ByteMerger::tryAssemblePackage(
-        const IByteMerger::ByteMergerBufferKey&          key, 
-        ByteSplitProtocolHeader&            header,
-        std::shared_ptr<ByteArrayPackage>&  outPackage
+        const IByteMerger::ByteMergerBufferKey&             key, 
+        ByteSplitProtocolHeader&                            header,
+        std::shared_ptr<ByteArrayPackage>&                  outPackage
     ) {
 
         std::shared_ptr<ByteMergerBufferItem> bufferItem(nullptr);
@@ -115,7 +124,6 @@ namespace Quix { namespace Transport {
             const auto it = buffer_.find(key);
             if( it == buffer_.end() ) {
                 // message never was or no longer in buffer !
-    //          logger.LogDebug("Received last segment for {0}, but rest of the segments can no longer be found.", msgGroupId);
                 return false;
             }
             bufferItem = it->second;

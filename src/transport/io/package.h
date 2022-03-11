@@ -22,7 +22,7 @@ class Package : public IPackage {
 
 private:
     const TContent value_; 
-    const TransportContext transportContext_;
+    const std::shared_ptr<TransportContext> transportContext_;
 
 public:
 
@@ -34,7 +34,7 @@ public:
      */
     Package(
         const TContent& value, 
-        const TransportContext& transportContext = TransportContext()
+        const std::shared_ptr<TransportContext>& transportContext = std::shared_ptr<TransportContext>(new TransportContext())
     )
      : 
         value_(value), 
@@ -42,6 +42,36 @@ public:
     {
 
     };
+
+    /**
+     * Initializes a new instance of Package<TContent> with ModelKey from value
+     * 
+     * @param value content value
+     * @param transportContext The extra context relevant for transporting the package
+     */
+    Package(
+        const TContent& value, 
+        const TransportContext& transportContext
+    )
+     : 
+        Package(
+            value,
+            std::shared_ptr<TransportContext>(new TransportContext(transportContext))
+        ) 
+    {
+
+    };
+
+
+    /**
+     * Create duplicate of the package with modified transport context
+     * 
+     * @param transportContext updated transportContext
+     */
+    std::shared_ptr<Package<TContent>> duplicate(const std::shared_ptr<TransportContext>& transportContext)
+    {
+        return std::shared_ptr<Package<TContent>>( new Package<TContent>( this->value_, transportContext ) );
+    }
 
     /**
      * Initialize meta information Package from previous parent
@@ -72,7 +102,7 @@ public:
     /**
      * The transport context of the package
      */
-    const TransportContext& transportContext() const
+    const std::shared_ptr<TransportContext>& transportContext() const
     { 
         return transportContext_;
     };
@@ -92,7 +122,19 @@ public:
     {
         const bool isValueSame = value_ == other.value();
         const bool isModelKeySame = value_.modelKey() == other.modelKey();
-        const bool isTransportContextSame = transportContext_ == other.transportContext();
+
+
+        const bool transportContext1Null = transportContext_.get() == nullptr;
+        const bool transportContext2Null = other.transportContext().get() == nullptr;
+        const bool isTransportContextSame = 
+                                (transportContext1Null && transportContext2Null)
+                                ||
+                                (
+                                    !transportContext1Null && 
+                                    !transportContext2Null && 
+                                    *transportContext_ == *(other.transportContext())
+                                )
+                                ;
 
         return 
             isValueSame

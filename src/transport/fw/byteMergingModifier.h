@@ -15,13 +15,18 @@
 #include "./byteSplitter.h"
 #include "./byteMerger.h"
 
+#include "./IModifier.h"
+#include "./IRevocation.h"
+
+#include "../../utils/eventHandler.h"
+
 namespace Quix { namespace Transport {
 
 
 /**
- * Component for splitting a single array of bytes into multiple according to implementation
+ * Modifier, which encapsulates an <see cref="IByteMerger"/> to merge previously split packages
 */
-class ByteMergingModifier: public IPublisher{
+class ByteMergingModifier: public IModifier, public IRevocationSubscriber{
 private:
 
     int bufferOrder_;
@@ -32,7 +37,14 @@ private:
     /// the order the packages should be raised
     std::unordered_map< IByteMerger::ByteMergerBufferKey, long, IByteMerger::ByteMergerBufferKey::Hasher > packageOrder_;
 
+    /// In case of packages that need merging, this package is the one which contains the extra context.
+    std::unordered_map< IByteMerger::ByteMergerBufferKey, std::shared_ptr<TransportContext>, IByteMerger::ByteMergerBufferKey::Hasher > firstPackageContext_;
+
+    /// Lock used for every internal structure ( can be in future splitted into multiple mutexes, but for now kept as single for simplicity )
     std::mutex lock_;
+
+    /// Lock used inside raiseNextPackageIfReady to replace SemaphoreSlim
+    std::mutex raiseNextPackageIfReadyLock_;
     
     IByteMerger* byteMerger_;
 
@@ -46,7 +58,7 @@ private:
     bool tryAddToBuffer(
         IByteMerger::ByteMergerBufferKey& bufferId, 
         std::shared_ptr<ByteArrayPackage> package, 
-        const TransportContext& transportContext
+        const std::shared_ptr<TransportContext>& transportContext 
     );
 
     bool removeFromBuffer(
@@ -58,16 +70,13 @@ public:
     ByteMergingModifier(IByteMerger* byteMerger_);
 
     /**
-     * The callback that is used when the split package is available
-     */
-    std::function<void(std::shared_ptr<ByteArrayPackage>)> onNewPackage;
-
-    /**
      * Send a package, which the modifier merged if necessary. Merged results are raised via onNewPackage
      * 
      * @param package The package to split
      */
     void send(std::shared_ptr<IPackage> package);
+
+    void subscribe(IRevocationPublisher* revocationPublisher); 
 };
 
 } }

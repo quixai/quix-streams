@@ -18,19 +18,18 @@ namespace Quix { namespace Transport {
         //TODO: add cancellationToken
 
         const auto& transportMessageValue = TransportPackageValueCodec::deserialize((static_cast<ByteArrayPackage*>(&*package))->value());
-        const auto codecBundle = transportMessageValue->codecBundle();
 
         auto codec = getCodec(transportMessageValue);
-        const auto deserializedPackage = codec->deserialize(transportMessageValue->value());
+        std::shared_ptr<Quix::Transport::IPackage> deserializedPackage(nullptr);
+        bool success = codec->tryDeserialize(deserializedPackage, transportMessageValue->value());
 
 
         onNewPackage(deserializedPackage); 
     };
 
 
-    AbstractCodec* DeserializingModifier::getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const
+    const BaseCodec* DeserializingModifier::getCodec(const std::shared_ptr<TransportPackageValue>& transportPackageValue) const
     {
-        //TODO: get modelKey
         const auto& codecBundle = transportPackageValue->codecBundle();
         const auto codec = CodecRegistry::instance()->retrieveCodec(codecBundle.modelKey(), codecBundle.codecId());
 

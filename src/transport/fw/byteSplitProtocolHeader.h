@@ -45,11 +45,16 @@ private:
 
 public:
     /**
-     * Initialize header with unknown values
-     * 
-     * Note: values can be random
+     * Initialize header with default ( zero ) values
      */
-    inline ByteSplitProtocolHeader()
+    inline ByteSplitProtocolHeader() :
+        msgId_(0),
+        index_(0),
+        maxIndex_(0),
+        splitStart_(0),
+        splitEnd_(0),
+        splitSeparator1_(0),
+        splitSeparator2_(0)
     {
 
     }
@@ -78,7 +83,7 @@ public:
      */
     inline ByteSplitProtocolHeader(const ByteArray& package)
     {
-        (*this) = *((ByteSplitProtocolHeader*)(package.data()));
+        (*this) = *((ByteSplitProtocolHeader*)(package.data()));  
     }
 
     /**

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../utils/eventHandler.h"
+
 #include "./IPackage.h"
 
 namespace Quix { namespace Transport {
@@ -10,10 +12,14 @@ namespace Quix { namespace Transport {
 class ISubscriber{
 
 public:
+
+    /// NOTE: hack to satisfy polymorfism condition for dynamic_cast
+    virtual void dummy() const {};
+
     /**
      * The callback that is used when the ISubscriber has new package for the listener
      */
-    std::function<void(std::shared_ptr<IPackage>)> onNewPackage = nullptr;
+    EventHandler<std::shared_ptr<IPackage>> onNewPackage;
 
 };
 

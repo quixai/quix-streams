@@ -26,14 +26,14 @@ TEST(transportContextTest, WithSingleObject_ShouldCorrespondToSerializingModifie
     DeserializingModifier deserializingModifier;
     SerializingModifier serializingModifier;
 
-    serializingModifier.onNewPackage = [&](shared_ptr<IPackage> package)
+    serializingModifier.onNewPackage += [&](shared_ptr<IPackage> package)
             {
                 deserializingModifier.send(package);
             };
     
     shared_ptr<IPackage> deserializedPackage(nullptr);
 
-    deserializingModifier.onNewPackage = [&](shared_ptr<IPackage> package)
+    deserializingModifier.onNewPackage += [&](shared_ptr<IPackage> package)
             {
                 deserializedPackage = package;
             };
@@ -61,14 +61,14 @@ TEST(transportContextTest, WithQuixByteArray_ShouldCorrespondToSerializingModifi
     DeserializingModifier deserializingModifier;
     SerializingModifier serializingModifier;
 
-    serializingModifier.onNewPackage = [&](shared_ptr<IPackage> package)
+    serializingModifier.onNewPackage += [&](shared_ptr<IPackage> package)
             {
                 deserializingModifier.send(package);
             };
     
     shared_ptr<IPackage> deserializedPackage(nullptr);
 
-    deserializingModifier.onNewPackage = [&](shared_ptr<IPackage> package)
+    deserializingModifier.onNewPackage += [&](shared_ptr<IPackage> package)
             {
                 deserializedPackage = package;
             };
@@ -96,14 +96,14 @@ TEST(transportContextTest, WithStringArray_ShouldCorrespondToSerializingModifier
     DeserializingModifier deserializingModifier;
     SerializingModifier serializingModifier;
 
-    serializingModifier.onNewPackage = [&](shared_ptr<IPackage> package)
+    serializingModifier.onNewPackage += [&](shared_ptr<IPackage> package)
             {
                 deserializingModifier.send(package);
             };
     
     shared_ptr<IPackage> deserializedPackage(nullptr);
 
-    deserializingModifier.onNewPackage = [&](shared_ptr<IPackage> package)
+    deserializingModifier.onNewPackage += [&](shared_ptr<IPackage> package)
             {
                 deserializedPackage = package;
             };

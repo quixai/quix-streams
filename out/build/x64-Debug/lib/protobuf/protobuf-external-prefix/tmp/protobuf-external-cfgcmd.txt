@@ -1,0 +1,1 @@
+cmd='C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe;-Dprotobuf_BUILD_EXAMPLES=OFF;-DCMAKE_BUILD_TYPE=Release;<SOURCE_DIR>/cmake'

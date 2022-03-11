@@ -2,6 +2,7 @@
 #include "gmock/gmock.h"
 #include "transport/fw/byteMerger.h"
 #include "transport/fw/byteMergingModifier.h"
+#include "transport/fw/IRevocation.h"
 #include "transport/io/IPackage.h"
 #include "transport/io/package.h"
 #include "transport/fw/exceptions/serializingException.h"
@@ -59,7 +60,7 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsBytes_ShouldRaisePackageAndRetu
 
     MyMockMerger merger;
 
-    IByteMerger::ByteMergerBufferKey bufferkey( string("123"), 1 );
+    IByteMerger::ByteMergerBufferKey bufferkey;
 
 
     ByteMergingModifier modifier(&merger);
@@ -81,12 +82,12 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsBytes_ShouldRaisePackageAndRetu
 
 
     std::vector<std::shared_ptr<ByteArrayPackage>> nonGeneric;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
-        nonGeneric.push_back(package);
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        nonGeneric.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
     };
 
 
-    EXPECT_CALL(merger, tryMerge(_,_,_,_));
+    EXPECT_CALL( merger, tryMerge(_,_,_,_) );
 
 
     modifier.send(package);
@@ -126,6 +127,13 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
                         new ByteArrayPackage(bytes, transportContext)
                     );
 
+    EXPECT_CALL( 
+        merger, 
+        purge(
+            _
+        ) 
+    );
+    
     EXPECT_CALL( 
         merger, 
         tryMerge(
@@ -183,8 +191,8 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
 
 
     std::shared_ptr<ByteArrayPackage> receivedPackage(nullptr);
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
-        receivedPackage = package;
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        receivedPackage =  dynamic_pointer_cast<ByteArrayPackage>( package ) ;
     };
 
 
@@ -197,7 +205,7 @@ TEST(byteMergingModifierTest, Modify_SplitPackageMerges_ShouldHaveTransportConte
     // Assert
     ASSERT_NE( receivedPackage.get(), nullptr );
     string ret("");
-    receivedPackage->transportContext().tryGetValue("Package", ret);
+    receivedPackage->transportContext()->tryGetValue("Package", ret);
     ASSERT_EQ( ret , "1" );
 }
 
@@ -377,8 +385,8 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherPackages_Sh
     expectedOrder.push_back(p3);
 
     vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
-        packagesReceived.push_back(package);
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        packagesReceived.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
     };
     
 
@@ -410,9 +418,6 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherPackages_Sh
 
 
 
-////// TODO: associated with purging
-
-/*
 TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPackageExpires_ShouldRaiseInExpectedOrder) 
 {
     // This is a bit of complex text. The idea is that if you have the following data to be merged:
@@ -433,6 +438,13 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
     auto p1s1 = std::shared_ptr<ByteArrayPackage>(
                         new ByteArrayPackage(bytes, transportContext)
                     );
+
+    EXPECT_CALL( 
+        merger, 
+        purge(
+            _
+        ) 
+    );
 
     EXPECT_CALL( 
         merger, 
@@ -486,19 +498,18 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
 
 
     vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
-        packagesReceived.push_back(package);
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        packagesReceived.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
     };
 
 
     // Act
     modifier.send(p1s1);
-//    merger.onMessageSegmentsPurged = Raise.Event<Action<string>>("p1"); // IMPORTANT! this is before p2
-    merger.onMessageSegmentsPurged = [](const IByteMerger::ByteMergerBufferKey& bufferKey) {}; // IMPORTANT! this is before p2
+    merger.onMessageSegmentsPurged(IByteMerger::ByteMergerBufferKey("p1")); // IMPORTANT! this is before p2
     modifier.send(p2);
 
     // Assert
-    //TODO: wait till completion of once async / await is implemented
+    // TODO: wait till completion of once async / await is implemented
     // tasks.All(x=> x.IsCompleted).Should().BeTrue();
 
     ASSERT_EQ( packagesReceived.size(), 1 );
@@ -510,11 +521,97 @@ TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPac
 
 
 
-Modify_SplitPackageInterweavedWithOtherAndSplitPackageExpiresAfterNonSplit_ShouldRaiseInExpectedOrder
+TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPackageExpiresAfterNonSplit_ShouldRaiseInExpectedOrder) 
+{
+    // This is a bit of complex text. The idea is that if you have the following data to be merged:
+    // [Package1_segment1] [Package2] but package1 expires before package1_segment2 arrived 
+    // then the outcome is [Package2]
+
+    // Arrange
+    MyMockMerger merger;
+
+    EXPECT_CALL( 
+        merger, 
+        purge(
+            _
+        ) 
+    ).Times(2);
+
+    // P1_s1
+    TransportContext transportContext;
+    transportContext["Package"] = "1";
+    auto bytes = ByteArray::initEmpty(1);
+    bytes.data()[0] = 1;
+    auto p1s1 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes, transportContext)
+                    );
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p1s1), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p1s1), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey("p1")),             
+            Return(false)
+        )
+    );
+
+    // P2
+    TransportContext transportContext2;
+    transportContext2["Package"] = "2";
+    auto bytes2m = ByteArray::initEmpty(1);
+    bytes2m.data()[0] = 4;
+    auto p2 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes2m, transportContext2)
+                    );
+
+    vector<std::shared_ptr<ByteArrayPackage>> expectedOrder;
+    expectedOrder.push_back(p2);
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p2), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p2), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey()),             
+            Return(true)
+        )
+    );
 
 
+    ByteMergingModifier modifier(&merger);
 
-*/
+    vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        packagesReceived.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
+    };
+
+    // Act
+
+    modifier.send(p1s1);
+    modifier.send(p2);
+    merger.onMessageSegmentsPurged(IByteMerger::ByteMergerBufferKey("p1")); // IMPORTANT! this is after p2
+
+    // Assert
+    EXPECT_EQ( packagesReceived.size(), 1 );
+    for( int i = 0; i < packagesReceived.size(); ++i )
+    {
+        ASSERT_THAT( packagesReceived[i], EqByteArrayPackagePtr(expectedOrder[i]) );
+    }
+
+}
+
+
 
 TEST(byteMergingModifierTest, Modify_MergeReturnsNull_ShouldNotRaisePackageAndReturnCompletedTask) 
 {
@@ -553,8 +650,8 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsNull_ShouldNotRaisePackageAndRe
     std::shared_ptr<ByteArrayPackage> nongeneric( nullptr );
 
     ByteMergingModifier modifier(&merger);
-    modifier.onNewPackage = [&](std::shared_ptr<ByteArrayPackage> package){
-        nongeneric = package;
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        nongeneric = dynamic_pointer_cast<ByteArrayPackage>( package );
     };
 
 
@@ -568,9 +665,179 @@ TEST(byteMergingModifierTest, Modify_MergeReturnsNull_ShouldNotRaisePackageAndRe
 
 
 
-/**** 
- TODO: revocation
+class MyMockRevocation : public IRevocationPublisher {
 
- Modify_SplitPackageInterweavedWithOtherAndSplitPackageRevoked_ShouldDiscardRevokedAndRaiseInExpectedOrder
+ public:
+    MOCK_METHOD2( filterRevokedContexts ,    std::vector<std::shared_ptr<TransportContext>>(const Quix::Object* state, const std::vector<std::shared_ptr<TransportContext>>& contexts) );
 
-****/
+};
+
+
+TEST(byteMergingModifierTest, Modify_SplitPackageInterweavedWithOtherAndSplitPackageRevoked_ShouldDiscardRevokedAndRaiseInExpectedOrder) 
+{
+    // This is a bit of complex text. The idea is that if you have the following data to be merged:
+    // [Package1_segment1] [Package2] [Package1_segment2] [Package3] but source gets revoked and causes Package1 to
+    // disappear then should raise [Package2] and [Package3]
+
+    // Arrange
+    MyMockMerger merger;
+
+    // P1_s1
+    TransportContext transportContext;
+    transportContext["Package"] = "1";
+    transportContext["Segment"] = "1";
+    auto bytes = ByteArray::initEmpty(1);
+    bytes.data()[0] = 1;
+    auto p1s1 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes, transportContext)
+                    );
+
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p1s1), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p1s1), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey()),             
+            Return(false)
+        )
+    );
+
+    // P2
+    TransportContext transportContext2;
+    transportContext2["Package"] = "2";
+    auto bytes2 = ByteArray::initEmpty(1);
+    bytes2.data()[0] = 2;
+    auto p2 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes2,transportContext2)
+                    );
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p2), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p2), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey()),             
+            Return(true)
+        )
+    );
+
+    // P1_s2
+    TransportContext transportContext3;
+    transportContext3["Package"] = "1";
+    transportContext3["Segment"] = "2";
+    auto bytes3 = ByteArray::initEmpty(1);
+    bytes3.data()[0] = 3;
+    auto p1s2 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes3, transportContext3)
+                    );
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p1s2), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p1s2), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey("p1")),             
+            Return(false)
+        )
+    );
+
+
+    // P3
+    TransportContext transportContext4;
+    transportContext4["Package"] = "3";
+    auto bytes4 = ByteArray::initEmpty(1);
+    bytes4.data()[0] = 4;
+    auto p3 = std::shared_ptr<ByteArrayPackage>(
+                        new ByteArrayPackage(bytes4,transportContext4)
+                    );
+    EXPECT_CALL( 
+        merger, 
+        tryMerge(
+            EqByteArrayPackagePtr(p3), 
+            _,
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        DoAll(
+            SetArgReferee<2>(p3), 
+            SetArgReferee<3>(IByteMerger::ByteMergerBufferKey()),             
+            Return(true)
+        )
+    );
+
+    ByteMergingModifier modifier(&merger);
+    MyMockRevocation revocationPublisher;
+    modifier.subscribe(&revocationPublisher);
+
+    std::vector<std::shared_ptr<TransportContext>> filteredContexts;
+    filteredContexts.push_back(p1s1->transportContext());
+    filteredContexts.push_back(p1s2->transportContext());
+    EXPECT_CALL( 
+        revocationPublisher, 
+        filterRevokedContexts(
+            _,
+            _
+        ) 
+    ).Times(1).WillRepeatedly(
+        Return(filteredContexts)
+    );
+
+    // the non-fragments shouldn't get purged - and cause exceptions in merger -
+    EXPECT_CALL( 
+        merger, 
+        purge(
+            _
+        ) 
+    ).Times(1);
+
+    EXPECT_CALL( 
+        merger, 
+        purge(
+            IByteMerger::ByteMergerBufferKey("p1")
+        ) 
+    ).Times(1);
+
+
+
+    vector<std::shared_ptr<ByteArrayPackage>> expectedOrder;
+    expectedOrder.push_back(p2);
+    expectedOrder.push_back(p3);
+
+    vector<std::shared_ptr<ByteArrayPackage>> packagesReceived;
+    modifier.onNewPackage += [&](std::shared_ptr<IPackage> package){
+        packagesReceived.push_back( dynamic_pointer_cast<ByteArrayPackage>( package ) );
+    };
+
+
+    // Act
+    modifier.send(p1s1);
+    modifier.send(p2);
+    modifier.send(p1s2);
+    modifier.send(p3);
+    revocationPublisher.onRevoked( static_cast<IRevocationPublisher*>(&revocationPublisher), IRevocationPublisher::OnRevokedEventArgs() );
+
+    // Assert
+    EXPECT_EQ( packagesReceived.size(), 2 );
+    for( size_t i = 0; i < expectedOrder.size(); ++i )
+    {
+        EXPECT_EQ( *(packagesReceived[i]), *(expectedOrder[i]) );
+    }
+
+};

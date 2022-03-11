@@ -44,7 +44,7 @@ We do recommend using the Visual Studio Community C++ toolchains. Please follow 
 run this command inside project root folder:
 
 ```cmd
-    Mkdir build && cd build && ( cmake .. && cmake --build . --config Release & cd .. )
+    Mkdir build_win && cd build_win && ( cmake .. && cmake --build . --config Release & cd .. )
 ```
 
 ### How to test?

@@ -2,9 +2,11 @@
 #include "../io/IPackage.h"
 #include "./byteSplitter.h"
 
+#include <cmath>        // ceil
 #include <cstring>
 #include <sstream>
 
+#include "./exceptions/outOfRangeException.h"
 #include "./exceptions/serializingException.h"
 
 namespace Quix { namespace Transport {
@@ -14,6 +16,7 @@ namespace Quix { namespace Transport {
 
     ByteSplitter::ByteSplitter(const size_t maxMessageSize) : 
         maxMessageSize_(maxMessageSize), 
+        messageId(rand()),
         maxMessageSizeWithoutHeader_(maxMessageSize - ByteSplitProtocolHeader::size())
     {
         if( maxMessageSize <= ByteSplitProtocolHeader::size() ) 
@@ -21,7 +24,7 @@ namespace Quix { namespace Transport {
             std::stringstream ss;
             ss << "ByteSplitter maxMessageSize must be at least " << ByteSplitProtocolHeader::size();
             // todo: throw better exception type
-            throw SerializingException(ss.str());
+            throw OutOfRangeException(ss.str());
         }
     };
 
@@ -77,14 +80,14 @@ namespace Quix { namespace Transport {
             );            
         }
 
-        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+        uint8_t maxIndex = ( originalLen - 1 ) / maxMessageSizeWithoutHeader_;
 
         //curIndex is maxIndex + 1
         return IByteSplitter::Iterator(
             originalPackage,                //originalPackage
             maxMessageSizeWithoutHeader_,   //maxMessageSizeWithoutHeader 
             0,              //messageId does not matter
-            maxIndex+1
+            maxIndex + 1
         );
     };
 
@@ -96,7 +99,7 @@ namespace Quix { namespace Transport {
         while( dataIt != dataEnd )
         {
             ret.push_back(*dataIt);
-            ++dataIt;
+            dataIt++;
         }
         return ret;
     }
@@ -141,8 +144,6 @@ namespace Quix { namespace Transport {
     std::shared_ptr<ByteArrayPackage> IByteSplitter::Iterator::operator*() const
     {
         switch(type_){
-            case IteratorType::splitMessage:
-                goto rest;
             case IteratorType::singleMessage:
                 //not split message
                 return originalPackage_;
@@ -150,12 +151,11 @@ namespace Quix { namespace Transport {
                 return *(iterator_ + curIndex_);
         }
 
-        rest:
         const auto& originalValue = originalPackage_->value(); 
         const size_t originalLen = originalValue.len();
 
         uint8_t curIndex = curIndex_;
-        uint8_t maxIndex = originalLen / maxMessageSizeWithoutHeader_;
+        uint8_t maxIndex = (originalLen - 1) / maxMessageSizeWithoutHeader_;
 
 
         ByteSplitProtocolHeader packetHeader(messageId_, curIndex, maxIndex);
@@ -184,13 +184,13 @@ namespace Quix { namespace Transport {
 
         ByteArray packet = ByteArray::prependHeader(
             (uint8_t*)&packetHeader, //adds pointer into the packetHeader
-            sizeof(ByteSplitProtocolHeader),    //header length
+            ByteSplitProtocolHeader::size(),    //header length
             ByteArray(originalValue, toSendDataLength, startDataIndex) //rest of package is subset of original message
         );
 
         return 
             std::shared_ptr<ByteArrayPackage>(
-                new ByteArrayPackage(packet)
+                new ByteArrayPackage(packet, originalPackage_->transportContext())
             );
     }
 

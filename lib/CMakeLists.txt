@@ -1,1 +1,3 @@
 add_subdirectory(protobuf)
+add_subdirectory(librdkafka)
+add_subdirectory(spdlog)

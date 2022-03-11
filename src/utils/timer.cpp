@@ -1,0 +1,199 @@
+#include "./timer.h"
+
+#include <iostream>
+
+namespace Quix { 
+
+    int Timer::calculateNextWaitTime() const
+    {
+            int delay = delay_;
+            int interval = interval_;
+
+            int waitFor;
+            if( delay != UNSET )
+            {
+                waitFor = delay;
+            }
+            else if( interval != UNSET )
+            {
+                waitFor = interval;
+            }
+            else
+            {
+                waitFor = UNSET;
+            }
+            return waitFor;
+    }
+
+    std::chrono::duration<double, std::nano> Timer::calculateNextWait(int waitFor) const
+    {
+            //// load configuration for the waiting
+            std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+            auto elapsed = now - lastRun_;  // in miliseconds
+
+            auto toWait = std::chrono::duration<double, std::milli>(waitFor) - elapsed;        
+
+            return toWait;
+    }
+
+
+    void Timer::run()
+    {
+        threadIsRunning_ = true;
+        do
+        {
+            bool executeFunction = false;
+            {
+                std::unique_lock<std::mutex> lk(changePropsLock_);
+
+                int waitFor = calculateNextWaitTime();
+                auto toWait = calculateNextWait(waitFor);
+
+                if( toWait > std::chrono::duration<double, std::milli>(0) )
+                {
+                    cond_.wait_for(lk, toWait, [=](){ 
+                        int newWaitFor = calculateNextWaitTime();
+                        return 
+                            !this->threadShouldBeRunning_ 
+                                ||
+                            waitFor != newWaitFor
+                                || 
+                            this->calculateNextWait(newWaitFor) <= std::chrono::duration<double, std::milli>(0); 
+                        });
+                }
+
+                //// thread could have been stopped
+                if(!threadShouldBeRunning_)
+                {
+                    return;
+                }
+
+
+                //// load again configuration for waiting becaue condition can expire due to other reasons than timeout
+                int delay = delay_;
+                int interval = interval_;
+                waitFor;
+
+                if( delay != UNSET )
+                {
+                    waitFor = delay;
+                }
+                else if( waitFor != UNSET )
+                {
+                    waitFor = interval;
+                }
+                else
+                {
+                    waitFor = UNSET;
+                }
+
+                //// check elapsed time
+                std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+                auto elapsed = now - lastRun_;
+                if( elapsed >= std::chrono::duration<double, std::milli>(waitFor) )
+                {
+                    // if it is only timeout then reset timer for timeout
+                    if( delay != UNSET )
+                    {
+                        delay_ = UNSET;
+                    }
+
+                    executeFunction = true;
+                }
+            }
+
+            if( executeFunction )
+            {
+                //// execute time
+                callback();
+
+                {
+                    std::unique_lock<std::mutex> lk(changePropsLock_);
+                    lastRun_ = std::chrono::system_clock::now();
+                }
+            }
+
+
+            /* code */
+        } while ( threadShouldBeRunning_ );
+
+        threadIsRunning_ = false;
+        
+    }
+
+    void Timer::start()
+    {
+        threadShouldBeRunning_ = true;
+        thread_ = std::thread(&Timer::run, this);
+    }
+
+    void Timer::change(int delay, int interval)
+    {
+        std::lock_guard<std::mutex> guard(changePropsLock_);
+
+        lastRun_ = std::chrono::system_clock::now();
+
+        delay_ = delay;
+        interval_ = interval;
+
+        if( !threadShouldBeRunning_ && autoStart_ )
+        {
+            start();
+        }
+
+        if( threadIsRunning_ )
+        {
+            cond_.notify_all();
+        }
+    }
+
+    void Timer::stop()
+    {
+        std::lock_guard<std::mutex> guard(changePropsLock_);
+
+        lastRun_ = std::chrono::system_clock::now();
+
+        delay_ = UNSET;
+        interval_ = UNSET;
+
+        cond_.notify_all();
+    }
+
+
+    Timer::Timer(int delay, int interval, bool autoStart)
+    :
+    threadShouldBeRunning_(false),
+    threadIsRunning_(false),
+    autoStart_(autoStart)
+    {
+        change(delay, interval);
+    }
+
+    Timer::~Timer()
+    {
+        threadShouldBeRunning_ = false;
+        stop();
+
+        thread_.join();
+    }
+
+
+    CallbackTimer::CallbackTimer(std::function<void()> cbk, int delay, int interval, bool autoStart)
+    :
+    cbk_(cbk),
+    Timer(delay, interval, autoStart)
+    {
+
+    }
+
+    void CallbackTimer::callback()
+    {
+        cbk_();
+    }
+
+    void CallbackTimer::setAction(std::function<void()> cbk)
+    {
+        cbk_ = cbk;
+    }
+
+}

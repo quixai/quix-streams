@@ -25,7 +25,7 @@ public:
     /**
      * The transport context of the package
      */
-    virtual const TransportContext& transportContext() const = 0;
+    virtual const std::shared_ptr<TransportContext>& transportContext() const = 0;
 
 };
 

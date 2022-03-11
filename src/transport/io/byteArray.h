@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+#include <iomanip>
+
 #include <cstring>
 #include <memory>
 
@@ -7,6 +10,8 @@
 #include "./IModel.h"
 
 namespace Quix { namespace Transport {
+
+
 
 
 /**
@@ -17,9 +22,9 @@ namespace Quix { namespace Transport {
 class ByteArray : public IModel{
 
 private:
-    const size_t len_;
-    const size_t start_;
-    const std::shared_ptr<uint8_t> data_;
+    size_t len_;
+    size_t start_;
+    std::shared_ptr<uint8_t> data_;
 
 public:
     /**
@@ -52,7 +57,7 @@ public:
      len_(data.size()),
      start_(0),
      //initialize array of same size as std::string
-     data_(std::shared_ptr<uint8_t>(new uint8_t[len_], std::default_delete<uint8_t[]>())) 
+     data_(std::shared_ptr<uint8_t>(new uint8_t[data.size()], std::default_delete<uint8_t[]>())) 
     {
         //copy data from string to the array
         memcpy((void*)&(*data_), data.c_str(), len_);
@@ -65,10 +70,10 @@ public:
      : 
      len_(0), 
      start_(0), 
-     data_(nullptr) 
-     {
-         
-     };
+     data_(nullptr)
+    {
+        
+    };
 
     /**
      *  Copy constructor
@@ -96,10 +101,28 @@ public:
      */
     static inline ByteArray initEmpty(size_t len)
     {
-        return ByteArray(
+        auto ret = ByteArray(
             std::shared_ptr<uint8_t>(new uint8_t[len], std::default_delete<uint8_t[]>()),
             len
         );
+
+        auto rawArray = ret.data();
+        for( int i = 0; i < len; ++i )
+        {
+            rawArray[i] = 0;
+        }
+
+        return ret;
+    };
+
+    /**
+     *  Initialize the array filled in with random bytes of size len
+     */
+    static inline ByteArray initFromArray(uint8_t* inp, size_t len)
+    {
+        auto ret = ByteArray::initEmpty(len);
+        memcpy(ret.data(), inp, len * sizeof(uint8_t));
+        return ret;
     };
 
     /**
@@ -151,7 +174,7 @@ public:
      */
     inline const ModelKey modelKey() const 
     { 
-        return ModelKey("ByteArrayPackage");
+        return Quix::Transport::ModelKey::forType<ByteArray>();
     };
 
     /**
@@ -161,8 +184,23 @@ public:
         return 
             len_ == other.len() 
                 && 
-            memcmp(data(), other.data(), len_) == 0
+            (len_ <= 0 || memcmp(data(), other.data(), len_) == 0)
             ;
+    }
+
+    /**
+     * Assign operator
+     */
+    inline ByteArray& operator=(const ByteArray& other) { 
+        if( this == &other ){
+            return *this;
+        }
+
+        this->len_ = other.len_;
+        this->start_ = other.start_;
+        this->data_ = other.data_;
+
+        return *this;
     }
 
     /**
@@ -199,6 +237,24 @@ public:
         return data_;
     }
 
+    /***
+     * Implement << operator for printing into the std::ostream
+     */
+    friend auto operator<<(std::ostream& os, ByteArray const& m) -> std::ostream& { 
+        os << " ByteArray("<<m.len()<<")<<";
+
+        os << std::hex << std::setfill('0') << std::setw(2);
+
+        auto data = m.data();
+        for( auto i = 0; i < m.len(); i++ ){
+            if ( data[i] == '\0' ) { os << '0'; }
+            os << (int)(data[i]) << " ";
+        }
+
+        os << std::dec << std::setfill('0') << std::setw(0);
+
+        return os << ">>";
+    }
 };
 
 } }

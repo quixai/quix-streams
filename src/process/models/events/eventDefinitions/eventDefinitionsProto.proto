@@ -1,0 +1,34 @@
+syntax = "proto3";
+package Quix.Process;
+
+
+
+option csharp_namespace = "Quix.Sdk.Process.Models.Codecs";
+
+
+message EventDefinitionProto {
+    string id = 1;
+
+    oneof name {
+        bool name_null = 2;  // always set this to "true" when null
+        string name_value = 3;
+    };
+    
+    oneof description {
+        bool description_null = 4;  // always set this to "true" when null
+        string description_value = 5;
+    };
+    
+    oneof customProperties {
+        bool customProperties_null = 6;  // always set this to "true" when null
+        string customProperties_value = 7;
+    };
+    
+    int32 level = 8;
+    
+    string location = 9;
+}
+
+message EventDefinitionsProto {
+    repeated EventDefinitionProto events = 1;
+}

@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "../codec/abstractCodec.h"
+#include "../codec/ICodec.h"
 #include "../fw/modelKey.h"
 
 namespace Quix { namespace Transport {
@@ -29,7 +29,7 @@ namespace Quix { namespace Transport {
              *  The last element from vector is used for serializing ( default )
              *   rest is eventually used for deserialization.
              */
-            std::map<ModelKey, std::vector<AbstractCodec*>> codecs;
+            std::map<ModelKey, std::vector<const BaseCodec*>> codecs;
 
         public:
 
@@ -52,7 +52,7 @@ namespace Quix { namespace Transport {
              * @param modelKey model key to be registered
              * @params codec codec
              */
-            void registerCodec(const ModelKey& modelKey, AbstractCodec*);
+            void registerCodec(const ModelKey& modelKey, const BaseCodec*);
 
             /**
              * @brief Retrieves registered codecs for the key
@@ -60,7 +60,7 @@ namespace Quix { namespace Transport {
              * @param modelKey The model key to retrieve codecs for
              * @returns Previously registered <see cref="ICodec"/> or an empty collection if none found
              */
-            std::vector<AbstractCodec*>& retrieveCodecs(const ModelKey& modelKey);
+            std::vector<const BaseCodec*>& retrieveCodecs(const ModelKey& modelKey);
 
             /**
              * @brief Retrieves registered codecs for the model key and codec id
@@ -70,7 +70,7 @@ namespace Quix { namespace Transport {
              * 
              * @returns nullptr if no codec found, otherwise matching codec implementation
              */
-            AbstractCodec* retrieveCodec(const ModelKey& modelKey, const std::string& codecKey);
+            const BaseCodec* retrieveCodec(const ModelKey& modelKey, const std::string& codecKey);
 
             /**
              * @brief Retrieves first codecs for the model key
@@ -79,7 +79,7 @@ namespace Quix { namespace Transport {
              * 
              * @returns nullptr if no codec found, otherwise matching codec implementation
              */
-            AbstractCodec* retrieveFirstCodec(const ModelKey& modelKey);
+            const BaseCodec* retrieveFirstCodec(const ModelKey& modelKey);
 
             /**
              * @brief Clear all codecs registered for model

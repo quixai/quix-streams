@@ -27,7 +27,7 @@ namespace Quix { namespace Transport {
         auto end = byteSplitter_->end(bytePackage);
         while(it != end){
             onNewPackage(*it);
-            ++it;
+            it++;
         }
     };
 

@@ -32,12 +32,13 @@ namespace Quix { namespace Transport {
 
     std::shared_ptr<ByteArrayPackage> SerializingModifier::serializePackage(
         std::shared_ptr<IPackage> package, 
-        AbstractCodec* codec, 
+        const BaseCodec* codec, 
         const CodecBundle& codecBundle
     ) const
     {
-        ByteArray serializedData = codec->serialize(package);
-        if(serializedData.begin() == nullptr)
+        ByteArray serializedData;
+        bool success = codec->trySerialize(serializedData, package);
+        if(!success || serializedData.begin() == nullptr)
         {
             const ModelKey& modelKey = codecBundle.modelKey();
             std::stringstream ss;
@@ -45,7 +46,7 @@ namespace Quix { namespace Transport {
             throw SerializingException(ss.str());
         }
 
-        auto wrappedInPackage = TransportPackageValueCodec::serialize(
+        auto byteArr = TransportPackageValueCodec::serialize(
             std::shared_ptr<TransportPackageValue>(
                 new TransportPackageValue(
                     std::shared_ptr<ByteArrayPackage>(
@@ -57,7 +58,7 @@ namespace Quix { namespace Transport {
         );
 
         return std::shared_ptr<ByteArrayPackage>(
-            new ByteArrayPackage(wrappedInPackage)
+            new ByteArrayPackage(package, byteArr)
         );
     }
  

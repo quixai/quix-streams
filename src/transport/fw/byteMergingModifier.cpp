@@ -16,8 +16,7 @@ namespace Quix { namespace Transport {
     bufferOrder_(0),
     bufferCounter_(0)
     {
-        ////TODO: remake onMessageSegmentsPurged for multi-callback solution 
-        byteMerger->onMessageSegmentsPurged = std::bind( &ByteMergingModifier::onMessageSegmentsPurgedInternal, this, std::placeholders::_1 );
+        byteMerger->onMessageSegmentsPurged += std::bind( &ByteMergingModifier::onMessageSegmentsPurgedInternal, this, std::placeholders::_1 );
     }
 
     void ByteMergingModifier::onMessageSegmentsPurgedInternal( const IByteMerger::ByteMergerBufferKey& bufferKey )
@@ -46,9 +45,11 @@ namespace Quix { namespace Transport {
             )
         )
         {
+            // if we do not have a merged package, then that means that this was not a standalone package, and the 
+            // content of this package was not enough to create a merged package.
             if( bufferKey == IByteMerger::ByteMergerBufferKey() )
             {
-                return;
+                return; // Means that the package is invalid, due to buffering // missing data constraints
             }
 
             tryAddToBuffer( bufferKey, std::shared_ptr<ByteArrayPackage>(nullptr), originalPackage->transportContext() );
@@ -70,8 +71,20 @@ namespace Quix { namespace Transport {
         {
             // buffer id means that this is a merged package
 
-            // TODO: handle transport context
-            packageToRaise = outPackage;
+            std::shared_ptr<TransportContext> transportContext; 
+            {
+                std::lock_guard<std::mutex> guard(lock_);
+                auto it = firstPackageContext_.find(bufferKey);
+                if( it != firstPackageContext_.end() )
+                {
+                    transportContext = it->second;
+                }
+                else
+                {
+                    transportContext = std::shared_ptr<TransportContext>( new TransportContext() );
+                }
+            }
+            packageToRaise = outPackage->duplicate(transportContext);
         }
         
         // check if empty. We're not worried about threading here, because this method is designed to be invoked via single thread
@@ -117,7 +130,9 @@ namespace Quix { namespace Transport {
 
     void ByteMergingModifier::raiseNextPackageIfReady( )
     {
-        //TODO: add concurrency ( semaphore )
+        // Csharp uses here semaphoreSlim because of Task locking
+        // The logic here has to be locked, because it touches multiple objects based on condition of other ones
+        std::lock_guard<std::mutex> guard(raiseNextPackageIfReadyLock_);
 
         vector<pair<IByteMerger::ByteMergerBufferKey, long>> sortedPackageOrder;
 
@@ -164,7 +179,7 @@ namespace Quix { namespace Transport {
     bool ByteMergingModifier::tryAddToBuffer(
         IByteMerger::ByteMergerBufferKey& bufferId, 
         std::shared_ptr<ByteArrayPackage> value, 
-        const TransportContext& transportContext 
+        const std::shared_ptr<TransportContext>& transportContext 
     )
     {
 
@@ -208,6 +223,10 @@ namespace Quix { namespace Transport {
             packageOrder_[bufferId] = order;
         }
 
+        if( *transportContext != TransportContext() )
+        {
+            firstPackageContext_[bufferId] = transportContext;
+        }
 
         ++bufferCounter_;
         return true;
@@ -235,12 +254,20 @@ namespace Quix { namespace Transport {
             {
                 packageOrder_.erase(packageOrderIterator);
             }
+
+            const auto& foundContextIterator = firstPackageContext_.find(bufferId);
+            if( foundContextIterator != firstPackageContext_.end() )
+            {
+                firstPackageContext_.erase( bufferId );
+            }
             else
             {
                 // this is not a split package. It is a queued package that is already whole and and isn't buffer
                 return false;
             }
         }
+
+
 
         byteMerger_->purge(bufferId);
 
@@ -257,6 +284,63 @@ namespace Quix { namespace Transport {
 
         return true;
     }
+
+    // template<typename T>
+    // void merge(std::vector<T> inner, std::vector<T> outer)
+
+    void ByteMergingModifier::subscribe(IRevocationPublisher* revocationPublisher)
+    {
+        revocationPublisher->onRevoked += [=](IRevocationPublisher * sender, const IRevocationPublisher::OnRevokedEventArgs & state)
+            {
+                std::vector<std::shared_ptr<TransportContext>> contexts;
+                {
+                    std::lock_guard<std::mutex> guard(this->lock_);
+                    if( this->firstPackageContext_.empty() ) { return; } // there is nothing to do
+
+                    for ( auto& el: this->firstPackageContext_ )
+                    {
+                        contexts.push_back( el.second );
+                    }
+
+                }
+
+                /// this createds join of the filtered and the this->firstPackageContext_
+                auto filtered = revocationPublisher->filterRevokedContexts(&state, contexts);
+
+                std::vector<IByteMerger::ByteMergerBufferKey> affectedBufferIds;
+                {
+                    std::lock_guard<std::mutex> guard(this->lock_);
+
+                    std::unordered_set<std::shared_ptr<TransportContext>> filteredMap;
+                    for( auto& el: filtered )
+                    {
+                        filteredMap.insert(el);
+                    }
+
+                    for ( auto& el: this->firstPackageContext_ )
+                    {
+                        if( filteredMap.find(el.second) != filteredMap.end() )
+                        {
+                            affectedBufferIds.push_back( el.first );
+                        }
+                    }
+
+                }
+
+                if( affectedBufferIds.size() <= 0 )
+                {
+                    return;
+                }
+
+                for ( auto& el : affectedBufferIds )
+                {
+                    this->removeFromBuffer( el );
+                }
+                this->raiseNextPackageIfReady();
+
+            };
+    }
+
 
 
 

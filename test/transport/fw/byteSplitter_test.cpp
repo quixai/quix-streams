@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "transport/fw/byteSplitter.h"
 #include "transport/io/IPackage.h"
+#include "transport/fw/exceptions/outOfRangeException.h"
 #include "transport/fw/exceptions/serializingException.h"
 
 #include <climits>
@@ -39,8 +40,7 @@ TEST(byteSplitterTest, WithTooLowMaxMessageSize_ShouldThrowArgumentOutOfRangExce
 {
     ByteSplitter* data = nullptr;
 
-    //TODO: implement OutOfRangeException
-    EXPECT_ANY_THROW( data = new ByteSplitter(7) );
+    EXPECT_THROW( data = new ByteSplitter(7), OutOfRangeException );
     if(data != nullptr){
         delete data;
     }
